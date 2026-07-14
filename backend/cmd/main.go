@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"pos/internal/database"
 	"pos/internal/handlers"
 	"pos/internal/repositories"
@@ -78,11 +79,23 @@ func main() {
 	routes.Setup(app, h)
 
 	webDir := filepath.Join(".", "web")
-	if info, err := os.Stat(webDir); err == nil && info.IsDir() {
-		app.Static("/", webDir, fiber.Static{
-			Index: "index.html",
-		})
-	}
+	app.Use(func(c *fiber.Ctx) error {
+		if strings.HasPrefix(c.Path(), "/api") {
+			return c.Status(404).JSON(fiber.Map{"success": false, "error": "Not found"})
+		}
+		if _, err := os.Stat(webDir); err != nil {
+			return c.Next()
+		}
+		p := c.Path()
+		if p == "/" {
+			p = "/index.html"
+		}
+		file := webDir + p
+		if _, err := os.Stat(file); err == nil {
+			return c.SendFile(file)
+		}
+		return c.SendFile(webDir + "/index.html")
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
