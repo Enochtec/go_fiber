@@ -186,12 +186,14 @@ CREATE TABLE IF NOT EXISTS stock_adjustments (
 CREATE INDEX IF NOT EXISTS idx_stock_adj_product ON stock_adjustments(product_id);
 CREATE INDEX IF NOT EXISTS idx_stock_adj_created_at ON stock_adjustments(created_at DESC);
 
+DROP TABLE IF EXISTS shifts CASCADE;
+
 CREATE TABLE IF NOT EXISTS shifts (
-	id TEXT PRIMARY KEY,
-	cashier_id TEXT NOT NULL,
+	id UUID PRIMARY KEY,
+	cashier_id UUID NOT NULL,
 	opening_float DOUBLE PRECISION NOT NULL DEFAULT 0,
-	opening_time TIMESTAMP NOT NULL DEFAULT NOW(),
-	closing_time TIMESTAMP,
+	opening_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	closing_time TIMESTAMPTZ,
 	cash_sales DOUBLE PRECISION NOT NULL DEFAULT 0,
 	mpesa_sales DOUBLE PRECISION NOT NULL DEFAULT 0,
 	card_sales DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -204,7 +206,7 @@ CREATE TABLE IF NOT EXISTS shifts (
 	variance DOUBLE PRECISION,
 	status TEXT NOT NULL DEFAULT 'open',
 	notes TEXT,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_shifts_cashier ON shifts(cashier_id);
