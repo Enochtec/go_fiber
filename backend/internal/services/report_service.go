@@ -46,13 +46,13 @@ func (s *ReportService) DailySales(days int) ([]DailySalesRow, error) {
 	var rows []DailySalesRow
 	err := s.db.Select(&rows, `
 		SELECT
-			date(created_at) AS date,
+			DATE(created_at) AS date,
 			COUNT(*) AS orders,
 			COALESCE(SUM(total), 0) AS total
 		FROM sales
 		WHERE status = 'completed'
 			AND created_at >= $1
-		GROUP BY date(created_at)
+		GROUP BY DATE(created_at)
 		ORDER BY date DESC`, since)
 	return rows, err
 }
@@ -62,14 +62,14 @@ func (s *ReportService) MonthlySales(months int) ([]DailySalesRow, error) {
 	var rows []DailySalesRow
 	err := s.db.Select(&rows, `
 		SELECT
-			strftime('%Y-%m', created_at) AS date,
+			TO_CHAR(created_at, 'YYYY-MM') AS date,
 			COUNT(*) AS orders,
 			COALESCE(SUM(total), 0) AS total
 		FROM sales
 		WHERE status = 'completed'
 			AND created_at >= $1
-		GROUP BY strftime('%Y-%m', created_at)
-		ORDER BY strftime('%Y-%m', created_at) DESC`, since)
+		GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+		ORDER BY TO_CHAR(created_at, 'YYYY-MM') DESC`, since)
 	return rows, err
 }
 
@@ -103,7 +103,7 @@ func (s *ReportService) InventoryValue() ([]InventoryValueRow, error) {
 			COALESCE(SUM(p.selling_price * p.stock_qty), 0) AS total_value
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
-		WHERE p.is_active = 1
+		WHERE p.is_active = TRUE
 		GROUP BY c.name
 		ORDER BY total_value DESC`)
 	return rows, err

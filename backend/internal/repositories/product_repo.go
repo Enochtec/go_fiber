@@ -18,7 +18,7 @@ func NewProductRepo(db *sqlx.DB) *ProductRepo {
 }
 
 func (r *ProductRepo) List(f models.ProductFilter) ([]models.Product, int, error) {
-	where := []string{"p.is_active = 1"}
+	where := []string{"p.is_active = TRUE"}
 	args := []interface{}{}
 	i := 1
 
@@ -77,7 +77,7 @@ func (r *ProductRepo) FindByBarcode(barcode string) (*models.Product, error) {
 		SELECT p.*, c.name AS category_name
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
-		WHERE p.barcode = $1 AND p.is_active = 1`, barcode)
+		WHERE p.barcode = $1 AND p.is_active = TRUE`, barcode)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (r *ProductRepo) Update(id string, in *models.ProductInput) error {
 		UPDATE products SET
 			name = $1, barcode = $2, sku = $3, category_id = $4,
 			buying_price = $5, selling_price = $6, stock_qty = $7,
-			reorder_level = $8, image_url = $9, updated_at = datetime('now')
+			reorder_level = $8, image_url = $9, updated_at = NOW()
 		WHERE id = $10`,
 		in.Name, in.Barcode, in.SKU, in.CategoryID,
 		in.BuyingPrice, in.SellingPrice, in.StockQty,
@@ -109,7 +109,7 @@ func (r *ProductRepo) Update(id string, in *models.ProductInput) error {
 }
 
 func (r *ProductRepo) Delete(id string) error {
-	_, err := r.db.Exec(`UPDATE products SET is_active = 0, updated_at = datetime('now') WHERE id = $1`, id)
+	_, err := r.db.Exec(`UPDATE products SET is_active = FALSE, updated_at = NOW() WHERE id = $1`, id)
 	return err
 }
 
@@ -122,7 +122,7 @@ func (r *ProductRepo) GetStock(tx *sqlx.Tx, productID string) (string, int, erro
 
 func (r *ProductRepo) UpdateStock(tx *sqlx.Tx, productID string, delta int) error {
 	_, err := tx.Exec(
-		`UPDATE products SET stock_qty = stock_qty + $1, updated_at = datetime('now') WHERE id = $2`,
+		`UPDATE products SET stock_qty = stock_qty + $1, updated_at = NOW() WHERE id = $2`,
 		delta, productID,
 	)
 	return err

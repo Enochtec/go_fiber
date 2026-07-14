@@ -2,6 +2,9 @@ node_modules/
 .svelte-kit/
 .env
 *.exe
-maestro.db
-maestro.db-wal
-maestro.db-shm
+*.exe~
+*~
+*.db
+*.db-wal
+*.db-shm
+MaestroPOS/

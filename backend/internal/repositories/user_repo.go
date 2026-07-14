@@ -17,7 +17,7 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 
 func (r *UserRepo) FindByEmail(email string) (*models.User, error) {
 	user := &models.User{}
-	err := r.db.Get(user, `SELECT * FROM users WHERE email = $1 AND is_active = 1`, email)
+	err := r.db.Get(user, `SELECT * FROM users WHERE email = $1 AND is_active = TRUE`, email)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (r *UserRepo) Update(id string, fields map[string]interface{}) error {
 			password = COALESCE(NULLIF(:password, ''), password),
 			role = COALESCE(NULLIF(:role, ''), role),
 			is_active = COALESCE(:is_active, is_active),
-			updated_at = datetime('now')
+			updated_at = NOW()
 		WHERE id = :id`,
 		fields,
 	)
@@ -64,6 +64,6 @@ func (r *UserRepo) Update(id string, fields map[string]interface{}) error {
 }
 
 func (r *UserRepo) Delete(id string) error {
-	_, err := r.db.Exec(`UPDATE users SET is_active = 0, updated_at = datetime('now') WHERE id = $1`, id)
+	_, err := r.db.Exec(`UPDATE users SET is_active = FALSE, updated_at = NOW() WHERE id = $1`, id)
 	return err
 }

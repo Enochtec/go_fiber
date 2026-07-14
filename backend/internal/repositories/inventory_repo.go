@@ -47,12 +47,12 @@ func (r *InventoryRepo) GetDashboardStats() (*models.DashboardStats, error) {
 	stats := &models.DashboardStats{}
 	err := r.db.Get(stats, `
 		SELECT
-			COALESCE((SELECT SUM(total) FROM sales WHERE status = 'completed' AND date(created_at) = date('now')), 0) AS today_sales,
-			COALESCE((SELECT COUNT(*) FROM sales WHERE status = 'completed' AND date(created_at) = date('now')), 0) AS today_orders,
-			COALESCE((SELECT COUNT(*) FROM products WHERE is_active = 1), 0) AS total_products,
-			COALESCE((SELECT COUNT(*) FROM products WHERE is_active = 1 AND stock_qty <= reorder_level), 0) AS low_stock_count,
+			COALESCE((SELECT SUM(total) FROM sales WHERE status = 'completed' AND DATE(created_at) = CURRENT_DATE), 0) AS today_sales,
+			COALESCE((SELECT COUNT(*) FROM sales WHERE status = 'completed' AND DATE(created_at) = CURRENT_DATE), 0) AS today_orders,
+			COALESCE((SELECT COUNT(*) FROM products WHERE is_active = TRUE), 0) AS total_products,
+			COALESCE((SELECT COUNT(*) FROM products WHERE is_active = TRUE AND stock_qty <= reorder_level), 0) AS low_stock_count,
 			COALESCE((SELECT COUNT(*) FROM customers), 0) AS total_customers,
-			COALESCE((SELECT SUM(total) FROM sales WHERE status = 'completed' AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')), 0) AS month_sales
+			COALESCE((SELECT SUM(total) FROM sales WHERE status = 'completed' AND TO_CHAR(created_at, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')), 0) AS month_sales
 	`)
 	return stats, err
 }
