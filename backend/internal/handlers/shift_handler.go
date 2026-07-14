@@ -32,7 +32,7 @@ func (h *ShiftHandler) Open(c *fiber.Ctx) error {
 
 	existing, _ := h.shifts.GetCurrent(cashierID)
 	if existing != nil {
-		return utils.BadRequest(c, "you already have an open shift")
+		h.shifts.ForceClose(existing.ID)
 	}
 
 	var input models.OpenShiftInput

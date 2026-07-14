@@ -106,6 +106,10 @@ func (r *ShiftRepo) AddSaleTotals(cashierID string, paymentMethod string, amount
 		amount, cashierID)
 }
 
+func (r *ShiftRepo) ForceClose(id string) {
+	r.db.Exec(`UPDATE shifts SET status='closed', closing_time=NOW(), notes=CASE WHEN notes='' OR notes IS NULL THEN 'Auto-closed' ELSE notes || '; Auto-closed' END WHERE id=$1 AND status='open'`, id)
+}
+
 func (r *ShiftRepo) List(cashierID string, limit int) ([]models.Shift, error) {
 	var shifts []models.Shift
 	err := r.db.Select(&shifts, `
