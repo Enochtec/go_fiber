@@ -1,1 +1,0 @@
-import{n as e,nt as t,tt as n}from"../chunks/DL49vrtn.js";import{t as r}from"../chunks/BbzY1Rvr.js";import"../chunks/xihTtKlq.js";import"../chunks/D0ehRlKU.js";import{t as i}from"../chunks/Y-FNhQDr.js";function a(a,o){t(o,!0),e(()=>{r(i.isAuthenticated?`/dashboard`:`/login`,{replaceState:!0})}),n()}export{a as component};

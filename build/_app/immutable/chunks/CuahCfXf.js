@@ -1,1 +1,0 @@
-import{n as e}from"./e_VQTmaS.js";var t={dashboard:()=>e.get(`/dashboard`),listAdjustments:(t=1,n=20)=>e.get(`/inventory/adjustments?page=${t}&limit=${n}`),adjust:t=>e.post(`/inventory/adjust`,t)};export{t};

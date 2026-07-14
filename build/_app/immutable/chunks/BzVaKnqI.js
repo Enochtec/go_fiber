@@ -1,1 +1,0 @@
-import{n as e}from"./e_VQTmaS.js";var t={list:()=>e.get(`/suppliers`),getById:t=>e.get(`/suppliers/${t}`),create:t=>e.post(`/suppliers`,t),update:(t,n)=>e.put(`/suppliers/${t}`,n),delete:t=>e.delete(`/suppliers/${t}`)};export{t};

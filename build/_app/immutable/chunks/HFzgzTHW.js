@@ -1,1 +1,0 @@
-import{n as e}from"./e_VQTmaS.js";var t={list:(t=``,n=1,r=20)=>e.get(`/customers?search=${encodeURIComponent(t)}&page=${n}&limit=${r}`),getById:t=>e.get(`/customers/${t}`),create:t=>e.post(`/customers`,t),update:(t,n)=>e.put(`/customers/${t}`,n),delete:t=>e.delete(`/customers/${t}`)};export{t};
