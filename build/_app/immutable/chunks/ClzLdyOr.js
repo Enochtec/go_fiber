@@ -1,0 +1,1 @@
+import{n as e}from"./e_VQTmaS.js";var t={dailySales:(t=30)=>e.get(`/reports/sales/daily?days=${t}`),monthlySales:(t=12)=>e.get(`/reports/sales/monthly?months=${t}`),topProducts:(t=10)=>e.get(`/reports/products/top?limit=${t}`),inventoryValue:()=>e.get(`/reports/inventory/value`)};export{t};

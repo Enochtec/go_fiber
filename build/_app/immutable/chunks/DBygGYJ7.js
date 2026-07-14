@@ -1,0 +1,1 @@
+import{n as e}from"./e_VQTmaS.js";function t(e){let t=new URLSearchParams;for(let[n,r]of Object.entries(e))r!==void 0&&r!==``&&t.set(n,String(r));let n=t.toString();return n?`?`+n:``}var n={list:(n={})=>e.get(`/sales`+t(n)),getById:t=>e.get(`/sales/${t}`),create:t=>e.post(`/sales`,t),void:t=>e.put(`/sales/${t}/void`,{}),hold:t=>e.put(`/sales/${t}/hold`,{})};export{n as t};
