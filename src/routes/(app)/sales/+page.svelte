@@ -375,21 +375,36 @@
 <svelte:head><title>Checkout — POS</title></svelte:head>
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- ─── Shift banner ──────────────────────────────────────────── -->
-{#if shiftStore.checked && !shiftStore.isOpen}
-	<div class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm shrink-0">
-		<div class="flex items-center gap-2">
-			<Clock size={15} class="text-amber-600 shrink-0" />
-			<span class="text-amber-800 font-medium">No open shift</span>
+<!-- ─── Shift banner/indicator ───────────────────────────────── -->
+{#if shiftStore.checked}
+	{#if shiftStore.isOpen}
+		<div class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-sm shrink-0">
+			<div class="flex items-center gap-2">
+				<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+				<span class="text-emerald-800 font-medium">Shift open</span>
+			</div>
+			<button
+				onclick={() => showCloseShiftModal = true}
+				class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 bg-red-500 hover:bg-red-600"
+			>
+				Close Shift
+			</button>
 		</div>
-		<button
-			onclick={() => showShiftModal = true}
-			class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
-			style="background-color:#008B8B;"
-		>
-			Open Shift
-		</button>
-	</div>
+	{:else}
+		<div class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm shrink-0">
+			<div class="flex items-center gap-2">
+				<Clock size={15} class="text-amber-600 shrink-0" />
+				<span class="text-amber-800 font-medium">No open shift</span>
+			</div>
+			<button
+				onclick={() => showShiftModal = true}
+				class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
+				style="background-color:#008B8B;"
+			>
+				Open Shift
+			</button>
+		</div>
+	{/if}
 {/if}
 
 <!-- ─── Main layout ───────────────────────────────────────────────── -->
@@ -422,17 +437,6 @@
 					</button>
 				{/if}
 			</div>
-
-			<!-- Shift indicator -->
-			{#if shiftStore.isOpen}
-				<button
-					onclick={() => showCloseShiftModal = true}
-					class="hidden sm:flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-400 shrink-0"
-				>
-					<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-					Shift Open
-				</button>
-			{/if}
 
 			<!-- Held sales -->
 			<button
