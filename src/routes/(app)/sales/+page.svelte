@@ -375,23 +375,20 @@
 <svelte:head><title>Checkout — POS</title></svelte:head>
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- ─── Shift gate ─────────────────────────────────────────────── -->
+<!-- ─── Shift banner ──────────────────────────────────────────── -->
 {#if shiftStore.checked && !shiftStore.isOpen}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4">
-		<div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 p-8 shadow-2xl text-center">
-			<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style="background-color:#008B8B20;">
-				<Clock size={32} style="color:#008B8B;" />
-			</div>
-			<h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">No Open Shift</h2>
-			<p class="mt-2 text-sm text-slate-500 dark:text-slate-400">You must open a shift before making sales.</p>
-			<button
-				onclick={() => showShiftModal = true}
-				class="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white transition-all active:scale-95"
-				style="background-color:#008B8B;"
-			>
-				Open Shift
-			</button>
+	<div class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm shrink-0">
+		<div class="flex items-center gap-2">
+			<Clock size={15} class="text-amber-600 shrink-0" />
+			<span class="text-amber-800 font-medium">No open shift</span>
 		</div>
+		<button
+			onclick={() => showShiftModal = true}
+			class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
+			style="background-color:#008B8B;"
+		>
+			Open Shift
+		</button>
 	</div>
 {/if}
 
