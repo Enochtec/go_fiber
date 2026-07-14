@@ -57,6 +57,7 @@
 	let lastSale: Sale | null = $state(null);
 	let lastAmountTendered = $state(0);
 	let lastChange = $state(0);
+	let whatsappNumber = $state('');
 
 	let searchInput: HTMLInputElement;
 	let searchResultsEl: HTMLDivElement;
@@ -187,6 +188,7 @@
 
 	function selectCustomer(c: Customer) {
 		cart.setCustomer(c.id, c.name);
+		if (c.phone && !whatsappNumber) whatsappNumber = c.phone;
 		showCustomerModal = false;
 	}
 
@@ -199,6 +201,7 @@
 				name: newCustomerName, phone: newCustomerPhone, email: newCustomerEmail, address: ''
 			});
 			if (res.data) {
+				if (newCustomerPhone) whatsappNumber = newCustomerPhone;
 				selectCustomer(res.data);
 				showNewCustomerModal = false;
 				newCustomerName = ''; newCustomerPhone = ''; newCustomerEmail = '';
@@ -295,6 +298,7 @@
 		cart.clear();
 		amountTendered = 0;
 		paymentMethod = 'cash';
+		whatsappNumber = '';
 		lastSale = null;
 		loadProducts();
 		searchInput?.focus();
@@ -302,14 +306,23 @@
 
 	function printReceipt() { window.print(); }
 
+	function formatPhone(num: string) {
+		const d = num.replace(/\D/g, '');
+		if (d.startsWith('0')) return '254' + d.slice(1);
+		if (d.startsWith('254')) return d;
+		if (d.startsWith('+')) return d.slice(1);
+		return d;
+	}
+
 	function sendWhatsApp() {
 		if (!lastSale) return;
-		const phone = lastSale.customer_name ? '' : '';
+		const num = whatsappNumber.trim();
+		if (!num) { notify.error('Enter a phone number for WhatsApp'); return; }
 		const items = (lastSale.items ?? []).map(i =>
 			`• ${i.product_name ?? 'Item'} x${i.quantity} = KES ${fmt(i.total)}`
 		).join('\n');
 		const msg = `*POS Receipt*\nReceipt: #${lastSale.id.slice(0, 8).toUpperCase()}\nDate: ${new Date(lastSale.created_at).toLocaleString()}\n\n${items}\n\nSubtotal: KES ${fmt(lastSale.subtotal)}\nTotal: *KES ${fmt(lastSale.total)}*\nPayment: ${lastSale.payment_method}\n\nThank you for your purchase! 🙏`;
-		window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+		window.open(`https://wa.me/${formatPhone(num)}?text=${encodeURIComponent(msg)}`, '_blank');
 	}
 
 	// ─── Shift ──────────────────────────────────────────────────────
@@ -759,6 +772,17 @@
 					<p class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">Amount: KES {fmt(cart.total)}</p>
 				</div>
 			{/if}
+
+			<!-- WhatsApp number -->
+			<div class="relative">
+				<MessageCircle size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+				<input
+					type="tel"
+					bind:value={whatsappNumber}
+					placeholder="WhatsApp: 0792 397 476"
+					class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 py-2.5 pl-9 pr-4 text-sm focus:outline-none"
+				/>
+			</div>
 
 			<!-- Utility row -->
 			<div class="grid grid-cols-3 gap-1.5">
