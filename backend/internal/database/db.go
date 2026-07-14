@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Connect() (*sqlx.DB, error) {
@@ -30,8 +32,34 @@ func Connect() (*sqlx.DB, error) {
 }
 
 func migrate(db *sqlx.DB) error {
-	_, err := db.Exec(schema)
-	return err
+	if _, err := db.Exec(schema); err != nil {
+		return err
+	}
+
+	var count int
+	if err := db.Get(&count, `SELECT COUNT(*) FROM users`); err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	id := uuid.New().String()
+	_, err = db.Exec(
+		`INSERT INTO users (id, name, email, password, role, is_active) VALUES ($1, $2, $3, $4, $5, $6)`,
+		id, "Administrator", "admin@pos.local", string(hash), "admin", true,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to seed admin user: %w", err)
+	}
+
+	fmt.Println("Seeded default admin user (admin@pos.local / admin123)")
+	return nil
 }
 
 const schema = `
