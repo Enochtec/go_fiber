@@ -1,6 +1,7 @@
 node_modules/
 .svelte-kit/
 build/
+web/
 .env
 *.exe
 *.exe~
@@ -9,3 +10,5 @@ build/
 *.db-wal
 *.db-shm
 MaestroPOS/
+pos
+pos.exe

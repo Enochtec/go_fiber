@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"pos/internal/database"
 	"pos/internal/handlers"
 	"pos/internal/repositories"
@@ -75,6 +76,13 @@ func main() {
 	}))
 
 	routes.Setup(app, h)
+
+	webDir := filepath.Join(".", "web")
+	if info, err := os.Stat(webDir); err == nil && info.IsDir() {
+		app.Static("/", webDir, fiber.Static{
+			Index: "index.html",
+		})
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
