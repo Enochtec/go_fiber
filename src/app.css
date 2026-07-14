@@ -25,6 +25,8 @@
 
 html {
 	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -32,6 +34,19 @@ body {
 	background-color: #f1f5f9;
 	color: #0f172a;
 }
+
+/* Unified focus ring using brand teal */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+	outline: 2px solid #008B8B;
+	outline-offset: 2px;
+}
+
+/* Smooth page-level transitions */
+.page-enter { opacity: 0; transform: translateY(6px); }
+.page-enter-active { opacity: 1; transform: none; transition: opacity 200ms, transform 200ms; }
 
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {

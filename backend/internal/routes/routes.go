@@ -17,6 +17,7 @@ type Handlers struct {
 	Purchase  *handlers.PurchaseHandler
 	Inventory *handlers.InventoryHandler
 	Report    *handlers.ReportHandler
+	Shift     *handlers.ShiftHandler
 }
 
 func Setup(app *fiber.App, h *Handlers) {
@@ -57,6 +58,8 @@ func Setup(app *fiber.App, h *Handlers) {
 
 	customers := protected.Group("/customers")
 	customers.Get("/", h.Customer.List)
+	customers.Get("/:id/stats", h.Customer.Stats)
+	customers.Get("/:id/history", h.Customer.History)
 	customers.Get("/:id", h.Customer.GetByID)
 	customers.Post("/", h.Customer.Create)
 	customers.Put("/:id", h.Customer.Update)
@@ -90,4 +93,10 @@ func Setup(app *fiber.App, h *Handlers) {
 	reports.Get("/sales/monthly", h.Report.MonthlySales)
 	reports.Get("/products/top", h.Report.TopProducts)
 	reports.Get("/inventory/value", h.Report.InventoryValue)
+
+	shifts := protected.Group("/shifts")
+	shifts.Get("/current", h.Shift.Current)
+	shifts.Get("/", h.Shift.List)
+	shifts.Post("/open", h.Shift.Open)
+	shifts.Post("/:id/close", h.Shift.Close)
 }

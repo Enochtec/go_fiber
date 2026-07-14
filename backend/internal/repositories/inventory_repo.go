@@ -47,12 +47,18 @@ func (r *InventoryRepo) GetDashboardStats() (*models.DashboardStats, error) {
 	stats := &models.DashboardStats{}
 	err := r.db.Get(stats, `
 		SELECT
-			COALESCE((SELECT SUM(total) FROM sales WHERE status = 'completed' AND DATE(created_at) = CURRENT_DATE), 0) AS today_sales,
-			COALESCE((SELECT COUNT(*) FROM sales WHERE status = 'completed' AND DATE(created_at) = CURRENT_DATE), 0) AS today_orders,
-			COALESCE((SELECT COUNT(*) FROM products WHERE is_active = TRUE), 0) AS total_products,
-			COALESCE((SELECT COUNT(*) FROM products WHERE is_active = TRUE AND stock_qty <= reorder_level), 0) AS low_stock_count,
+			COALESCE((SELECT SUM(total) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE), 0) AS today_sales,
+			COALESCE((SELECT COUNT(*) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE), 0) AS today_orders,
+			COALESCE((SELECT AVG(total) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE), 0) AS today_avg_sale,
+			COALESCE((SELECT SUM(total) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE AND payment_method='cash'), 0) AS today_cash_sales,
+			COALESCE((SELECT SUM(total) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE AND payment_method='mpesa'), 0) AS today_mpesa,
+			COALESCE((SELECT SUM(total) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE AND payment_method='card'), 0) AS today_card,
+			COALESCE((SELECT COUNT(*) FROM products WHERE is_active=TRUE), 0) AS total_products,
+			COALESCE((SELECT COUNT(*) FROM products WHERE is_active=TRUE AND stock_qty>0 AND stock_qty<=reorder_level), 0) AS low_stock_count,
+			COALESCE((SELECT COUNT(*) FROM products WHERE is_active=TRUE AND stock_qty=0), 0) AS out_of_stock,
 			COALESCE((SELECT COUNT(*) FROM customers), 0) AS total_customers,
-			COALESCE((SELECT SUM(total) FROM sales WHERE status = 'completed' AND TO_CHAR(created_at, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')), 0) AS month_sales
+			COALESCE((SELECT SUM(total) FROM sales WHERE status='completed' AND TO_CHAR(created_at,'YYYY-MM')=TO_CHAR(NOW(),'YYYY-MM')), 0) AS month_sales,
+			COALESCE((SELECT SUM(total) FROM sales WHERE status='completed' AND DATE(created_at)=CURRENT_DATE-1), 0) AS yesterday_sales
 	`)
 	return stats, err
 }

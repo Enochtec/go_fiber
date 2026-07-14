@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"pos/internal/database"
 	"pos/internal/handlers"
 	"pos/internal/repositories"
 	"pos/internal/routes"
 	"pos/internal/services"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -39,6 +39,7 @@ func main() {
 	supplierRepo := repositories.NewSupplierRepo(db)
 	purchaseRepo := repositories.NewPurchaseRepo(db)
 	inventoryRepo := repositories.NewInventoryRepo(db)
+	shiftRepo := repositories.NewShiftRepo(db)
 
 	authSvc := services.NewAuthService(userRepo)
 	saleSvc := services.NewSaleService(saleRepo, productRepo)
@@ -56,6 +57,7 @@ func main() {
 		Purchase:  handlers.NewPurchaseHandler(purchaseRepo, purchaseSvc, validate),
 		Inventory: handlers.NewInventoryHandler(inventoryRepo, inventorySvc, validate),
 		Report:    handlers.NewReportHandler(reportSvc),
+		Shift:     handlers.NewShiftHandler(shiftRepo, validate),
 	}
 
 	app := fiber.New(fiber.Config{
@@ -79,12 +81,12 @@ func main() {
 	routes.Setup(app, h)
 
 	webDir := filepath.Join(".", "web")
-	app.Use(func(c *fiber.Ctx) error {
+	app.Get("/*", func(c *fiber.Ctx) error {
 		if strings.HasPrefix(c.Path(), "/api") {
 			return c.Status(404).JSON(fiber.Map{"success": false, "error": "Not found"})
 		}
 		if _, err := os.Stat(webDir); err != nil {
-			return c.Next()
+			return c.SendStatus(404)
 		}
 		p := c.Path()
 		if p == "/" {

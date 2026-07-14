@@ -21,10 +21,11 @@ type DailySalesRow struct {
 }
 
 type TopProductRow struct {
-	ProductID   string  `db:"product_id" json:"product_id"`
-	ProductName string  `db:"product_name" json:"product_name"`
-	Quantity    int     `db:"quantity" json:"quantity"`
-	Revenue     float64 `db:"revenue" json:"revenue"`
+	ProductID    string  `db:"product_id" json:"product_id"`
+	ProductName  string  `db:"product_name" json:"product_name"`
+	Quantity     int     `db:"quantity" json:"quantity"`
+	QuantitySold int     `db:"quantity_sold" json:"quantity_sold"`
+	Revenue      float64 `db:"revenue" json:"revenue"`
 }
 
 type ProfitRow struct {
@@ -81,6 +82,7 @@ func (s *ReportService) TopProducts(limit int) ([]TopProductRow, error) {
 			si.product_id,
 			p.name AS product_name,
 			SUM(si.quantity) AS quantity,
+			SUM(si.quantity) AS quantity_sold,
 			SUM(si.total) AS revenue
 		FROM sale_items si
 		JOIN products p ON si.product_id = p.id

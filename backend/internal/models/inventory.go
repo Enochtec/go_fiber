@@ -18,10 +18,16 @@ type StockAdjustmentInput struct {
 }
 
 type DashboardStats struct {
-	TodaySales    float64 `json:"today_sales" db:"today_sales"`
-	TodayOrders   int     `json:"today_orders" db:"today_orders"`
-	TotalProducts int     `json:"total_products" db:"total_products"`
-	LowStockCount int     `json:"low_stock_count" db:"low_stock_count"`
-	TotalCustomers int    `json:"total_customers" db:"total_customers"`
-	MonthSales    float64 `json:"month_sales" db:"month_sales"`
+	TodaySales     float64 `json:"today_sales" db:"today_sales"`
+	TodayOrders    int     `json:"today_orders" db:"today_orders"`
+	TodayAvgSale   float64 `json:"today_avg_sale" db:"today_avg_sale"`
+	TodayCashSales float64 `json:"today_cash_sales" db:"today_cash_sales"`
+	TodayMpesa     float64 `json:"today_mpesa" db:"today_mpesa"`
+	TodayCard      float64 `json:"today_card" db:"today_card"`
+	TotalProducts  int     `json:"total_products" db:"total_products"`
+	LowStockCount  int     `json:"low_stock_count" db:"low_stock_count"`
+	OutOfStock     int     `json:"out_of_stock" db:"out_of_stock"`
+	TotalCustomers int     `json:"total_customers" db:"total_customers"`
+	MonthSales     float64 `json:"month_sales" db:"month_sales"`
+	YesterdaySales float64 `json:"yesterday_sales" db:"yesterday_sales"`
 }

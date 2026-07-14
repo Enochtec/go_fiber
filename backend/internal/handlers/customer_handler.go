@@ -89,3 +89,23 @@ func (h *CustomerHandler) Delete(c *fiber.Ctx) error {
 	}
 	return utils.OKMessage(c, "customer deleted")
 }
+
+func (h *CustomerHandler) Stats(c *fiber.Ctx) error {
+	stats, err := h.customers.GetStats(c.Params("id"))
+	if err != nil {
+		return utils.Internal(c, err)
+	}
+	return utils.OK(c, stats)
+}
+
+func (h *CustomerHandler) History(c *fiber.Ctx) error {
+	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	sales, err := h.customers.ListPurchaseHistory(c.Params("id"), limit)
+	if err != nil {
+		return utils.Internal(c, err)
+	}
+	return utils.OK(c, sales)
+}

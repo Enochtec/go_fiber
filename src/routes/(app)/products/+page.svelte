@@ -5,7 +5,7 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { Product, Category } from '$lib/types';
-	import { Plus, Search, Pencil, Trash2, AlertTriangle } from '@lucide/svelte';
+	import { Plus, Search, Pencil, Trash2, AlertTriangle, Package } from '@lucide/svelte';
 
 	let products = $state<Product[]>([]);
 	let categories = $state<Category[]>([]);
@@ -126,156 +126,225 @@
 
 <svelte:head><title>Products — POS</title></svelte:head>
 
-<div class="p-6 space-y-5">
-	<div class="flex items-center justify-between">
-		<h1 class="text-xl font-semibold text-gray-900">Products</h1>
-		<button onclick={openCreate} class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+<div class="p-4 md:p-6 space-y-5 dark:bg-slate-950 min-h-full">
+
+	<!-- Page header -->
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+		<div>
+			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Products</h1>
+			<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+				{total} product{total !== 1 ? 's' : ''} total
+			</p>
+		</div>
+		<button
+			onclick={openCreate}
+			class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95"
+			style="background-color: #008B8B;"
+		>
 			<Plus size={16} />
 			Add Product
 		</button>
 	</div>
 
-	<div class="flex gap-3 flex-wrap">
+	<!-- Filters -->
+	<div class="flex gap-2.5 flex-wrap">
 		<div class="relative flex-1 min-w-48">
-			<Search size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+			<Search size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 			<input
 				bind:value={search}
 				oninput={onSearch}
-				placeholder="Search products…"
-				class="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
+				placeholder="Search by name, barcode, SKU…"
+				class="w-full rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 bg-white py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none"
 			/>
 		</div>
 		<select
 			bind:value={categoryFilter}
 			onchange={() => { page = 1; fetchProducts(); }}
-			class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+			class="rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none"
 		>
 			<option value="">All Categories</option>
 			{#each categories as cat}
 				<option value={cat.id}>{cat.name}</option>
 			{/each}
 		</select>
-		<label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-			<input type="checkbox" bind:checked={lowStockFilter} onchange={() => { page = 1; fetchProducts(); }} class="rounded" />
-			Low Stock
+		<label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 cursor-pointer shadow-sm select-none">
+			<input type="checkbox" bind:checked={lowStockFilter} onchange={() => { page = 1; fetchProducts(); }} class="rounded accent-teal-600" />
+			Low Stock Only
 		</label>
 	</div>
 
-	<div class="rounded-xl shadow-sm bg-white overflow-hidden">
-		<table class="w-full text-sm">
-			<thead>
-				<tr class="bg-slate-50">
-					<th class="px-4 py-3 font-medium text-gray-600">Product</th>
-					<th class="px-4 py-3 font-medium text-gray-600">Category</th>
-					<th class="px-4 py-3 font-medium text-gray-600 text-right">Buy Price</th>
-					<th class="px-4 py-3 font-medium text-gray-600 text-right">Sell Price</th>
-					<th class="px-4 py-3 font-medium text-gray-600 text-right">Stock</th>
-					<th class="px-4 py-3 font-medium text-gray-600 text-right">Actions</th>
-				</tr>
-			</thead>
-			<tbody class="divide-y divide-slate-100">
-				{#if loading}
-					{#each Array(8) as _}
-						<tr>
-							{#each Array(6) as _}
-								<td class="px-4 py-3"><div class="h-4 bg-gray-100 rounded animate-pulse"></div></td>
-							{/each}
-						</tr>
-					{/each}
-				{:else if products.length === 0}
-					<tr>
-						<td colspan="6" class="px-4 py-12 text-center text-gray-400">No products found</td>
+	<!-- Table card -->
+	<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Product</th>
+						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Category</th>
+						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cost</th>
+						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Price</th>
+						<th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Stock</th>
+						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Margin</th>
+						<th class="px-5 py-3.5"></th>
 					</tr>
-				{:else}
-					{#each products as p}
-						<tr class="hover:bg-gray-50">
-							<td class="px-4 py-3">
-								<p class="font-medium text-gray-900">{p.name}</p>
-								{#if p.barcode}<p class="text-xs text-gray-400">{p.barcode}</p>{/if}
-							</td>
-							<td class="px-4 py-3 text-gray-500">{p.category_name ?? '—'}</td>
-							<td class="px-4 py-3 text-right text-gray-600">KES {fmt(p.buying_price)}</td>
-							<td class="px-4 py-3 text-right font-medium">KES {fmt(p.selling_price)}</td>
-							<td class="px-4 py-3 text-right">
-								<span class="inline-flex items-center gap-1 {p.stock_qty <= p.reorder_level ? 'text-blue-600 font-medium' : 'text-gray-700'}">
-									{#if p.stock_qty <= p.reorder_level}<AlertTriangle size={12} />{/if}
-									{p.stock_qty}
-								</span>
-							</td>
-							<td class="px-4 py-3 text-right">
-								<div class="flex items-center justify-end gap-2">
-									<button onclick={() => openEdit(p)} class="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600">
-										<Pencil size={14} />
-									</button>
-									<button onclick={() => deleteProduct(p)} class="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-red-600">
-										<Trash2 size={14} />
-									</button>
+				</thead>
+				<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+					{#if loading}
+						{#each Array(8) as _}
+							<tr>
+								{#each Array(7) as _}
+									<td class="px-5 py-3.5">
+										<div class="h-4 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					{:else if products.length === 0}
+						<tr>
+							<td colspan="7" class="px-5 py-16 text-center">
+								<div class="flex flex-col items-center gap-3 text-slate-400 dark:text-slate-500">
+									<Package size={40} class="opacity-30" />
+									<p class="text-sm font-medium">No products found</p>
+									<p class="text-xs">Try adjusting your search or filters</p>
 								</div>
 							</td>
 						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
+					{:else}
+						{#each products as p}
+							{@const margin = p.buying_price > 0 ? ((p.selling_price - p.buying_price) / p.buying_price * 100) : 0}
+							<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group">
+								<td class="px-5 py-3.5">
+									<p class="font-semibold text-slate-800 dark:text-slate-100">{p.name}</p>
+									<div class="flex items-center gap-2 mt-0.5">
+										{#if p.barcode}
+											<p class="text-xs text-slate-400 font-mono">{p.barcode}</p>
+										{/if}
+										{#if p.sku}
+											<p class="text-xs text-slate-400">SKU: {p.sku}</p>
+										{/if}
+									</div>
+								</td>
+								<td class="px-5 py-3.5">
+									{#if p.category_name}
+										<span class="inline-flex rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+											{p.category_name}
+										</span>
+									{:else}
+										<span class="text-slate-400 text-xs">—</span>
+									{/if}
+								</td>
+								<td class="px-5 py-3.5 text-right text-slate-500 dark:text-slate-400 tabular-nums">
+									{fmt(p.buying_price)}
+								</td>
+								<td class="px-5 py-3.5 text-right font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
+									{fmt(p.selling_price)}
+								</td>
+								<td class="px-5 py-3.5 text-center">
+									{#if p.stock_qty === 0}
+										<span class="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
+											<AlertTriangle size={10} /> Out of stock
+										</span>
+									{:else if p.stock_qty <= p.reorder_level}
+										<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+											<AlertTriangle size={10} /> Low: {p.stock_qty}
+										</span>
+									{:else}
+										<span class="inline-flex rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+											{p.stock_qty}
+										</span>
+									{/if}
+								</td>
+								<td class="px-5 py-3.5 text-right tabular-nums">
+									<span class="text-xs font-semibold {margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : margin >= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}">
+										{margin.toFixed(1)}%
+									</span>
+								</td>
+								<td class="px-5 py-3.5">
+									<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+										<button
+											onclick={() => openEdit(p)}
+											class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+											title="Edit"
+										>
+											<Pencil size={14} />
+										</button>
+										<button
+											onclick={() => deleteProduct(p)}
+											class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors"
+											title="Delete"
+										>
+											<Trash2 size={14} />
+										</button>
+									</div>
+								</td>
+							</tr>
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		</div>
 	</div>
 
 	<Pagination {page} {total} {limit} onchange={(p) => { page = p; fetchProducts(); }} />
 </div>
 
+<!-- Product Modal -->
 <Modal
 	open={showModal}
-	title={editingProduct ? 'Edit Product' : 'Add Product'}
+	title={editingProduct ? 'Edit Product' : 'New Product'}
 	onclose={() => showModal = false}
 	size="lg"
 >
 	{#snippet children()}
-		<div class="grid grid-cols-2 gap-4">
-			<div class="col-span-2">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-				<input bind:value={form.name} class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+			<div class="sm:col-span-2">
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Product Name *</label>
+				<input bind:value={form.name} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="e.g. Coca-Cola 500ml" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
-				<input bind:value={form.barcode} class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Leave empty if none" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Barcode</label>
+				<input bind:value={form.barcode} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none font-mono" placeholder="Scan or leave blank" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-				<input bind:value={form.sku} class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">SKU</label>
+				<input bind:value={form.sku} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="Optional" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-				<select bind:value={form.category_id} class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
-					<option value={null}>None</option>
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Category</label>
+				<select bind:value={form.category_id} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none">
+					<option value={null}>No Category</option>
 					{#each categories as cat}
 						<option value={cat.id}>{cat.name}</option>
 					{/each}
 				</select>
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Buying Price</label>
-				<input type="number" bind:value={form.buying_price} min="0" step="0.01" class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Stock Qty</label>
+				<input type="number" bind:value={form.stock_qty} min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Selling Price</label>
-				<input type="number" bind:value={form.selling_price} min="0" step="0.01" class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Reorder Level</label>
+				<input type="number" bind:value={form.reorder_level} min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Stock Qty</label>
-				<input type="number" bind:value={form.stock_qty} min="0" class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cost Price (KES)</label>
+				<input type="number" bind:value={form.buying_price} min="0" step="0.01" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Reorder Level</label>
-				<input type="number" bind:value={form.reorder_level} min="0" class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Selling Price (KES)</label>
+				<input type="number" bind:value={form.selling_price} min="0" step="0.01" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
-			<div class="col-span-2">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-				<input bind:value={form.image_url} class="w-full rounded-lg border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="https://…" />
+			<div class="sm:col-span-2">
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Image URL</label>
+				<input bind:value={form.image_url} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://…" />
 			</div>
 		</div>
 	{/snippet}
 	{#snippet footer()}
-		<button onclick={() => showModal = false} class="rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
-		<button onclick={save} disabled={submitting} class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
+		<button onclick={() => showModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+			Cancel
+		</button>
+		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed" style="background-color: #008B8B;">
 			{submitting ? 'Saving…' : editingProduct ? 'Save Changes' : 'Create Product'}
 		</button>
 	{/snippet}

@@ -121,10 +121,16 @@ export interface StockAdjustment {
 export interface DashboardStats {
 	today_sales: number;
 	today_orders: number;
+	today_avg_sale: number;
+	today_cash_sales: number;
+	today_mpesa: number;
+	today_card: number;
 	total_products: number;
 	low_stock_count: number;
+	out_of_stock: number;
 	total_customers: number;
 	month_sales: number;
+	yesterday_sales: number;
 }
 
 export interface CartItem {
@@ -158,6 +164,7 @@ export interface TopProductRow {
 	product_id: string;
 	product_name: string;
 	quantity: number;
+	quantity_sold: number;
 	revenue: number;
 }
 
