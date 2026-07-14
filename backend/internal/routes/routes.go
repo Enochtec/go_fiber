@@ -22,6 +22,10 @@ type Handlers struct {
 func Setup(app *fiber.App, h *Handlers) {
 	api := app.Group("/api")
 
+	api.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{"success": true, "data": "ok"})
+	})
+
 	api.Post("/auth/login", h.Auth.Login)
 
 	protected := api.Group("", middleware.Auth())
