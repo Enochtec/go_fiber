@@ -58,9 +58,23 @@
 	let lastAmountTendered = $state(0);
 	let lastChange = $state(0);
 	let whatsappNumber = $state('');
+	let clockStr = $state('');
 
 	let searchInput: HTMLInputElement;
 	let searchResultsEl: HTMLDivElement;
+
+	let clockTimer: ReturnType<typeof setInterval>;
+
+	function updateClock() {
+		const d = new Date();
+		const opts: Intl.DateTimeFormatOptions = {
+			weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+			hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+		};
+		clockStr = d.toLocaleDateString('en-US', opts);
+	}
+
+	onDestroy(() => clearInterval(clockTimer));
 
 	// ─── Derived ────────────────────────────────────────────────────
 	const change = $derived(
@@ -364,6 +378,8 @@
 	});
 
 	onMount(async () => {
+		updateClock();
+		clockTimer = setInterval(updateClock, 1000);
 		await shiftStore.fetch();
 		const catRes = await productsService.listCategories();
 		categories = catRes.data ?? [];
@@ -375,40 +391,8 @@
 <svelte:head><title>Checkout — POS</title></svelte:head>
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- ─── Shift banner/indicator ───────────────────────────────── -->
-{#if shiftStore.checked}
-	{#if shiftStore.isOpen}
-		<div class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-sm shrink-0">
-			<div class="flex items-center gap-2">
-				<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-				<span class="text-emerald-800 font-medium">Shift open</span>
-			</div>
-			<button
-				onclick={() => showCloseShiftModal = true}
-				class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 bg-red-500 hover:bg-red-600"
-			>
-				Close Shift
-			</button>
-		</div>
-	{:else}
-		<div class="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm shrink-0">
-			<div class="flex items-center gap-2">
-				<Clock size={15} class="text-amber-600 shrink-0" />
-				<span class="text-amber-800 font-medium">No open shift</span>
-			</div>
-			<button
-				onclick={() => showShiftModal = true}
-				class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
-				style="background-color:#008B8B;"
-			>
-				Open Shift
-			</button>
-		</div>
-	{/if}
-{/if}
-
 <!-- ─── Main layout ───────────────────────────────────────────────── -->
-<div class="flex h-full overflow-hidden bg-slate-100 dark:bg-slate-950">
+<div class="flex h-full overflow-hidden bg-slate-100">
 
 	<!-- Mobile cart overlay -->
 	{#if cartOpen}
@@ -418,37 +402,78 @@
 	<!-- ── LEFT: Product Browser ─────────────────────────────────── -->
 	<div class="flex flex-1 flex-col overflow-hidden min-w-0">
 
-		<!-- Search bar -->
-		<div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center gap-2 shrink-0 shadow-sm relative z-10">
-			<div class="relative flex-1">
-				<Search size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-				<input
-					bind:this={searchInput}
-					bind:value={search}
-					oninput={onSearch}
-					onkeydown={handleSearchKeydown}
-					onfocus={() => { if (search) showSearchDropdown = true; }}
-					placeholder="Search by name, barcode, SKU… (F2)"
-					class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 bg-slate-50 py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-colors"
-				/>
-				{#if search}
-					<button onclick={closeSearch} class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-						<X size={13} />
-					</button>
+		<!-- Unified header -->
+		<div class="sticky top-0 z-30 shrink-0 bg-white border-b border-slate-200 shadow-sm">
+			<!-- Top row: shift status + clock + search + actions -->
+			<div class="flex items-center gap-2 px-3 py-2">
+				<!-- Shift status -->
+				{#if shiftStore.checked}
+					{#if shiftStore.isOpen}
+						<div class="flex items-center gap-2 shrink-0">
+							<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+							<span class="text-xs font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
+							<button
+								onclick={() => showCloseShiftModal = true}
+								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 bg-red-500 hover:bg-red-600 shrink-0"
+							>
+								Close
+							</button>
+						</div>
+					{:else}
+						<div class="flex items-center gap-2 shrink-0">
+							<div class="h-2 w-2 rounded-full bg-amber-400"></div>
+							<span class="text-xs font-semibold text-amber-700 hidden sm:inline">No Shift</span>
+							<button
+								onclick={() => showShiftModal = true}
+								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 shrink-0"
+								style="background-color:#008B8B;"
+							>
+								Open
+							</button>
+						</div>
+					{/if}
 				{/if}
-			</div>
 
-			<!-- Held sales -->
-			<button
-				onclick={async () => { await fetchHeld(); showHeldModal = true; }}
-				class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 shrink-0"
-				title="Held Sales"
-			>
-				<Clock size={16} />
-				{#if heldSales.length > 0}
-					<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background-color:#008B8B;">{heldSales.length}</span>
-				{/if}
-			</button>
+				<!-- Digital clock -->
+				<div class="hidden md:flex items-center gap-1.5 text-xs text-slate-500 font-mono ml-1 shrink-0" aria-live="polite">
+					<span id="clock-display">{clockStr}</span>
+				</div>
+
+				<!-- Search -->
+				<div class="relative flex-1 min-w-0">
+					<Search size={14} class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+					<input
+						bind:this={searchInput}
+						bind:value={search}
+						oninput={onSearch}
+						onkeydown={handleSearchKeydown}
+						onfocus={() => { if (search) showSearchDropdown = true; }}
+						placeholder="Search product… (F2)"
+						class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm focus:outline-none focus:border-slate-300 focus:bg-white transition-colors"
+					/>
+					{#if search}
+						<button onclick={closeSearch} class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+							<X size={13} />
+						</button>
+					{/if}
+				</div>
+
+				<!-- Held sales -->
+				<button
+					onclick={async () => { await fetchHeld(); showHeldModal = true; }}
+					class="relative flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shrink-0"
+					title="Held Sales"
+				>
+					<Clock size={15} />
+					{#if heldSales.length > 0}
+						<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background-color:#008B8B;">{heldSales.length}</span>
+					{/if}
+				</button>
+			</div>
+			<!-- Mobile clock row -->
+			<div class="md:hidden flex items-center justify-center px-3 pb-1.5">
+				<span class="text-[10px] text-slate-400 font-mono">{clockStr}</span>
+			</div>
 		</div>
 
 		<!-- Search dropdown -->
