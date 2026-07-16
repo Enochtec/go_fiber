@@ -77,6 +77,7 @@
 					<li>
 						<a
 							href={link.href}
+							data-sveltekit-preload-code
 							onclick={() => onclose?.()}
 							class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all {link.indent ? 'ml-4' : ''} {active ? 'bg-white text-[#00008B] font-semibold shadow-sm' : 'text-white/70 hover:bg-white/10 hover:text-white'}"
 						>

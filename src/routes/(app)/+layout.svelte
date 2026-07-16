@@ -95,6 +95,7 @@
 					{@const active = $page.url.pathname === item.href}
 					<a
 						href={item.href}
+						data-sveltekit-preload-code
 						class="flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors {active ? 'text-white' : 'text-white/50'}"
 					>
 						<item.icon size={20} />
