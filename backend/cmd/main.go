@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -72,11 +73,26 @@ func main() {
 
 	app.Use(recover.New())
 	app.Use(logger.New())
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestSpeed,
+	}))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
+
+	// Cache static assets aggressively
+	app.Use(func(c *fiber.Ctx) error {
+		if err := c.Next(); err != nil {
+			return err
+		}
+		path := c.Path()
+		if strings.HasPrefix(path, "/_app/") || strings.HasSuffix(path, ".js") || strings.HasSuffix(path, ".css") || strings.HasSuffix(path, ".png") || strings.HasSuffix(path, ".svg") || strings.HasSuffix(path, ".ico") || strings.HasSuffix(path, ".woff2") {
+			c.Response().Header.Set("Cache-Control", "public, max-age=31536000, immutable")
+		}
+		return nil
+	})
 
 	routes.Setup(app, h)
 
@@ -109,3 +125,5 @@ func main() {
 		log.Fatalf("Server error: %v", err)
 	}
 }
+
+

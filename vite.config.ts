@@ -14,6 +14,20 @@ export default defineConfig({
 			adapter: adapter({ fallback: 'index.html' })
 		})
 	],
+	build: {
+		target: 'es2020',
+		cssMinify: 'esbuild',
+		rollupOptions: {
+			output: {
+				manualChunks(id: string) {
+					if (id.includes('node_modules/.pnpm') || id.includes('node_modules/')) {
+						if (id.includes('@lucide/svelte')) return 'lucide';
+						if (id.includes('svelte')) return 'vendor';
+					}
+				}
+			}
+		}
+	},
 	server: {
 		proxy: {
 			'/api': {

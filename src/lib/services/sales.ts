@@ -41,9 +41,19 @@ export const salesService = {
 
 	getById: (id: string) => api.get<ApiResponse<Sale>>(`/sales/${id}`),
 
-	create: (data: CreateSaleInput) => api.post<ApiResponse<Sale>>('/sales', data),
+	create: async (data: CreateSaleInput) => {
+		const res = await api.post<ApiResponse<Sale>>('/sales', data);
+		api.invalidate('/dashboard');
+		api.invalidate('/reports');
+		return res;
+	},
 
-	void: (id: string) => api.put<ApiResponse<null>>(`/sales/${id}/void`, {}),
+	void: async (id: string) => {
+		const res = await api.put<ApiResponse<null>>(`/sales/${id}/void`, {});
+		api.invalidate('/dashboard');
+		api.invalidate('/reports');
+		return res;
+	},
 
 	hold: (id: string) => api.put<ApiResponse<null>>(`/sales/${id}/hold`, {})
 };

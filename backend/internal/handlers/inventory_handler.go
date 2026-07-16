@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"pos/internal/cache"
 	"pos/internal/models"
 	"pos/internal/repositories"
 	"pos/internal/services"
 	"pos/internal/utils"
 	"strconv"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -15,17 +17,22 @@ type InventoryHandler struct {
 	inventory *repositories.InventoryRepo
 	service   *services.InventoryService
 	validate  *validator.Validate
+	cache     *cache.Cache
 }
 
 func NewInventoryHandler(inventory *repositories.InventoryRepo, service *services.InventoryService, v *validator.Validate) *InventoryHandler {
-	return &InventoryHandler{inventory: inventory, service: service, validate: v}
+	return &InventoryHandler{inventory: inventory, service: service, validate: v, cache: cache.New(30 * time.Second)}
 }
 
 func (h *InventoryHandler) Dashboard(c *fiber.Ctx) error {
+	if v, ok := h.cache.Get("dashboard"); ok {
+		return utils.OK(c, v)
+	}
 	stats, err := h.inventory.GetDashboardStats()
 	if err != nil {
 		return utils.Internal(c, err)
 	}
+	h.cache.Set("dashboard", stats)
 	return utils.OK(c, stats)
 }
 

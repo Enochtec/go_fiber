@@ -70,7 +70,7 @@
 	let interval: ReturnType<typeof setInterval>;
 	onMount(async () => {
 		await loadData();
-		interval = setInterval(loadData, 30_000);
+		interval = setInterval(loadData, 60_000);
 	});
 	onDestroy(() => clearInterval(interval));
 
