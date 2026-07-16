@@ -218,7 +218,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
 			<!-- 7-day bar chart -->
-			<div class="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+			<div class="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-800 p-5 shadow-sm">
 				<div class="flex items-center justify-between mb-4">
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Revenue — Last 7 Days</h2>
 					<span class="text-xs text-slate-400">{fmt(stats.month_sales)} this month</span>
@@ -265,7 +265,7 @@
 			</div>
 
 			<!-- Payment method breakdown - Donut chart -->
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+			<div class="rounded-2xl bg-white dark:bg-slate-800 p-5 shadow-sm">
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Payments — Today</h2>
 				{#if payTotal === 0}
 					<div class="flex items-center justify-center h-36 text-slate-400 text-sm">No payments yet</div>
@@ -308,7 +308,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
 			<!-- Top products with revenue bars -->
-			<div class="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+			<div class="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-800 p-5 shadow-sm">
 				<div class="flex items-center justify-between mb-4">
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
 					{#if topProducts.length > 0}
@@ -350,7 +350,7 @@
 			<div class="space-y-4">
 
 				<!-- Product performance stats -->
-				<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
+				<div class="rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-sm">
 					<div class="flex items-center gap-2 mb-3">
 						<Package size={14} class="text-slate-400 shrink-0" />
 						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Product Stats</h2>
@@ -376,7 +376,7 @@
 				</div>
 
 				<!-- Stock health gauge -->
-				<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
+				<div class="rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-sm">
 					<div class="flex items-center gap-2 mb-3">
 						<BarChart2 size={14} class="text-slate-400 shrink-0" />
 						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Stock Health</h2>
@@ -421,7 +421,7 @@
 				</div>
 
 				<!-- Recent transactions -->
-				<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
+				<div class="rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-sm">
 					<div class="flex items-center gap-2 mb-3">
 						<Clock size={14} class="text-slate-400 shrink-0" />
 						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Recent Sales</h2>

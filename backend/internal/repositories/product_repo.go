@@ -23,7 +23,7 @@ func (r *ProductRepo) List(f models.ProductFilter) ([]models.Product, int, error
 	i := 1
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf("(p.name LIKE $%d OR p.barcode = $%d OR p.sku LIKE $%d)", i, i+1, i+2))
+		where = append(where, fmt.Sprintf("(p.name ILIKE $%d OR p.barcode = $%d OR p.sku ILIKE $%d)", i, i+1, i+2))
 		like := "%" + f.Search + "%"
 		args = append(args, like, f.Search, like)
 		i += 3

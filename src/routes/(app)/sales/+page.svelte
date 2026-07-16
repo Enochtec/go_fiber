@@ -189,6 +189,7 @@
 	}
 
 	function addToCart(product: Product) {
+		if (!shiftStore.isOpen) { notify.error('Open a shift before making sales'); return; }
 		if (product.stock_qty <= 0) {
 			notify.error(`"${product.name}" is out of stock`);
 			return;
@@ -200,6 +201,7 @@
 	}
 
 	function setQuantity(productId: string, qty: number) {
+		if (!shiftStore.isOpen) { notify.error('Open a shift first'); return; }
 		const item = cart.items.find(i => i.product.id === productId);
 		if (!item) return;
 		if (qty > item.product.stock_qty) {
@@ -314,6 +316,7 @@
 	function applyNote() { cart.setNote(noteInput); showNoteModal = false; }
 
 	async function completeSale() {
+		if (!shiftStore.isOpen) { notify.error('Open a shift before completing sale'); return; }
 		if (cart.items.length === 0) { notify.error('Cart is empty'); return; }
 		if (paymentMethod === 'cash' && amountTendered < cart.total) {
 			notify.error('Amount tendered is less than total');
@@ -375,6 +378,7 @@
 		try {
 			await shiftStore.open(openingFloat, shiftNotes);
 			showShiftModal = false;
+			showCloseShiftModal = false;
 			openingFloat = 0;
 			shiftNotes = '';
 			notify.success('Shift opened');
@@ -387,6 +391,8 @@
 		try {
 			const shift = await shiftStore.close(closingCash, shiftNotes);
 			showCloseShiftModal = false;
+			closingCash = 0;
+			shiftNotes = '';
 			notify.success(`Shift closed. Variance: KES ${fmt(shift.variance ?? 0)}`);
 		} catch (err) {
 			notify.error(err instanceof Error ? err.message : 'Failed to close shift');
@@ -395,6 +401,7 @@
 
 	// ─── Keyboard ───────────────────────────────────────────────────
 	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') { showShiftModal = false; showCloseShiftModal = false; }
 		if (lastSale !== null || showCustomerModal || showHeldModal || showDiscountModal || showNoteModal || showNewCustomerModal) return;
 		if (e.key === 'F2') { e.preventDefault(); searchInput?.focus(); }
 		if (e.key === 'F4') { e.preventDefault(); openCustomerModal(); }
@@ -439,30 +446,69 @@
 			<div class="flex items-center gap-2 px-3 py-2">
 				<!-- Shift status -->
 				{#if shiftStore.checked}
-					{#if shiftStore.isOpen}
-						<div class="flex items-center gap-2 shrink-0">
-							<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-							<span class="text-xs font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
-							<button
-								onclick={() => showCloseShiftModal = true}
-								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 bg-red-500 hover:bg-red-600 shrink-0"
-							>
-								Close
-							</button>
-						</div>
-					{:else}
-						<div class="flex items-center gap-2 shrink-0">
-							<div class="h-2 w-2 rounded-full bg-amber-400"></div>
-							<span class="text-xs font-semibold text-amber-700 hidden sm:inline">No Shift</span>
-							<button
-								onclick={() => showShiftModal = true}
-								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 shrink-0"
-								style="background-color:#008B8B;"
-							>
-								Open
-							</button>
-						</div>
-					{/if}
+					<div class="relative shrink-0">
+						{#if shiftStore.isOpen}
+							<div class="flex items-center gap-2">
+								<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+								<span class="text-xs font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
+								<button
+									onclick={() => showCloseShiftModal = !showCloseShiftModal}
+									class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 bg-red-500 hover:bg-red-600"
+								>
+									Close
+								</button>
+							</div>
+							{#if showCloseShiftModal}
+								<div class="absolute top-full left-0 mt-2 z-50 w-72 rounded-xl border border-slate-200 bg-white shadow-xl">
+									<div class="p-4 space-y-3">
+										{#if shiftStore.current}
+											<div class="rounded-lg bg-slate-50 p-3 space-y-1.5 text-xs">
+												<div class="flex justify-between"><span class="text-slate-500">Opening Float</span><span class="font-semibold">KES {fmt(shiftStore.current.opening_float)}</span></div>
+												<div class="flex justify-between"><span class="text-slate-500">Cash Sales</span><span class="font-semibold text-emerald-600">+ KES {fmt(shiftStore.current.cash_sales)}</span></div>
+												<div class="flex justify-between border-t border-slate-200 pt-1.5"><span class="text-slate-700 font-semibold">Expected Cash</span><span class="font-bold">KES {fmt(shiftStore.current.opening_float + shiftStore.current.cash_sales)}</span></div>
+											</div>
+											<input type="number" bind:value={closingCash} min="0" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Cash counted…" />
+											{#if closingCash > 0}
+												{@const variance = closingCash - (shiftStore.current.opening_float + shiftStore.current.cash_sales)}
+												<div class="rounded-lg p-2.5 text-center {variance >= 0 ? 'bg-emerald-50' : 'bg-red-50'}">
+													<p class="text-xs font-semibold {variance >= 0 ? 'text-emerald-700' : 'text-red-600'}">{variance >= 0 ? 'Surplus' : 'Shortage'}</p>
+													<p class="text-lg font-bold tabular-nums {variance >= 0 ? 'text-emerald-700' : 'text-red-600'}">KES {fmt(Math.abs(variance))}</p>
+												</div>
+											{/if}
+											<div class="flex gap-2">
+												<button onclick={() => showCloseShiftModal = false} class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
+												<button onclick={closeShift} class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700">Close Shift</button>
+											</div>
+										{/if}
+									</div>
+								</div>
+							{/if}
+						{:else}
+							<div class="flex items-center gap-2">
+								<div class="h-2 w-2 rounded-full bg-amber-400"></div>
+								<span class="text-xs font-semibold text-amber-700 hidden sm:inline">No Shift</span>
+								<button
+									onclick={() => showShiftModal = !showShiftModal}
+									class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
+									style="background-color:#008B8B;"
+								>
+									Open
+								</button>
+							</div>
+							{#if showShiftModal}
+								<div class="absolute top-full left-0 mt-2 z-50 w-64 rounded-xl border border-slate-200 bg-white shadow-xl">
+									<div class="p-4 space-y-3">
+										<input type="number" bind:value={openingFloat} min="0" step="50" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Opening float (KES)" />
+										<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Notes (optional)" />
+										<div class="flex gap-2">
+											<button onclick={() => showShiftModal = false} class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
+											<button onclick={openShift} class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white" style="background-color:#008B8B;">Open</button>
+										</div>
+									</div>
+								</div>
+							{/if}
+						{/if}
+					</div>
 				{/if}
 
 				<!-- Digital clock -->
@@ -1010,55 +1056,11 @@
 	{/snippet}
 </Modal>
 
-<!-- ─── Open Shift modal ─────────────────────────────────────── -->
-<Modal open={showShiftModal} title="Open Shift" onclose={() => showShiftModal = false} size="sm">
-	{#snippet children()}
-		<div class="space-y-4">
-			<div>
-				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Opening Float (KES)</label>
-				<input type="number" bind:value={openingFloat} min="0" step="50" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="e.g. 5000" />
-			</div>
-			<div>
-				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Notes (optional)</label>
-				<textarea bind:value={shiftNotes} rows={2} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none resize-none" placeholder="Opening notes…"></textarea>
-			</div>
-		</div>
-	{/snippet}
-	{#snippet footer()}
-		<button onclick={() => showShiftModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={openShift} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#008B8B;">Open Shift</button>
-	{/snippet}
-</Modal>
-
-<!-- ─── Close Shift modal ────────────────────────────────────── -->
-<Modal open={showCloseShiftModal} title="Close Shift" onclose={() => showCloseShiftModal = false} size="sm">
-	{#snippet children()}
-		{#if shiftStore.current}
-			<div class="space-y-4">
-				<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 space-y-2 text-sm">
-					<div class="flex justify-between"><span class="text-slate-500">Opening Float</span><span class="font-semibold">KES {fmt(shiftStore.current.opening_float)}</span></div>
-					<div class="flex justify-between"><span class="text-slate-500">Cash Sales</span><span class="font-semibold text-emerald-600">+ KES {fmt(shiftStore.current.cash_sales)}</span></div>
-					<div class="flex justify-between border-t border-slate-200 dark:border-slate-600 pt-2"><span class="text-slate-700 dark:text-slate-300 font-semibold">Expected Cash</span><span class="font-bold">KES {fmt(shiftStore.current.opening_float + shiftStore.current.cash_sales)}</span></div>
-				</div>
-				<div>
-					<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Actual Cash Counted (KES)</label>
-					<input type="number" bind:value={closingCash} min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="Count the cash drawer" />
-				</div>
-				{#if closingCash > 0}
-					{@const variance = closingCash - (shiftStore.current.opening_float + shiftStore.current.cash_sales)}
-					<div class="rounded-xl p-3 text-center {variance >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}">
-						<p class="text-xs font-semibold {variance >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600'}">{variance >= 0 ? 'Surplus' : 'Shortage'}</p>
-						<p class="text-xl font-bold tabular-nums {variance >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600'}">KES {fmt(Math.abs(variance))}</p>
-					</div>
-				{/if}
-			</div>
-		{/if}
-	{/snippet}
-	{#snippet footer()}
-		<button onclick={() => showCloseShiftModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={closeShift} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Close Shift</button>
-	{/snippet}
-</Modal>
+<!-- ─── Close dropdown on click outside ────────────── -->
+{#if showShiftModal || showCloseShiftModal}
+	<!-- svelte-ignore a11y_click_events_have_key_events,a11y_no_static_element_interactions -->
+	<div class="fixed inset-0 z-40" onclick={() => { showShiftModal = false; showCloseShiftModal = false; }}></div>
+{/if}
 
 <!-- ─── Receipt overlay ──────────────────────────────────────── -->
 {#if lastSale}

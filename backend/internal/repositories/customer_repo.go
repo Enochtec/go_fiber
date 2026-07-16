@@ -23,7 +23,7 @@ func (r *CustomerRepo) List(search string, page, limit int) ([]models.Customer, 
 	where := "1=1"
 
 	if search != "" {
-		where = "name LIKE $1 OR phone LIKE $1 OR email LIKE $1"
+		where = "name ILIKE $1 OR phone ILIKE $1 OR email ILIKE $1"
 		args = append(args, "%"+search+"%")
 	}
 

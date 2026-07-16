@@ -195,7 +195,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
 			<!-- Low stock -->
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 					<AlertTriangle size={14} class="text-amber-500 shrink-0" />
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Low Stock Items</h2>
@@ -231,7 +231,7 @@
 			</div>
 
 			<!-- Fast movers -->
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 					<TrendingUp size={14} style="color:#008B8B;" class="shrink-0" />
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Fast Movers — 30 Days</h2>
@@ -265,7 +265,7 @@
 
 		<!-- ── Stock value by category ───────────────────────── -->
 		{#if stockValue.length > 0}
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Stock Value by Category</h2>
 				</div>
@@ -304,7 +304,7 @@
 	{/if}
 
 	<!-- ── Adjustments log ───────────────────────────────────── -->
-	<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+	<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 		<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 			<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Adjustment History</h2>
 		</div>
