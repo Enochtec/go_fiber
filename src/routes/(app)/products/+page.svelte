@@ -139,7 +139,7 @@
 		<button
 			onclick={openCreate}
 			class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95"
-			style="background-color: #008B8B;"
+			style="background-color: #00008B;"
 		>
 			<Plus size={16} />
 			Add Product
@@ -344,7 +344,7 @@
 		<button onclick={() => showModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
 			Cancel
 		</button>
-		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed" style="background-color: #008B8B;">
+		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed" style="background-color: #00008B;">
 			{submitting ? 'Saving…' : editingProduct ? 'Save Changes' : 'Create Product'}
 		</button>
 	{/snippet}

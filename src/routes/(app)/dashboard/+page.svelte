@@ -238,7 +238,7 @@
 									>{fmt(day.total)}</div>
 									<div
 										class="w-full rounded-lg transition-all"
-										style="height:{h}px; background-color:#008B8B; opacity:{day.total > 0 ? 0.8 : 0.15};"
+										style="height:{h}px; background-color:#00008B; opacity:{day.total > 0 ? 0.8 : 0.15};"
 									></div>
 								</div>
 								<p class="text-[9px] text-slate-400 mt-1 text-center leading-tight">{fmtDate(day.date).split(' ').slice(0,2).join(' ')}</p>
@@ -273,7 +273,7 @@
 					{@const cashPct = (stats.today_cash_sales / payTotal) * 100}
 					{@const mpesaPct = (stats.today_mpesa / payTotal) * 100}
 					{@const cardPct = (stats.today_card / payTotal) * 100}
-					{@const grad = `conic-gradient(#10b981 0% ${cashPct}%, #008B8B ${cashPct}% ${cashPct + mpesaPct}%, #6366f1 ${cashPct + mpesaPct}% 100%)`}
+					{@const grad = `conic-gradient(#10b981 0% ${cashPct}%, #00008B ${cashPct}% ${cashPct + mpesaPct}%, #6366f1 ${cashPct + mpesaPct}% 100%)`}
 					<div class="flex items-center gap-5">
 						<div class="relative h-28 w-28 shrink-0 rounded-full" style="background:{grad};">
 							<div class="absolute inset-[10px] rounded-full bg-white dark:bg-slate-800 flex flex-col items-center justify-center">
@@ -284,7 +284,7 @@
 						<div class="flex-1 space-y-2.5">
 							{#each [
 								{ label: 'Cash', value: stats.today_cash_sales, color: '#10b981', pct: cashPct },
-								{ label: 'M-Pesa', value: stats.today_mpesa, color: '#008B8B', pct: mpesaPct },
+								{ label: 'M-Pesa', value: stats.today_mpesa, color: '#00008B', pct: mpesaPct },
 								{ label: 'Card', value: stats.today_card, color: '#6366f1', pct: cardPct }
 							] as pm}
 								<div class="flex items-center justify-between gap-2">
@@ -335,7 +335,7 @@
 									</div>
 									<div class="flex items-center gap-2">
 										<div class="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-											<div class="h-full rounded-full" style="width:{revW}%; background-color:#008B8B;"></div>
+											<div class="h-full rounded-full" style="width:{revW}%; background-color:#00008B;"></div>
 										</div>
 										<span class="text-[9px] text-slate-400 w-8 text-right tabular-nums">{revW.toFixed(0)}%</span>
 									</div>

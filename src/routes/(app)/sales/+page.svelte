@@ -490,7 +490,7 @@
 								<button
 									onclick={() => showShiftModal = !showShiftModal}
 									class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
-									style="background-color:#008B8B;"
+									style="background-color:#00008B;"
 								>
 									Open
 								</button>
@@ -502,7 +502,7 @@
 										<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Notes (optional)" />
 										<div class="flex gap-2">
 											<button onclick={() => showShiftModal = false} class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-											<button onclick={openShift} class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white" style="background-color:#008B8B;">Open</button>
+											<button onclick={openShift} class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white" style="background-color:#00008B;">Open</button>
 										</div>
 									</div>
 								</div>
@@ -543,7 +543,7 @@
 				>
 					<Clock size={15} />
 					{#if heldSales.length > 0}
-						<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background-color:#008B8B;">{heldSales.length}</span>
+						<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background-color:#00008B;">{heldSales.length}</span>
 					{/if}
 				</button>
 			</div>
@@ -588,7 +588,7 @@
 								</p>
 							</div>
 							<div class="text-right shrink-0">
-								<p class="text-sm font-bold" style="color:#008B8B;">KES {fmt(product.selling_price)}</p>
+								<p class="text-sm font-bold" style="color:#00008B;">KES {fmt(product.selling_price)}</p>
 								{#if product.barcode}<p class="text-xs text-slate-400 font-mono">{product.barcode}</p>{/if}
 							</div>
 						</button>
@@ -602,7 +602,7 @@
 			<button
 				onclick={() => { selectedCategory = ''; loadProducts(); }}
 				class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
-				style={selectedCategory === '' ? 'background-color:#008B8B; color:white;' : 'background-color:#f1f5f9; color:#64748b;'}
+				style={selectedCategory === '' ? 'background-color:#00008B; color:white;' : 'background-color:#f1f5f9; color:#64748b;'}
 			>
 				All
 			</button>
@@ -610,7 +610,7 @@
 				<button
 					onclick={() => { selectedCategory = cat.id; loadProducts(); }}
 					class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
-					style={selectedCategory === cat.id ? 'background-color:#008B8B; color:white;' : 'background-color:#f1f5f9; color:#64748b;'}
+					style={selectedCategory === cat.id ? 'background-color:#00008B; color:white;' : 'background-color:#f1f5f9; color:#64748b;'}
 				>
 					{cat.name}
 				</button>
@@ -665,13 +665,13 @@
 								<p class="text-[10px] text-slate-400 mt-0.5 truncate">{product.category_name}</p>
 							{/if}
 							<div class="flex items-center justify-between mt-2">
-								<p class="text-sm font-bold" style="color:#008B8B;">KES {fmt(product.selling_price)}</p>
+								<p class="text-sm font-bold" style="color:#00008B;">KES {fmt(product.selling_price)}</p>
 								<span class="text-[10px] text-slate-400">{product.stock_qty} left</span>
 							</div>
 
 							<!-- Add overlay on hover -->
 							<div class="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style="background-color:rgba(0,139,139,0.08);">
-								<div class="rounded-full text-white p-1.5" style="background-color:#008B8B;">
+								<div class="rounded-full text-white p-1.5" style="background-color:#00008B;">
 									<Plus size={14} />
 								</div>
 							</div>
@@ -686,7 +686,7 @@
 	<button
 		onclick={() => cartOpen = true}
 		class="fixed bottom-24 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 rounded-full px-5 py-3 text-white shadow-xl lg:hidden active:scale-95 transition-all"
-		style="background-color:#008B8B; box-shadow:0 10px 25px rgba(0,139,139,0.4);"
+		style="background-color:#00008B; box-shadow:0 10px 25px rgba(0,0,139,0.4);"
 		class:opacity-0={cart.items.length === 0}
 		class:pointer-events-none={cart.items.length === 0}
 	>
@@ -712,7 +712,7 @@
 				<ShoppingCart size={16} class="text-slate-500" />
 				<span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Order</span>
 				{#if cart.count > 0}
-					<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-bold text-white px-1" style="background-color:#008B8B;">{cart.count}</span>
+					<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-bold text-white px-1" style="background-color:#00008B;">{cart.count}</span>
 				{/if}
 			</div>
 			<div class="flex items-center gap-1">
@@ -832,7 +832,7 @@
 					<button
 						onclick={() => paymentMethod = p.id}
 						class="flex flex-col items-center gap-1 rounded-xl border py-2.5 text-[10px] font-semibold transition-all active:scale-95"
-						style={paymentMethod === p.id ? 'background-color:#008B8B;border-color:#008B8B;color:white;' : 'border-color:#e2e8f0;color:#64748b;'}
+						style={paymentMethod === p.id ? 'background-color:#00008B;border-color:#00008B;color:white;' : 'border-color:#e2e8f0;color:#64748b;'}
 					>
 						<svelte:component this={p.icon} size={15} />
 						{p.label}
@@ -921,7 +921,7 @@
 					onclick={completeSale}
 					disabled={cart.items.length === 0 || checkingOut}
 					class="col-span-4 rounded-xl py-3.5 text-sm font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
-					style="background-color:#008B8B; box-shadow:0 4px 14px rgba(0,139,139,0.3);"
+					style="background-color:#00008B; box-shadow:0 4px 14px rgba(0,0,139,0.3);"
 				>
 					{checkingOut ? 'Processing…' : `Charge KES ${fmt(cart.total)}`}
 				</button>
@@ -958,7 +958,7 @@
 							onclick={() => selectCustomer(c)}
 							class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 text-sm flex items-center gap-3 transition-colors"
 						>
-							<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-xs text-white" style="background-color:#008B8B;">
+							<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-xs text-white" style="background-color:#00008B;">
 								{c.name.charAt(0).toUpperCase()}
 							</div>
 							<div class="min-w-0 flex-1">
@@ -1002,7 +1002,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showNewCustomerModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={createNewCustomer} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all active:scale-95" style="background-color:#008B8B;">Save</button>
+		<button onclick={createNewCustomer} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all active:scale-95" style="background-color:#00008B;">Save</button>
 	{/snippet}
 </Modal>
 
@@ -1016,7 +1016,7 @@
 						<p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{new Date(sale.created_at).toLocaleString()}</p>
 						<p class="text-xs text-slate-400">{sale.items?.length ?? 0} items · KES {fmt(sale.total)}</p>
 					</div>
-					<button onclick={() => resumeSale(sale)} class="rounded-xl px-3 py-1.5 text-xs font-semibold text-white" style="background-color:#008B8B;">Resume</button>
+					<button onclick={() => resumeSale(sale)} class="rounded-xl px-3 py-1.5 text-xs font-semibold text-white" style="background-color:#00008B;">Resume</button>
 				</li>
 			{:else}
 				<li class="py-12 text-center text-sm text-slate-400">No held sales</li>
@@ -1041,7 +1041,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showDiscountModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={applyDiscount} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#008B8B;">Apply</button>
+		<button onclick={applyDiscount} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#00008B;">Apply</button>
 	{/snippet}
 </Modal>
 
@@ -1052,7 +1052,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showNoteModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={applyNote} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#008B8B;">Save</button>
+		<button onclick={applyNote} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#00008B;">Save</button>
 	{/snippet}
 </Modal>
 
@@ -1069,12 +1069,12 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-5 py-4 shrink-0">
 				<div class="flex items-center gap-2">
-					<div class="h-8 w-8 rounded-full flex items-center justify-center" style="background-color:#008B8B20;">
-						<Check size={16} style="color:#008B8B;" />
+					<div class="h-8 w-8 rounded-full flex items-center justify-center" style="background-color:#00008B20;">
+						<Check size={16} style="color:#00008B;" />
 					</div>
 					<h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Sale Complete!</h2>
 				</div>
-				<p class="text-sm font-bold tabular-nums" style="color:#008B8B;">KES {fmt(lastSale.total)}</p>
+				<p class="text-sm font-bold tabular-nums" style="color:#00008B;">KES {fmt(lastSale.total)}</p>
 			</div>
 
 			<!-- Receipt body -->
@@ -1132,7 +1132,7 @@
 				<button onclick={sendWhatsApp} class="flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-colors">
 					<MessageCircle size={14} /> WhatsApp
 				</button>
-				<button onclick={resetAfterSale} class="flex-1 rounded-xl py-2.5 text-sm font-bold text-white transition-all active:scale-95" style="background-color:#008B8B;">
+				<button onclick={resetAfterSale} class="flex-1 rounded-xl py-2.5 text-sm font-bold text-white transition-all active:scale-95" style="background-color:#00008B;">
 					New Sale
 				</button>
 			</div>

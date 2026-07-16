@@ -137,7 +137,7 @@
 		<button
 			onclick={() => showModal = true}
 			class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-95"
-			style="background-color:#008B8B;"
+			style="background-color:#00008B;"
 		>
 			<Plus size={15} /> Adjust Stock
 		</button>
@@ -233,7 +233,7 @@
 			<!-- Fast movers -->
 			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
-					<TrendingUp size={14} style="color:#008B8B;" class="shrink-0" />
+					<TrendingUp size={14} style="color:#00008B;" class="shrink-0" />
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Fast Movers — 30 Days</h2>
 				</div>
 				{#if fastMovers.length === 0}
@@ -254,7 +254,7 @@
 									</div>
 								</div>
 								<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-									<div class="h-full rounded-full" style="width:{maxQty > 0 ? (p.quantity_sold / maxQty) * 100 : 0}%; background-color:#008B8B;"></div>
+									<div class="h-full rounded-full" style="width:{maxQty > 0 ? (p.quantity_sold / maxQty) * 100 : 0}%; background-color:#00008B;"></div>
 								</div>
 							</li>
 						{/each}
@@ -379,7 +379,7 @@
 					</ul>
 				{/if}
 				{#if selectedProduct}
-					<p class="mt-1.5 text-xs font-medium" style="color:#008B8B;">Current stock: {selectedProduct.stock_qty} units</p>
+					<p class="mt-1.5 text-xs font-medium" style="color:#00008B;">Current stock: {selectedProduct.stock_qty} units</p>
 				{/if}
 			</div>
 			<div>
@@ -394,7 +394,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-all active:scale-95" style="background-color:#008B8B;">
+		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-all active:scale-95" style="background-color:#00008B;">
 			{submitting ? 'Saving…' : 'Apply'}
 		</button>
 	{/snippet}
