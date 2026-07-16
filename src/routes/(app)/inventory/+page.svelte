@@ -26,6 +26,9 @@
 	let submitting = $state(false);
 	let productSearch = $state('');
 	let searchResults = $state<Product[]>([]);
+	let searchReqId = $state(0);
+	let searching = $state(false);
+	let searchTimer: ReturnType<typeof setTimeout>;
 	let selectedProduct = $state<Product | null>(null);
 	let form = $state<AdjustInput>({ product_id: '', quantity: 0, reason: '' });
 
@@ -62,10 +65,25 @@
 		}
 	}
 
-	async function searchProducts() {
-		if (!productSearch.trim()) { searchResults = []; return; }
-		const res = await productsService.list({ search: productSearch, limit: 8 });
+	function onSearch() {
+		clearTimeout(searchTimer);
+		if (!productSearch.trim()) {
+			searchResults = [];
+			searching = false;
+			return;
+		}
+		searchTimer = setTimeout(doSearch, 80);
+	}
+
+	async function doSearch() {
+		const q = productSearch.trim();
+		if (!q) return;
+		const id = ++searchReqId;
+		searching = true;
+		const res = await productsService.list({ search: q, limit: 8 });
+		if (id !== searchReqId) return;
 		searchResults = res.data ?? [];
+		searching = false;
 	}
 
 	function selectProduct(p: Product) {
@@ -337,21 +355,25 @@
 					<Search size={13} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 					<input
 						bind:value={productSearch}
-						oninput={searchProducts}
+						oninput={onSearch}
 						placeholder="Search product…"
 						class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 py-2.5 pl-9 pr-4 text-sm focus:outline-none"
 					/>
 				</div>
-				{#if searchResults.length > 0}
+				{#if productSearch.trim() && (searching || searchResults.length > 0)}
 					<ul class="mt-1.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg max-h-44 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700">
-						{#each searchResults as p}
-							<li>
-								<button onclick={() => selectProduct(p)} class="w-full flex items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-									<span class="font-medium text-slate-800 dark:text-slate-100 truncate">{p.name}</span>
-									<span class="text-xs text-slate-400 shrink-0 ml-2">Stock: {p.stock_qty}</span>
-								</button>
-							</li>
-						{/each}
+						{#if searching}
+							<li class="px-4 py-4 text-center text-sm text-slate-400">Searching…</li>
+						{:else}
+							{#each searchResults as p}
+								<li>
+									<button onclick={() => selectProduct(p)} class="w-full flex items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+										<span class="font-medium text-slate-800 dark:text-slate-100 truncate">{p.name}</span>
+										<span class="text-xs text-slate-400 shrink-0 ml-2">Stock: {p.stock_qty}</span>
+									</button>
+								</li>
+							{/each}
+						{/if}
 					</ul>
 				{/if}
 				{#if selectedProduct}

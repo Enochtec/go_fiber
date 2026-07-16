@@ -19,6 +19,7 @@
 	// ─── State ───────────────────────────────────────────────────────
 	let products = $state<Product[]>([]);
 	let allProducts = $state<Product[]>([]);
+	let searchResults = $state<Product[]>([]);
 	let customers = $state<Customer[]>([]);
 	let heldSales = $state<Sale[]>([]);
 
@@ -95,23 +96,32 @@
 	}
 
 	// ─── Products ───────────────────────────────────────────────────
-	let debounceTimer: ReturnType<typeof setTimeout>;
+	let searchTimer: ReturnType<typeof setTimeout>;
+	let searchReqId = $state(0);
+	let searching = $state(false);
 
 	function onSearch() {
 		selectedIndex = -1;
-		clearTimeout(debounceTimer);
+		clearTimeout(searchTimer);
 		if (search.trim()) {
 			showSearchDropdown = true;
-			debounceTimer = setTimeout(fetchSearchResults, 180);
+			searchTimer = setTimeout(doSearch, 50);
 		} else {
 			showSearchDropdown = false;
-			products = allProducts;
+			searching = false;
+			searchResults = [];
 		}
 	}
 
-	async function fetchSearchResults() {
-		const res = await productsService.list({ search: search.trim(), limit: 8 });
-		products = res.data ?? [];
+	async function doSearch() {
+		const q = search.trim();
+		if (!q) return;
+		const id = ++searchReqId;
+		searching = true;
+		const res = await productsService.list({ search: q, limit: 8 });
+		if (id !== searchReqId) return;
+		searchResults = res.data ?? [];
+		searching = false;
 	}
 
 	async function loadProducts() {
@@ -133,13 +143,18 @@
 			const res = await productsService.getByBarcode(query);
 			if (res.data) { addToCart(res.data); return; }
 		} catch { /* not a barcode */ }
-		await fetchSearchResults();
+		const q = query.trim();
+		if (!q) return;
+		const id = ++searchReqId;
+		const res = await productsService.list({ search: q, limit: 8 });
+		if (id !== searchReqId) return;
+		searchResults = res.data ?? [];
 	}
 
 	function handleSearchKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
-			if (selectedIndex >= 0 && products[selectedIndex]) {
-				addToCart(products[selectedIndex]);
+			if (selectedIndex >= 0 && searchResults[selectedIndex]) {
+				addToCart(searchResults[selectedIndex]);
 				return;
 			}
 			if (search.trim()) searchBarcodeOrSKU(search.trim());
@@ -148,7 +163,7 @@
 		}
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			selectedIndex = Math.min(selectedIndex + 1, products.length - 1);
+			selectedIndex = Math.min(selectedIndex + 1, searchResults.length - 1);
 			scrollToSelected();
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
@@ -169,7 +184,7 @@
 	function closeSearch() {
 		search = '';
 		showSearchDropdown = false;
-		products = allProducts;
+		searchResults = [];
 		selectedIndex = -1;
 	}
 
@@ -195,8 +210,24 @@
 	}
 
 	// ─── Customers ──────────────────────────────────────────────────
+	let customerSearchTimer: ReturnType<typeof setTimeout>;
+	let customerSearchId = $state(0);
+
 	async function fetchCustomers() {
 		const res = await customersService.list(customerSearch, 1, 50);
+		customers = res.data ?? [];
+	}
+
+	function onCustomerSearch() {
+		clearTimeout(customerSearchTimer);
+		customerSearchTimer = setTimeout(doCustomerSearch, 80);
+	}
+
+	async function doCustomerSearch() {
+		const q = customerSearch.trim();
+		const id = ++customerSearchId;
+		const res = await customersService.list(q, 1, 50);
+		if (id !== customerSearchId) return;
 		customers = res.data ?? [];
 	}
 
@@ -477,38 +508,46 @@
 		</div>
 
 		<!-- Search dropdown -->
-		{#if showSearchDropdown && products.length > 0}
+		{#if showSearchDropdown}
 			<div
 				bind:this={searchResultsEl}
-				class="absolute top-[56px] left-0 right-0 lg:right-[400px] z-20 mx-3 max-h-72 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl"
+				class="absolute top-[52px] left-0 right-0 lg:right-[400px] z-20 mx-3 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
 			>
-				{#each products as product, idx}
-					<button
-						onclick={() => addToCart(product)}
-						onmouseenter={() => selectedIndex = idx}
-						class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0"
-						class:bg-slate-50={selectedIndex === idx}
-						class:dark:bg-slate-700={selectedIndex === idx}
-					>
-						<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700">
-							{#if product.image_url}
-								<img src={product.image_url} alt={product.name} class="h-full w-full object-cover rounded-lg" />
-							{:else}
-								<Package size={14} class="text-slate-400" />
-							{/if}
-						</div>
-						<div class="flex-1 min-w-0">
-							<p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{product.name}</p>
-							<p class="text-xs text-slate-400">
-								{product.category_name ? `${product.category_name} · ` : ''}Stock: {product.stock_qty}
-							</p>
-						</div>
-						<div class="text-right shrink-0">
-							<p class="text-sm font-bold" style="color:#008B8B;">KES {fmt(product.selling_price)}</p>
-							{#if product.barcode}<p class="text-xs text-slate-400 font-mono">{product.barcode}</p>{/if}
-						</div>
-					</button>
-				{/each}
+				{#if searching}
+					<div class="flex items-center justify-center gap-2 px-4 py-6 text-sm text-slate-400">
+						<span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500"></span>
+						Searching…
+					</div>
+				{:else if searchResults.length === 0}
+					<div class="px-4 py-6 text-center text-sm text-slate-400">No products found</div>
+				{:else}
+					{#each searchResults as product, idx}
+						<button
+							onclick={() => addToCart(product)}
+							onmouseenter={() => selectedIndex = idx}
+							class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-b border-slate-100 last:border-0"
+							class:bg-blue-50={selectedIndex === idx}
+						>
+							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+								{#if product.image_url}
+									<img src={product.image_url} alt={product.name} class="h-full w-full object-cover rounded-lg" />
+								{:else}
+									<Package size={14} class="text-slate-400" />
+								{/if}
+							</div>
+							<div class="flex-1 min-w-0">
+								<p class="text-sm font-semibold text-slate-800 truncate">{product.name}</p>
+								<p class="text-xs text-slate-400">
+									{product.category_name ? `${product.category_name} · ` : ''}Stock: {product.stock_qty}
+								</p>
+							</div>
+							<div class="text-right shrink-0">
+								<p class="text-sm font-bold" style="color:#008B8B;">KES {fmt(product.selling_price)}</p>
+								{#if product.barcode}<p class="text-xs text-slate-400 font-mono">{product.barcode}</p>{/if}
+							</div>
+						</button>
+					{/each}
+				{/if}
 			</div>
 		{/if}
 
@@ -860,8 +899,9 @@
 				<Search size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
 				<input
 					bind:value={customerSearch}
-					oninput={fetchCustomers}
+					oninput={onCustomerSearch}
 					placeholder="Search customers…"
+					autofocus
 					class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-2.5 pl-9 text-sm focus:outline-none"
 				/>
 			</div>

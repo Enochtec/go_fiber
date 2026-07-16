@@ -22,21 +22,38 @@
 	let supplierId = $state<string>('');
 	let status = $state<'received' | 'pending'>('received');
 	let note = $state('');
-	let items = $state<Array<{ product: Product | null; quantity: number; unit_price: number; search: string; results: Product[] }>>([]);
+	let items = $state<Array<{ product: Product | null; quantity: number; unit_price: number; search: string; results: Product[]; searchId: number; searching: boolean }>>([]);
 
 	function addItem() {
-		items.push({ product: null, quantity: 1, unit_price: 0, search: '', results: [] });
+		items.push({ product: null, quantity: 1, unit_price: 0, search: '', results: [], searchId: 0, searching: false });
 	}
 
 	function removeItem(i: number) {
 		items.splice(i, 1);
 	}
 
-	async function searchProduct(i: number) {
+	let searchTimers: ReturnType<typeof setTimeout>[] = [];
+
+	function onSearch(i: number) {
+		clearTimeout(searchTimers[i]);
 		const q = items[i].search;
-		if (!q.trim()) { items[i].results = []; return; }
+		if (!q.trim()) {
+			items[i].results = [];
+			items[i].searching = false;
+			return;
+		}
+		searchTimers[i] = setTimeout(() => doSearch(i), 80);
+	}
+
+	async function doSearch(i: number) {
+		const q = items[i].search.trim();
+		if (!q) return;
+		const id = ++items[i].searchId;
+		items[i].searching = true;
 		const res = await productsService.list({ search: q, limit: 8 });
+		if (id !== items[i].searchId) return;
 		items[i].results = res.data ?? [];
+		items[i].searching = false;
 	}
 
 	function selectProduct(i: number, p: Product) {
@@ -190,15 +207,19 @@
 								<Search size={13} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 								<input
 									bind:value={item.search}
-									oninput={() => searchProduct(i)}
+									oninput={() => onSearch(i)}
 									placeholder="Search product…"
 									class="w-full rounded-lg border px-3 py-2 pl-8 text-sm focus:border-blue-500 focus:outline-none"
 								/>
-								{#if item.results.length > 0}
+								{#if item.search.trim() && (item.searching || item.results.length > 0)}
 									<ul class="absolute z-10 mt-1 w-full rounded-lg border bg-white shadow-lg max-h-32 overflow-y-auto">
-										{#each item.results as p}
-											<li><button onclick={() => selectProduct(i, p)} class="w-full px-3 py-2 text-left text-sm hover:bg-blue-50">{p.name}</button></li>
-										{/each}
+										{#if item.searching}
+											<li class="px-3 py-2 text-sm text-gray-400">Searching…</li>
+										{:else}
+											{#each item.results as p}
+												<li><button onclick={() => selectProduct(i, p)} class="w-full px-3 py-2 text-left text-sm hover:bg-blue-50">{p.name}</button></li>
+											{/each}
+										{/if}
 									</ul>
 								{/if}
 							</div>
