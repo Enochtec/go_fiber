@@ -53,7 +53,7 @@
 	}
 </script>
 
-<aside class="flex h-full w-64 shrink-0 flex-col" style="background-color: #005A9C;">
+<aside class="flex h-full w-64 shrink-0 flex-col" style="background-color: #00008B;">
 	<!-- Logo -->
 	<div class="flex items-center gap-3 px-5 py-5" style="border-bottom: 1px solid rgba(255,255,255,0.15);">
 		<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 shadow-lg">
@@ -61,7 +61,7 @@
 		</div>
 		<div class="flex-1 min-w-0">
 			<p class="font-bold text-white text-sm leading-tight">POS System</p>
-			<p class="text-xs text-blue-200 mt-0.5">Point of Sale</p>
+			<p class="text-xs text-blue-300 mt-0.5">Point of Sale</p>
 		</div>
 		<button onclick={onclose} class="text-white/60 hover:text-white transition-colors lg:hidden">
 			<X size={18} />
@@ -78,7 +78,7 @@
 						<a
 							href={link.href}
 							onclick={() => onclose?.()}
-							class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all {link.indent ? 'ml-4' : ''} {active ? 'bg-white text-[#005A9C] font-semibold shadow-sm' : 'text-white/70 hover:bg-white/10 hover:text-white'}"
+							class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all {link.indent ? 'ml-4' : ''} {active ? 'bg-white text-[#00008B] font-semibold shadow-sm' : 'text-white/70 hover:bg-white/10 hover:text-white'}"
 						>
 							<link.icon size={15} />
 							{link.label}
@@ -93,12 +93,12 @@
 	<div class="p-3" style="border-top: 1px solid rgba(255,255,255,0.15);">
 		{#if authStore.user}
 			<div class="flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg bg-white/10">
-				<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold" style="color: #005A9C;">
+				<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold" style="color: #00008B;">
 					{authStore.user.name.charAt(0).toUpperCase()}
 				</div>
 				<div class="min-w-0 flex-1">
 					<p class="text-sm font-medium text-white truncate">{authStore.user.name}</p>
-					<p class="text-xs text-blue-200 capitalize">{authStore.user.role}</p>
+					<p class="text-xs text-blue-300 capitalize">{authStore.user.role}</p>
 				</div>
 				<button
 					onclick={themeStore.toggle}

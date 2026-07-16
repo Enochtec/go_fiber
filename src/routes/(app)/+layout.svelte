@@ -63,7 +63,7 @@
 	<!-- Main area -->
 	<div class="flex flex-1 flex-col min-w-0 overflow-hidden">
 		<!-- Mobile top header -->
-		<header class="flex items-center gap-3 px-4 py-3 shadow-md lg:hidden shrink-0" style="background-color: #005A9C;">
+		<header class="flex items-center gap-3 px-4 py-3 shadow-md lg:hidden shrink-0" style="background-color: #00008B;">
 			<button
 				onclick={() => drawerOpen = true}
 				class="flex h-9 w-9 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 active:bg-white/20"
@@ -77,7 +77,7 @@
 				<span class="font-bold text-white text-sm">POS System</span>
 			</div>
 			{#if authStore.user}
-				<div class="ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold" style="color: #005A9C;">
+				<div class="ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold" style="color: #00008B;">
 					{authStore.user.name.charAt(0).toUpperCase()}
 				</div>
 			{/if}
@@ -89,7 +89,7 @@
 		</main>
 
 		<!-- Mobile bottom navigation -->
-		<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden shadow-lg" style="background-color: #005A9C;">
+		<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden shadow-lg" style="background-color: #00008B;">
 			<div class="flex">
 				{#each bottomNav as item}
 					{@const active = $page.url.pathname === item.href}
