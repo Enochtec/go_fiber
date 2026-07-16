@@ -76,6 +76,10 @@
 
 	const salesTrend = $derived(stats ? pct(stats.today_sales, stats.yesterday_sales) : 0);
 	const payTotal = $derived(stats ? stats.today_cash_sales + stats.today_mpesa + stats.today_card : 0);
+	const healthyProducts = $derived(stats ? stats.total_products - stats.low_stock_count - stats.out_of_stock : 0);
+	const healthPct = $derived(stats && stats.total_products > 0 ? (healthyProducts / stats.total_products) * 100 : 0);
+	const lowPct = $derived(stats && stats.total_products > 0 ? (stats.low_stock_count / stats.total_products) * 100 : 0);
+	const outPct = $derived(stats && stats.total_products > 0 ? (stats.out_of_stock / stats.total_products) * 100 : 0);
 </script>
 
 <svelte:head><title>Dashboard — POS</title></svelte:head>
@@ -222,6 +226,8 @@
 				{#if dailySales.length === 0}
 					<div class="flex items-center justify-center h-36 text-slate-400 text-sm">No sales data yet</div>
 				{:else}
+					{@const bestDay = dailySales.reduce((a,b) => a.total > b.total ? a : b)}
+					{@const dailyAvg = dailySales.reduce((s,d) => s + d.total, 0) / dailySales.length}
 					<div class="flex items-end gap-2 h-36 mt-2">
 						{#each dailySales as day}
 							{@const h = MAX_REV > 0 ? Math.max((day.total / MAX_REV) * MAX_BAR, 4) : 4}
@@ -239,65 +245,99 @@
 							</div>
 						{/each}
 					</div>
+					<!-- Mini stats under chart -->
+					<div class="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+						<div class="text-center">
+							<p class="text-[10px] text-slate-400 uppercase tracking-wide">Best Day</p>
+							<p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">{fmtDate(bestDay.date)}</p>
+							<p class="text-[10px] font-semibold text-emerald-600">{fmt(bestDay.total)}</p>
+						</div>
+						<div class="text-center">
+							<p class="text-[10px] text-slate-400 uppercase tracking-wide">Daily Avg</p>
+							<p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">{fmt(dailyAvg)}</p>
+						</div>
+						<div class="text-center">
+							<p class="text-[10px] text-slate-400 uppercase tracking-wide">vs Yesterday</p>
+							<p class="text-xs font-bold {salesTrend >= 0 ? 'text-emerald-600' : 'text-red-500'} mt-0.5">{salesTrend >= 0 ? '+' : ''}{salesTrend}%</p>
+						</div>
+					</div>
 				{/if}
 			</div>
 
-			<!-- Payment method breakdown -->
+			<!-- Payment method breakdown - Donut chart -->
 			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Payments — Today</h2>
 				{#if payTotal === 0}
 					<div class="flex items-center justify-center h-36 text-slate-400 text-sm">No payments yet</div>
 				{:else}
-					<div class="space-y-3.5">
-						{#each [
-							{ label: 'Cash', value: stats.today_cash_sales, icon: Banknote, color: '#10b981' },
-							{ label: 'M-Pesa', value: stats.today_mpesa, icon: Smartphone, color: '#008B8B' },
-							{ label: 'Card', value: stats.today_card, icon: CreditCard, color: '#6366f1' }
-						] as pm}
-							{@const w = payTotal > 0 ? (pm.value / payTotal) * 100 : 0}
-							<div>
-								<div class="flex items-center justify-between mb-1.5">
-									<div class="flex items-center gap-1.5">
-										<svelte:component this={pm.icon} size={12} style="color:{pm.color};" />
-										<span class="text-xs font-semibold text-slate-600 dark:text-slate-300">{pm.label}</span>
-									</div>
-									<span class="text-xs font-bold text-slate-700 dark:text-slate-200 tabular-nums">{fmt(pm.value)}</span>
-								</div>
-								<div class="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-									<div class="h-full rounded-full transition-all" style="width:{w}%; background-color:{pm.color};"></div>
-								</div>
-								<p class="text-right text-[10px] text-slate-400 mt-0.5">{w.toFixed(0)}%</p>
+					{@const cashPct = (stats.today_cash_sales / payTotal) * 100}
+					{@const mpesaPct = (stats.today_mpesa / payTotal) * 100}
+					{@const cardPct = (stats.today_card / payTotal) * 100}
+					{@const grad = `conic-gradient(#10b981 0% ${cashPct}%, #008B8B ${cashPct}% ${cashPct + mpesaPct}%, #6366f1 ${cashPct + mpesaPct}% 100%)`}
+					<div class="flex items-center gap-5">
+						<div class="relative h-28 w-28 shrink-0 rounded-full" style="background:{grad};">
+							<div class="absolute inset-[10px] rounded-full bg-white dark:bg-slate-800 flex flex-col items-center justify-center">
+								<p class="text-lg font-bold text-slate-800 dark:text-slate-100">{fmt(payTotal)}</p>
+								<p class="text-[9px] text-slate-400 uppercase tracking-wide">total</p>
 							</div>
-						{/each}
+						</div>
+						<div class="flex-1 space-y-2.5">
+							{#each [
+								{ label: 'Cash', value: stats.today_cash_sales, color: '#10b981', pct: cashPct },
+								{ label: 'M-Pesa', value: stats.today_mpesa, color: '#008B8B', pct: mpesaPct },
+								{ label: 'Card', value: stats.today_card, color: '#6366f1', pct: cardPct }
+							] as pm}
+								<div class="flex items-center justify-between gap-2">
+									<div class="flex items-center gap-1.5 min-w-0">
+										<span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background:{pm.color};"></span>
+										<span class="text-xs text-slate-600 dark:text-slate-300 truncate">{pm.label}</span>
+									</div>
+									<div class="flex items-center gap-2 shrink-0">
+										<span class="text-xs font-bold text-slate-700 dark:text-slate-200">{fmt(pm.value)}</span>
+										<span class="text-[10px] text-slate-400 w-9 text-right tabular-nums">{pm.pct.toFixed(0)}%</span>
+									</div>
+								</div>
+							{/each}
+						</div>
 					</div>
 				{/if}
 			</div>
 		</div>
 
-		<!-- ── Bottom row ────────────────────────────────────── -->
+		<!-- ── Bottom row: Product Analysis ──────────────────── -->
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-			<!-- Top products -->
+			<!-- Top products with revenue bars -->
 			<div class="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
-				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Top Products — 30 Days</h2>
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
+					{#if topProducts.length > 0}
+						{@const totalSold = topProducts.reduce((s,p) => s + p.quantity_sold, 0)}
+						<span class="text-xs text-slate-400">{totalSold} total sold</span>
+					{/if}
+				</div>
 				{#if topProducts.length === 0}
 					<div class="flex items-center justify-center h-32 text-slate-400 text-sm">No sales data yet</div>
 				{:else}
-					<div class="space-y-2.5">
+					<div class="space-y-3">
 						{#each topProducts.slice(0, 6) as product, i}
-							{@const w = MAX_PROD > 0 ? (product.revenue / MAX_PROD) * 100 : 0}
+							{@const revW = MAX_PROD > 0 ? (product.revenue / MAX_PROD) * 100 : 0}
+							{@const qtyW = topProducts[0].quantity_sold > 0 ? (product.quantity_sold / topProducts[0].quantity_sold) * 100 : 0}
 							<div class="flex items-center gap-3">
 								<span class="text-xs font-bold text-slate-300 dark:text-slate-600 w-4 shrink-0 text-right">{i+1}</span>
 								<div class="flex-1 min-w-0">
-									<div class="flex items-center justify-between mb-1">
+									<div class="flex items-center justify-between mb-0.5">
 										<span class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{product.product_name}</span>
 										<div class="flex items-center gap-2 shrink-0 ml-2">
 											<span class="text-xs text-slate-400">{product.quantity_sold} sold</span>
 											<span class="text-xs font-bold text-slate-800 dark:text-slate-100 tabular-nums">{fmt(product.revenue)}</span>
 										</div>
 									</div>
-									<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-										<div class="h-full rounded-full" style="width:{w}%; background-color:#008B8B;"></div>
+									<div class="flex items-center gap-2">
+										<div class="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+											<div class="h-full rounded-full" style="width:{revW}%; background-color:#008B8B;"></div>
+										</div>
+										<span class="text-[9px] text-slate-400 w-8 text-right tabular-nums">{revW.toFixed(0)}%</span>
 									</div>
 								</div>
 							</div>
@@ -306,30 +346,78 @@
 				{/if}
 			</div>
 
-			<!-- Low stock + recent sales -->
+			<!-- Right column: Product Stats + Stock Health -->
 			<div class="space-y-4">
 
-				<!-- Low stock alerts -->
+				<!-- Product performance stats -->
 				<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
 					<div class="flex items-center gap-2 mb-3">
-						<AlertTriangle size={14} class="text-amber-500 shrink-0" />
-						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Low Stock</h2>
-						{#if lowStockProducts.length > 0}
-							<span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold px-1">{lowStockProducts.length}</span>
-						{/if}
+						<Package size={14} class="text-slate-400 shrink-0" />
+						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Product Stats</h2>
 					</div>
-					{#if lowStockProducts.length === 0}
-						<p class="text-xs text-slate-400 py-3 text-center">All products are well-stocked</p>
-					{:else}
-						<ul class="space-y-1.5">
-							{#each lowStockProducts.slice(0, 5) as p}
-								<li class="flex items-center justify-between">
-									<span class="text-xs text-slate-600 dark:text-slate-300 truncate">{p.name}</span>
-									<span class="shrink-0 ml-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold {p.stock_qty === 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}">{p.stock_qty === 0 ? 'Out' : p.stock_qty}</span>
-								</li>
-							{/each}
-						</ul>
-					{/if}
+					<div class="grid grid-cols-2 gap-3">
+						<div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-3 text-center">
+							<p class="text-lg font-bold text-emerald-700 dark:text-emerald-400">{stats.total_products}</p>
+							<p class="text-[10px] text-emerald-600/70 dark:text-emerald-400/70">Active Products</p>
+						</div>
+						<div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 p-3 text-center">
+							<p class="text-lg font-bold text-blue-700 dark:text-blue-400">{stats.total_customers}</p>
+							<p class="text-[10px] text-blue-600/70 dark:text-blue-400/70">Customers</p>
+						</div>
+						<div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 p-3 text-center">
+							<p class="text-lg font-bold text-amber-700 dark:text-amber-400">{stats.low_stock_count}</p>
+							<p class="text-[10px] text-amber-600/70 dark:text-amber-400/70">Low Stock</p>
+						</div>
+						<div class="rounded-xl bg-red-50 dark:bg-red-900/20 p-3 text-center">
+							<p class="text-lg font-bold text-red-700 dark:text-red-400">{stats.out_of_stock}</p>
+							<p class="text-[10px] text-red-600/70 dark:text-red-400/70">Out of Stock</p>
+						</div>
+					</div>
+				</div>
+
+				<!-- Stock health gauge -->
+				<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
+					<div class="flex items-center gap-2 mb-3">
+						<BarChart2 size={14} class="text-slate-400 shrink-0" />
+						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Stock Health</h2>
+					</div>
+					<div class="flex items-center gap-4">
+						<div class="relative h-24 w-24 shrink-0">
+							<svg class="h-full w-full -rotate-90" viewBox="0 0 36 36">
+								<circle cx="18" cy="18" r="15" fill="none" stroke="#e2e8f0" stroke-width="3" class="dark:stroke-slate-700"/>
+								<circle cx="18" cy="18" r="15" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="{healthPct} {100 - healthPct}" stroke-linecap="round"/>
+								<circle cx="18" cy="18" r="15" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="{lowPct} {100 - lowPct}" stroke-dashoffset="{-healthPct}" stroke-linecap="round"/>
+								<circle cx="18" cy="18" r="15" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="{outPct} {100 - outPct}" stroke-dashoffset="{-(healthPct + lowPct)}" stroke-linecap="round"/>
+							</svg>
+							<div class="absolute inset-0 flex flex-col items-center justify-center">
+								<p class="text-lg font-bold text-slate-800 dark:text-slate-100">{healthPct.toFixed(0)}%</p>
+								<p class="text-[8px] text-slate-400 uppercase tracking-wide">healthy</p>
+							</div>
+						</div>
+						<div class="flex-1 space-y-1.5">
+							<div class="flex items-center justify-between text-xs">
+								<div class="flex items-center gap-1.5">
+									<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+									<span class="text-slate-600 dark:text-slate-300">Healthy</span>
+								</div>
+								<span class="font-bold text-slate-700 dark:text-slate-200">{healthyProducts}</span>
+							</div>
+							<div class="flex items-center justify-between text-xs">
+								<div class="flex items-center gap-1.5">
+									<span class="h-2 w-2 rounded-full bg-amber-500"></span>
+									<span class="text-slate-600 dark:text-slate-300">Low Stock</span>
+								</div>
+								<span class="font-bold text-slate-700 dark:text-slate-200">{stats.low_stock_count}</span>
+							</div>
+							<div class="flex items-center justify-between text-xs">
+								<div class="flex items-center gap-1.5">
+									<span class="h-2 w-2 rounded-full bg-red-500"></span>
+									<span class="text-slate-600 dark:text-slate-300">Out of Stock</span>
+								</div>
+								<span class="font-bold text-slate-700 dark:text-slate-200">{stats.out_of_stock}</span>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<!-- Recent transactions -->

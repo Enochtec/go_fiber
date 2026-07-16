@@ -153,39 +153,41 @@
 	{:else}
 		<!-- ── Stock value cards ─────────────────────────────────── -->
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
-				<div class="flex items-center justify-between mb-2">
-					<span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Retail Value</span>
-					<div class="h-7 w-7 rounded-lg flex items-center justify-center" style="background-color:#008B8B15;">
-						<DollarSign size={14} style="color:#008B8B;" />
+			<div class="relative overflow-hidden rounded-2xl p-4 shadow-sm text-white" style="background:linear-gradient(135deg,#10b981,#059669);">
+				<div class="absolute -top-3 -right-3 h-16 w-16 rounded-full bg-white/10"></div>
+				<div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-white/5"></div>
+				<div class="flex items-center justify-between mb-2 relative">
+					<span class="text-xs font-semibold uppercase tracking-wide text-white/80">Retail Value</span>
+					<div class="h-7 w-7 rounded-lg flex items-center justify-center bg-white/20">
+						<DollarSign size={14} class="text-white" />
 					</div>
 				</div>
-				<p class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(totalRetailValue)}</p>
-				<p class="text-xs text-slate-400 mt-1">across {totalProducts} products</p>
+				<p class="text-2xl font-bold tabular-nums relative">KES {fmt(totalRetailValue)}</p>
+				<p class="text-xs text-white/70 mt-1 relative">across {totalProducts} products</p>
 			</div>
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
-				<div class="flex items-center justify-between mb-2">
-					<span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cost Value</span>
-					<div class="h-7 w-7 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-blue-900/20">
-						<BarChart2 size={14} class="text-blue-500" />
+			<div class="relative overflow-hidden rounded-2xl p-4 shadow-sm text-white" style="background:linear-gradient(135deg,#0ea5e9,#2563eb);">
+				<div class="absolute -top-3 -right-3 h-16 w-16 rounded-full bg-white/10"></div>
+				<div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-white/5"></div>
+				<div class="flex items-center justify-between mb-2 relative">
+					<span class="text-xs font-semibold uppercase tracking-wide text-white/80">Cost Value</span>
+					<div class="h-7 w-7 rounded-lg flex items-center justify-center bg-white/20">
+						<BarChart2 size={14} class="text-white" />
 					</div>
 				</div>
-				<p class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(totalCostValue)}</p>
-				<p class="text-xs text-emerald-600 mt-1">Margin: KES {fmt(totalRetailValue - totalCostValue)}</p>
+				<p class="text-2xl font-bold tabular-nums relative">KES {fmt(totalCostValue)}</p>
+				<p class="text-xs text-white/70 mt-1 relative">Margin: KES {fmt(totalRetailValue - totalCostValue)}</p>
 			</div>
-			<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
-				<div class="flex items-center justify-between mb-2">
-					<span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Stock Alerts</span>
-					<div class="h-7 w-7 rounded-lg flex items-center justify-center bg-amber-50 dark:bg-amber-900/20">
-						<AlertTriangle size={14} class="text-amber-500" />
+			<div class="relative overflow-hidden rounded-2xl p-4 shadow-sm text-white" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+				<div class="absolute -top-3 -right-3 h-16 w-16 rounded-full bg-white/10"></div>
+				<div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-white/5"></div>
+				<div class="flex items-center justify-between mb-2 relative">
+					<span class="text-xs font-semibold uppercase tracking-wide text-white/80">Stock Alerts</span>
+					<div class="h-7 w-7 rounded-lg flex items-center justify-center bg-white/20">
+						<AlertTriangle size={14} class="text-white" />
 					</div>
 				</div>
-				<p class="text-2xl font-bold {lowStockItems.length > 0 ? 'text-amber-600' : 'text-slate-900 dark:text-slate-100'} tabular-nums">
-					{lowStockItems.length}
-				</p>
-				<p class="text-xs text-slate-400 mt-1">
-					{lowStockItems.filter(p => p.stock_qty === 0).length} out of stock
-				</p>
+				<p class="text-2xl font-bold tabular-nums relative">{lowStockItems.length}</p>
+				<p class="text-xs text-white/70 mt-1 relative">{lowStockItems.filter(p => p.stock_qty === 0).length} out of stock</p>
 			</div>
 		</div>
 

@@ -78,26 +78,32 @@
 		</div>
 	{:else if activeTab === 'sales'}
 		<div class="grid grid-cols-3 gap-4">
-			<div class="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-				<div class="flex items-center gap-3 mb-3">
-					<div class="rounded-xl bg-blue-100 p-2.5"><DollarSign size={16} class="text-blue-600" /></div>
-					<p class="text-sm font-medium text-slate-500">30-Day Revenue</p>
+			<div class="relative overflow-hidden rounded-2xl p-5 shadow-sm text-white" style="background:linear-gradient(135deg,#0ea5e9,#2563eb);">
+				<div class="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
+				<div class="flex items-center gap-3 mb-3 relative">
+					<div class="rounded-xl bg-white/20 p-2.5"><DollarSign size={16} class="text-white" /></div>
+					<p class="text-sm font-medium text-white/80">30-Day Revenue</p>
 				</div>
-				<p class="text-2xl font-bold text-slate-900">{fmt(totalRevenue)}</p>
+				<p class="text-2xl font-bold relative">{fmt(totalRevenue)}</p>
 			</div>
-			<div class="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-				<div class="flex items-center gap-3 mb-3">
-					<div class="rounded-xl bg-emerald-100 p-2.5"><BarChart2 size={16} class="text-emerald-600" /></div>
-					<p class="text-sm font-medium text-slate-500">30-Day Orders</p>
+			<div class="relative overflow-hidden rounded-2xl p-5 shadow-sm text-white" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">
+				<div class="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
+				<div class="flex items-center gap-3 mb-3 relative">
+					<div class="rounded-xl bg-white/20 p-2.5"><BarChart2 size={16} class="text-white" /></div>
+					<p class="text-sm font-medium text-white/80">30-Day Orders</p>
 				</div>
-				<p class="text-2xl font-bold text-slate-900">{totalOrders}</p>
+				<p class="text-2xl font-bold relative">{totalOrders}</p>
 			</div>
-			<div class="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-				<div class="flex items-center gap-3 mb-3">
-					<div class="rounded-xl bg-violet-100 p-2.5"><TrendingUp size={16} class="text-violet-600" /></div>
-					<p class="text-sm font-medium text-slate-500">Avg. Order Value</p>
+			<div class="relative overflow-hidden rounded-2xl p-5 shadow-sm text-white" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+				<div class="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
+				<div class="flex items-center gap-3 mb-3 relative">
+					<div class="rounded-xl bg-white/20 p-2.5"><TrendingUp size={16} class="text-white" /></div>
+					<p class="text-sm font-medium text-white/80">Avg. Order Value</p>
 				</div>
-				<p class="text-2xl font-bold text-slate-900">{fmt(totalOrders > 0 ? totalRevenue / totalOrders : 0)}</p>
+				<p class="text-2xl font-bold relative">{fmt(totalOrders > 0 ? totalRevenue / totalOrders : 0)}</p>
 			</div>
 		</div>
 
