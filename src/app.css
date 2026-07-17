@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-	--color-primary-50: #eef4fa;
-	--color-primary-100: #d9eaf8;
-	--color-primary-200: #b3d5f0;
-	--color-primary-300: #80bfe8;
-	--color-primary-400: #4da8e0;
-	--color-primary-500: #1a8ad4;
-	--color-primary-600: #00008B;
-	--color-primary-700: #004d85;
-	--color-primary-800: #003d6b;
-	--color-primary-900: #002b4d;
-	--color-primary-950: #001a30;
-	--color-brand: #00008B;
-	--color-brand-dark: #004d85;
+	--color-brand:      #008B8B;
+	--color-brand-dark: #006B6B;
+	--color-brand-light:#e0f7f7;
+	--color-sidebar:    #0f172a;
+
+	/* Remap the blue palette → teal (#008B8B) so every bg-blue-*, text-blue-*, etc. uses the new brand */
+	--color-blue-50:  #f0fafa;
+	--color-blue-100: #d8f4f4;
+	--color-blue-200: #b3e5e5;
+	--color-blue-300: #7dd0d0;
+	--color-blue-400: #3db8b8;
+	--color-blue-500: #0fa0a0;
+	--color-blue-600: #008B8B;
+	--color-blue-700: #007070;
+	--color-blue-800: #005858;
+	--color-blue-900: #003f3f;
+	--color-blue-950: #002525;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -27,43 +31,53 @@ html {
 	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	font-size: 15px;
 }
 
 body {
 	margin: 0;
-	background-color: #f1f5f9;
+	background-color: #f8fafc;
 	color: #0f172a;
 }
 
-/* Unified focus ring using brand teal */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
-	outline: 2px solid #00008B;
+	outline: 2px solid #008B8B;
 	outline-offset: 2px;
 }
-
-/* Smooth page-level transitions */
-.page-enter { opacity: 0; transform: translateY(6px); }
-.page-enter-active { opacity: 1; transform: none; transition: opacity 200ms, transform 200ms; }
 
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
 	-webkit-appearance: none;
 }
 
-::-webkit-scrollbar {
-	width: 5px;
-	height: 5px;
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ─── Shared field style ─── */
+.field {
+	width: 100%;
+	border-radius: 0.5rem;
+	border: 1px solid #e2e8f0;
+	padding: 0.5rem 0.75rem;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	outline: none;
+	background: #fff;
+	color: #0f172a;
+	transition: border-color 150ms;
 }
-::-webkit-scrollbar-track {
-	background: transparent;
-}
-::-webkit-scrollbar-thumb {
-	background: #cbd5e1;
-	border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-	background: #94a3b8;
-}
+.field:focus { border-color: #008B8B; }
+
+/* ─── Badge variants ─── */
+.badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 600; line-height: 1.25rem; }
+.badge-blue   { background: #e0f7f7; color: #006060; }
+.badge-green  { background: #f0fdf4; color: #15803d; }
+.badge-amber  { background: #fffbeb; color: #b45309; }
+.badge-red    { background: #fef2f2; color: #b91c1c; }
+.badge-slate  { background: #f1f5f9; color: #475569; }
+.badge-purple { background: #faf5ff; color: #7e22ce; }

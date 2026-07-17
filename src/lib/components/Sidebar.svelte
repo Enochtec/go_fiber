@@ -2,123 +2,128 @@
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import {
-		LayoutDashboard,
-		ShoppingCart,
-		Package,
-		Warehouse,
-		Users,
-		Truck,
-		ShoppingBag,
-		BarChart2,
-		UserCog,
-		Settings,
-		LogOut,
-		Store,
-		X,
-		Sun,
-		Moon
+		LayoutDashboard, ShoppingCart, Package, Warehouse,
+		Users, Truck, ShoppingBag, BarChart2, UserCog, Settings,
+		LogOut, Store, X, Sun, Moon, History
 	} from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { themeStore } from '$lib/stores/theme.svelte';
 
-	interface Props {
-		onclose?: () => void;
-	}
+	interface Props { onclose?: () => void; }
 	let { onclose }: Props = $props();
 
-	const links = [
-		{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
-		{ href: '/sales', label: 'New Sale', icon: ShoppingCart, roles: ['admin', 'manager', 'cashier'] },
-		{ href: '/sales/history', label: 'Sales History', icon: BarChart2, roles: ['admin', 'manager', 'cashier'], indent: true },
-		{ href: '/products', label: 'Products', icon: Package, roles: ['admin', 'manager', 'cashier'] },
-		{ href: '/inventory', label: 'Inventory', icon: Warehouse, roles: ['admin', 'manager'] },
-		{ href: '/customers', label: 'Customers', icon: Users, roles: ['admin', 'manager', 'cashier'] },
-		{ href: '/suppliers', label: 'Suppliers', icon: Truck, roles: ['admin', 'manager'] },
-		{ href: '/purchases', label: 'Purchases', icon: ShoppingBag, roles: ['admin', 'manager'] },
-		{ href: '/reports', label: 'Reports', icon: BarChart2, roles: ['admin', 'manager'] },
-		{ href: '/users', label: 'Users', icon: UserCog, roles: ['admin'] },
-		{ href: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] }
+	const groups = [
+		{
+			label: 'Main',
+			links: [
+				{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
+				{ href: '/sales',     label: 'Point of Sale', icon: ShoppingCart, roles: ['admin', 'manager', 'cashier'] },
+				{ href: '/sales/history', label: 'Sales History', icon: History, roles: ['admin', 'manager', 'cashier'] },
+			]
+		},
+		{
+			label: 'Catalogue',
+			links: [
+				{ href: '/products',  label: 'Products',   icon: Package,   roles: ['admin', 'manager', 'cashier'] },
+				{ href: '/inventory', label: 'Inventory',  icon: Warehouse,  roles: ['admin', 'manager'] },
+				{ href: '/customers', label: 'Customers',  icon: Users,      roles: ['admin', 'manager', 'cashier'] },
+			]
+		},
+		{
+			label: 'Procurement',
+			links: [
+				{ href: '/suppliers', label: 'Suppliers',  icon: Truck,      roles: ['admin', 'manager'] },
+				{ href: '/purchases', label: 'Purchases',  icon: ShoppingBag, roles: ['admin', 'manager'] },
+			]
+		},
+		{
+			label: 'Analytics',
+			links: [
+				{ href: '/reports',   label: 'Reports',    icon: BarChart2,  roles: ['admin', 'manager'] },
+			]
+		},
+		{
+			label: 'Admin',
+			links: [
+				{ href: '/users',     label: 'Users',      icon: UserCog,    roles: ['admin'] },
+				{ href: '/settings',  label: 'Settings',   icon: Settings,   roles: ['admin', 'manager'] },
+			]
+		},
 	];
 
 	const role = $derived(authStore.role ?? 'cashier');
+	const path = $derived($page.url.pathname);
 
-	function logout() {
-		authStore.clear();
-		goto('/login');
-	}
-
-	function nav(href: string) {
-		goto(href);
-		onclose?.();
-	}
+	function logout() { authStore.clear(); goto('/login'); }
 </script>
 
-<aside class="flex h-full w-64 shrink-0 flex-col" style="background-color: #00008B;">
+<aside class="flex h-full w-64 shrink-0 flex-col bg-slate-900 select-none">
 	<!-- Logo -->
-	<div class="flex items-center gap-3 px-5 py-5" style="border-bottom: 1px solid rgba(255,255,255,0.15);">
-		<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 shadow-lg">
-			<Store size={18} class="text-white" />
+	<div class="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
+		<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600">
+			<Store size={16} class="text-white" />
 		</div>
 		<div class="flex-1 min-w-0">
-			<p class="font-bold text-white text-sm leading-tight">POS System</p>
-			<p class="text-xs text-blue-300 mt-0.5">Point of Sale</p>
+			<p class="text-sm font-bold text-white leading-none">Maestro POS</p>
+			<p class="text-xs text-slate-500 mt-0.5">Point of Sale</p>
 		</div>
-		<button onclick={onclose} class="text-white/60 hover:text-white transition-colors lg:hidden">
-			<X size={18} />
+		<button onclick={onclose} class="h-7 w-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors lg:hidden">
+			<X size={15} />
 		</button>
 	</div>
 
 	<!-- Navigation -->
-	<nav class="flex-1 overflow-y-auto px-3 py-4">
-		<ul class="space-y-0.5">
-			{#each links as link}
-				{#if link.roles.includes(role)}
-					{@const active = $page.url.pathname === link.href}
-					<li>
+	<nav class="flex-1 overflow-y-auto py-3">
+		{#each groups as group}
+			{@const visible = group.links.filter(l => l.roles.includes(role))}
+			{#if visible.length > 0}
+				<div class="mb-1">
+					<p class="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500">{group.label}</p>
+					{#each visible as link}
+						{@const active = path === link.href || (link.href !== '/sales' && path.startsWith(link.href + '/') && link.href !== '/dashboard')}
 						<a
 							href={link.href}
 							data-sveltekit-preload-code
 							onclick={() => onclose?.()}
-							class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all {link.indent ? 'ml-4' : ''} {active ? 'bg-white text-[#00008B] font-semibold shadow-sm' : 'text-white/70 hover:bg-white/10 hover:text-white'}"
+							class="flex items-center gap-2.5 mx-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
+								{active
+									? 'bg-blue-600 text-white'
+									: 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}"
 						>
-							<link.icon size={15} />
-							{link.label}
+							<link.icon size={15} class="shrink-0" />
+							<span>{link.label}</span>
 						</a>
-					</li>
-				{/if}
-			{/each}
-		</ul>
+					{/each}
+				</div>
+			{/if}
+		{/each}
 	</nav>
 
 	<!-- User section -->
-	<div class="p-3" style="border-top: 1px solid rgba(255,255,255,0.15);">
+	<div class="border-t border-slate-800 p-3 space-y-1">
 		{#if authStore.user}
-			<div class="flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg bg-white/10">
-				<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold" style="color: #00008B;">
+			<div class="flex items-center gap-2.5 px-3 py-2 rounded-md bg-slate-800">
+				<div class="h-7 w-7 shrink-0 flex items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
 					{authStore.user.name.charAt(0).toUpperCase()}
 				</div>
-				<div class="min-w-0 flex-1">
-					<p class="text-sm font-medium text-white truncate">{authStore.user.name}</p>
-					<p class="text-xs text-blue-300 capitalize">{authStore.user.role}</p>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-semibold text-slate-200 truncate">{authStore.user.name}</p>
+					<p class="text-[10px] text-slate-500 capitalize">{authStore.user.role}</p>
 				</div>
 				<button
 					onclick={themeStore.toggle}
-					title={themeStore.dark ? 'Switch to light mode' : 'Switch to dark mode'}
-					class="flex h-7 w-7 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+					title={themeStore.dark ? 'Light mode' : 'Dark mode'}
+					class="h-6 w-6 flex items-center justify-center rounded text-slate-500 hover:text-slate-300 transition-colors"
 				>
-					{#if themeStore.dark}
-						<Sun size={14} />
-					{:else}
-						<Moon size={14} />
-					{/if}
+					{#if themeStore.dark}<Sun size={13} />{:else}<Moon size={13} />{/if}
 				</button>
 			</div>
 		{/if}
 		<button
 			onclick={logout}
-			class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+			class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
 		>
-			<LogOut size={15} />
+			<LogOut size={14} />
 			Sign out
 		</button>
 	</div>

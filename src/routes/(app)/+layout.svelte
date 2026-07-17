@@ -50,7 +50,7 @@
 	></div>
 {/if}
 
-<div class="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950">
+<div class="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
 	<!-- Sidebar: always visible on desktop, drawer on mobile -->
 	<div
 		class="fixed inset-y-0 left-0 z-50 transition-transform duration-300 lg:relative lg:translate-x-0 lg:z-auto"
@@ -63,21 +63,21 @@
 	<!-- Main area -->
 	<div class="flex flex-1 flex-col min-w-0 overflow-hidden">
 		<!-- Mobile top header -->
-		<header class="flex items-center gap-3 px-4 py-3 shadow-md lg:hidden shrink-0" style="background-color: #00008B;">
+		<header class="flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800 lg:hidden shrink-0">
 			<button
 				onclick={() => drawerOpen = true}
-				class="flex h-9 w-9 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 active:bg-white/20"
+				class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
 			>
-				<Menu size={20} />
+				<Menu size={18} />
 			</button>
 			<div class="flex items-center gap-2">
-				<div class="flex h-7 w-7 items-center justify-center rounded-xl bg-white/20">
-					<Store size={14} class="text-white" />
+				<div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
+					<Store size={13} class="text-white" />
 				</div>
-				<span class="font-bold text-white text-sm">POS System</span>
+				<span class="font-bold text-white text-sm">Maestro POS</span>
 			</div>
 			{#if authStore.user}
-				<div class="ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold" style="color: #00008B;">
+				<div class="ml-auto flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
 					{authStore.user.name.charAt(0).toUpperCase()}
 				</div>
 			{/if}
@@ -89,24 +89,24 @@
 		</main>
 
 		<!-- Mobile bottom navigation -->
-		<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden shadow-lg" style="background-color: #00008B;">
+		<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-slate-900 border-t border-slate-800">
 			<div class="flex">
 				{#each bottomNav as item}
 					{@const active = $page.url.pathname === item.href}
 					<a
 						href={item.href}
 						data-sveltekit-preload-code
-						class="flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors {active ? 'text-white' : 'text-white/50'}"
+						class="flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors {active ? 'text-blue-400' : 'text-slate-500 hover:text-slate-300'}"
 					>
-						<item.icon size={20} />
+						<item.icon size={19} />
 						{item.label}
 					</a>
 				{/each}
 				<button
 					onclick={() => drawerOpen = true}
-					class="flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium text-white/50 hover:text-white"
+					class="flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium text-slate-500 hover:text-slate-300 transition-colors"
 				>
-					<MoreHorizontal size={20} />
+					<MoreHorizontal size={19} />
 					More
 				</button>
 			</div>

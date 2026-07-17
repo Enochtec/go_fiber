@@ -446,67 +446,25 @@
 			<div class="flex items-center gap-2 px-3 py-2">
 				<!-- Shift status -->
 				{#if shiftStore.checked}
-					<div class="relative shrink-0">
+					<div class="flex items-center gap-2 shrink-0">
 						{#if shiftStore.isOpen}
-							<div class="flex items-center gap-2">
-								<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-								<span class="text-xs font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
-								<button
-									onclick={() => showCloseShiftModal = !showCloseShiftModal}
-									class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95 bg-red-500 hover:bg-red-600"
-								>
-									Close
-								</button>
-							</div>
-							{#if showCloseShiftModal}
-								<div class="absolute top-full left-0 mt-2 z-50 w-72 rounded-xl border border-slate-200 bg-white shadow-xl">
-									<div class="p-4 space-y-3">
-										{#if shiftStore.current}
-											<div class="rounded-lg bg-slate-50 p-3 space-y-1.5 text-xs">
-												<div class="flex justify-between"><span class="text-slate-500">Opening Float</span><span class="font-semibold">KES {fmt(shiftStore.current.opening_float)}</span></div>
-												<div class="flex justify-between"><span class="text-slate-500">Cash Sales</span><span class="font-semibold text-emerald-600">+ KES {fmt(shiftStore.current.cash_sales)}</span></div>
-												<div class="flex justify-between border-t border-slate-200 pt-1.5"><span class="text-slate-700 font-semibold">Expected Cash</span><span class="font-bold">KES {fmt(shiftStore.current.opening_float + shiftStore.current.cash_sales)}</span></div>
-											</div>
-											<input type="number" bind:value={closingCash} min="0" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Cash counted…" />
-											{#if closingCash > 0}
-												{@const variance = closingCash - (shiftStore.current.opening_float + shiftStore.current.cash_sales)}
-												<div class="rounded-lg p-2.5 text-center {variance >= 0 ? 'bg-emerald-50' : 'bg-red-50'}">
-													<p class="text-xs font-semibold {variance >= 0 ? 'text-emerald-700' : 'text-red-600'}">{variance >= 0 ? 'Surplus' : 'Shortage'}</p>
-													<p class="text-lg font-bold tabular-nums {variance >= 0 ? 'text-emerald-700' : 'text-red-600'}">KES {fmt(Math.abs(variance))}</p>
-												</div>
-											{/if}
-											<div class="flex gap-2">
-												<button onclick={() => showCloseShiftModal = false} class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-												<button onclick={closeShift} class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700">Close Shift</button>
-											</div>
-										{/if}
-									</div>
-								</div>
-							{/if}
+							<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+							<span class="text-xs font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
+							<button
+								onclick={() => showCloseShiftModal = true}
+								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors active:scale-95"
+							>
+								Close Shift
+							</button>
 						{:else}
-							<div class="flex items-center gap-2">
-								<div class="h-2 w-2 rounded-full bg-amber-400"></div>
-								<span class="text-xs font-semibold text-amber-700 hidden sm:inline">No Shift</span>
-								<button
-									onclick={() => showShiftModal = !showShiftModal}
-									class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all active:scale-95"
-									style="background-color:#00008B;"
-								>
-									Open
-								</button>
-							</div>
-							{#if showShiftModal}
-								<div class="absolute top-full left-0 mt-2 z-50 w-64 rounded-xl border border-slate-200 bg-white shadow-xl">
-									<div class="p-4 space-y-3">
-										<input type="number" bind:value={openingFloat} min="0" step="50" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Opening float (KES)" />
-										<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Notes (optional)" />
-										<div class="flex gap-2">
-											<button onclick={() => showShiftModal = false} class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-											<button onclick={openShift} class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white" style="background-color:#00008B;">Open</button>
-										</div>
-									</div>
-								</div>
-							{/if}
+							<span class="h-2 w-2 rounded-full bg-amber-400 shrink-0"></span>
+							<span class="text-xs font-semibold text-amber-700 hidden sm:inline">No Shift</span>
+							<button
+								onclick={() => showShiftModal = true}
+								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors active:scale-95"
+							>
+								Open Shift
+							</button>
 						{/if}
 					</div>
 				{/if}
@@ -543,7 +501,7 @@
 				>
 					<Clock size={15} />
 					{#if heldSales.length > 0}
-						<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background-color:#00008B;">{heldSales.length}</span>
+						<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center bg-blue-600">{heldSales.length}</span>
 					{/if}
 				</button>
 			</div>
@@ -588,7 +546,7 @@
 								</p>
 							</div>
 							<div class="text-right shrink-0">
-								<p class="text-sm font-bold" style="color:#00008B;">KES {fmt(product.selling_price)}</p>
+								<p class="text-sm font-bold text-blue-600">KES {fmt(product.selling_price)}</p>
 								{#if product.barcode}<p class="text-xs text-slate-400 font-mono">{product.barcode}</p>{/if}
 							</div>
 						</button>
@@ -601,16 +559,16 @@
 		<div class="flex gap-2 px-3 py-2 overflow-x-auto shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 scrollbar-none">
 			<button
 				onclick={() => { selectedCategory = ''; loadProducts(); }}
-				class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
-				style={selectedCategory === '' ? 'background-color:#00008B; color:white;' : 'background-color:#f1f5f9; color:#64748b;'}
+				class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all
+					{selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}"
 			>
 				All
 			</button>
 			{#each categories as cat}
 				<button
 					onclick={() => { selectedCategory = cat.id; loadProducts(); }}
-					class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all"
-					style={selectedCategory === cat.id ? 'background-color:#00008B; color:white;' : 'background-color:#f1f5f9; color:#64748b;'}
+					class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all
+						{selectedCategory === cat.id ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}"
 				>
 					{cat.name}
 				</button>
@@ -640,8 +598,7 @@
 						<button
 							onclick={() => addToCart(product)}
 							disabled={product.stock_qty === 0}
-							class="group relative rounded-2xl border bg-white dark:bg-slate-800 p-3 text-left transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:-translate-y-0.5 flex flex-col"
-							style={product.stock_qty === 0 ? '' : 'border-color:#e2e8f0;'}
+							class="group relative rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-left transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-0.5 flex flex-col"
 						>
 							<!-- Product image -->
 							<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 mb-2.5 flex items-center justify-center">
@@ -665,13 +622,13 @@
 								<p class="text-[10px] text-slate-400 mt-0.5 truncate">{product.category_name}</p>
 							{/if}
 							<div class="flex items-center justify-between mt-2">
-								<p class="text-sm font-bold" style="color:#00008B;">KES {fmt(product.selling_price)}</p>
+								<p class="text-sm font-bold text-blue-600">KES {fmt(product.selling_price)}</p>
 								<span class="text-[10px] text-slate-400">{product.stock_qty} left</span>
 							</div>
 
 							<!-- Add overlay on hover -->
-							<div class="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style="background-color:rgba(0,139,139,0.08);">
-								<div class="rounded-full text-white p-1.5" style="background-color:#00008B;">
+							<div class="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-blue-600/5">
+								<div class="rounded-full bg-blue-600 text-white p-1.5 shadow-lg">
 									<Plus size={14} />
 								</div>
 							</div>
@@ -685,8 +642,7 @@
 	<!-- Mobile FAB -->
 	<button
 		onclick={() => cartOpen = true}
-		class="fixed bottom-24 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 rounded-full px-5 py-3 text-white shadow-xl lg:hidden active:scale-95 transition-all"
-		style="background-color:#00008B; box-shadow:0 10px 25px rgba(0,0,139,0.4);"
+		class="fixed bottom-24 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 rounded-full px-5 py-3 text-white bg-blue-600 shadow-xl shadow-blue-500/30 lg:hidden active:scale-95 transition-all"
 		class:opacity-0={cart.items.length === 0}
 		class:pointer-events-none={cart.items.length === 0}
 	>
@@ -712,7 +668,7 @@
 				<ShoppingCart size={16} class="text-slate-500" />
 				<span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Order</span>
 				{#if cart.count > 0}
-					<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-bold text-white px-1" style="background-color:#00008B;">{cart.count}</span>
+					<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-bold text-white px-1 bg-blue-600">{cart.count}</span>
 				{/if}
 			</div>
 			<div class="flex items-center gap-1">
@@ -831,10 +787,12 @@
 				{#each payments as p}
 					<button
 						onclick={() => paymentMethod = p.id}
-						class="flex flex-col items-center gap-1 rounded-xl border py-2.5 text-[10px] font-semibold transition-all active:scale-95"
-						style={paymentMethod === p.id ? 'background-color:#00008B;border-color:#00008B;color:white;' : 'border-color:#e2e8f0;color:#64748b;'}
+						class="flex flex-col items-center gap-1 rounded-xl border py-2.5 text-[10px] font-semibold transition-all active:scale-95
+							{paymentMethod === p.id
+								? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+								: 'border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300'}"
 					>
-						<svelte:component this={p.icon} size={15} />
+						<p.icon size={15} />
 						{p.label}
 					</button>
 				{/each}
@@ -909,21 +867,27 @@
 			</div>
 
 			<!-- Checkout buttons -->
-			<div class="grid grid-cols-5 gap-2">
-				<button
-					onclick={() => cart.clear()}
-					disabled={cart.items.length === 0}
-					class="col-span-1 rounded-xl border border-red-200 dark:border-red-800 py-3.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 transition-colors"
-				>
-					Clear
-				</button>
+			<div class="space-y-2">
 				<button
 					onclick={completeSale}
 					disabled={cart.items.length === 0 || checkingOut}
-					class="col-span-4 rounded-xl py-3.5 text-sm font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
-					style="background-color:#00008B; box-shadow:0 4px 14px rgba(0,0,139,0.3);"
+					class="w-full rounded-xl py-4 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-50 transition-all active:scale-[0.98]"
 				>
-					{checkingOut ? 'Processing…' : `Charge KES ${fmt(cart.total)}`}
+					{#if checkingOut}
+						<span class="flex items-center justify-center gap-2">
+							<span class="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
+							Processing…
+						</span>
+					{:else}
+						Charge KES {fmt(cart.total)}
+					{/if}
+				</button>
+				<button
+					onclick={() => cart.clear()}
+					disabled={cart.items.length === 0}
+					class="w-full rounded-xl border border-red-200 dark:border-red-800 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 transition-colors"
+				>
+					Clear Cart
 				</button>
 			</div>
 
@@ -958,7 +922,7 @@
 							onclick={() => selectCustomer(c)}
 							class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 text-sm flex items-center gap-3 transition-colors"
 						>
-							<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-xs text-white" style="background-color:#00008B;">
+							<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-xs text-white bg-blue-600">
 								{c.name.charAt(0).toUpperCase()}
 							</div>
 							<div class="min-w-0 flex-1">
@@ -1002,7 +966,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showNewCustomerModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={createNewCustomer} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all active:scale-95" style="background-color:#00008B;">Save</button>
+		<button onclick={createNewCustomer} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95">Save</button>
 	{/snippet}
 </Modal>
 
@@ -1016,7 +980,7 @@
 						<p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{new Date(sale.created_at).toLocaleString()}</p>
 						<p class="text-xs text-slate-400">{sale.items?.length ?? 0} items · KES {fmt(sale.total)}</p>
 					</div>
-					<button onclick={() => resumeSale(sale)} class="rounded-xl px-3 py-1.5 text-xs font-semibold text-white" style="background-color:#00008B;">Resume</button>
+					<button onclick={() => resumeSale(sale)} class="rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Resume</button>
 				</li>
 			{:else}
 				<li class="py-12 text-center text-sm text-slate-400">No held sales</li>
@@ -1041,7 +1005,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showDiscountModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={applyDiscount} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#00008B;">Apply</button>
+		<button onclick={applyDiscount} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Apply</button>
 	{/snippet}
 </Modal>
 
@@ -1052,15 +1016,9 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showNoteModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={applyNote} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style="background-color:#00008B;">Save</button>
+		<button onclick={applyNote} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Save</button>
 	{/snippet}
 </Modal>
-
-<!-- ─── Close dropdown on click outside ────────────── -->
-{#if showShiftModal || showCloseShiftModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events,a11y_no_static_element_interactions -->
-	<div class="fixed inset-0 z-40" onclick={() => { showShiftModal = false; showCloseShiftModal = false; }}></div>
-{/if}
 
 <!-- ─── Receipt overlay ──────────────────────────────────────── -->
 {#if lastSale}
@@ -1069,12 +1027,12 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-5 py-4 shrink-0">
 				<div class="flex items-center gap-2">
-					<div class="h-8 w-8 rounded-full flex items-center justify-center" style="background-color:#00008B20;">
-						<Check size={16} style="color:#00008B;" />
+					<div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+						<Check size={16} class="text-blue-600" />
 					</div>
 					<h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Sale Complete!</h2>
 				</div>
-				<p class="text-sm font-bold tabular-nums" style="color:#00008B;">KES {fmt(lastSale.total)}</p>
+				<p class="text-sm font-bold tabular-nums text-blue-600">KES {fmt(lastSale.total)}</p>
 			</div>
 
 			<!-- Receipt body -->
@@ -1132,13 +1090,80 @@
 				<button onclick={sendWhatsApp} class="flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-colors">
 					<MessageCircle size={14} /> WhatsApp
 				</button>
-				<button onclick={resetAfterSale} class="flex-1 rounded-xl py-2.5 text-sm font-bold text-white transition-all active:scale-95" style="background-color:#00008B;">
+				<button onclick={resetAfterSale} class="flex-1 rounded-xl py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95">
 					New Sale
 				</button>
 			</div>
 		</div>
 	</div>
 {/if}
+
+<!-- ─── Open Shift modal ────────────────────────────────────── -->
+<Modal open={showShiftModal} title="Open Shift" onclose={() => showShiftModal = false} size="sm">
+	{#snippet children()}
+		<div class="space-y-4">
+			<div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4">
+				<p class="text-sm font-semibold text-blue-800 dark:text-blue-200">Starting a new shift</p>
+				<p class="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Enter the opening cash float to begin.</p>
+			</div>
+			<div>
+				<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Opening Float (KES)</label>
+				<input type="number" bind:value={openingFloat} min="0" step="50" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="e.g. 5,000" />
+			</div>
+			<div>
+				<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Notes (optional)</label>
+				<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Shift notes…" />
+			</div>
+		</div>
+	{/snippet}
+	{#snippet footer()}
+		<button onclick={() => showShiftModal = false} class="rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+		<button onclick={openShift} class="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">Open Shift</button>
+	{/snippet}
+</Modal>
+
+<!-- ─── Close Shift modal ─────────────────────────────────────── -->
+<Modal open={showCloseShiftModal} title="Close Shift" onclose={() => showCloseShiftModal = false} size="sm">
+	{#snippet children()}
+		<div class="space-y-4">
+			{#if shiftStore.current}
+				<div class="rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 p-4 space-y-2.5 text-sm">
+					<div class="flex justify-between text-slate-500 dark:text-slate-400">
+						<span>Opening Float</span>
+						<span class="font-semibold tabular-nums text-slate-800 dark:text-slate-200">KES {fmt(shiftStore.current.opening_float)}</span>
+					</div>
+					<div class="flex justify-between text-emerald-600 dark:text-emerald-400">
+						<span>Cash Sales</span>
+						<span class="font-semibold tabular-nums">+ KES {fmt(shiftStore.current.cash_sales)}</span>
+					</div>
+					<div class="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-2.5 font-bold text-slate-800 dark:text-slate-200">
+						<span>Expected Cash</span>
+						<span class="tabular-nums">KES {fmt(shiftStore.current.opening_float + shiftStore.current.cash_sales)}</span>
+					</div>
+				</div>
+				<div>
+					<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cash Counted (KES)</label>
+					<input type="number" bind:value={closingCash} min="0" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Enter actual cash in drawer…" />
+				</div>
+				{#if closingCash > 0}
+					{@const variance = closingCash - (shiftStore.current.opening_float + shiftStore.current.cash_sales)}
+					<div class="rounded-lg p-4 text-center border {variance >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}">
+						<p class="text-xs font-semibold uppercase tracking-wide {variance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600'}">{variance >= 0 ? 'Cash Surplus' : 'Cash Shortage'}</p>
+						<p class="text-3xl font-bold tabular-nums mt-1 {variance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700'}">KES {fmt(Math.abs(variance))}</p>
+					</div>
+				{/if}
+				<div>
+					<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Closing Notes (optional)</label>
+					<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Notes…" />
+				</div>
+			{/if}
+		</div>
+	{/snippet}
+	{#snippet footer()}
+		<button onclick={() => showCloseShiftModal = false} class="rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+		<button onclick={closeShift} class="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">Close Shift</button>
+	{/snippet}
+</Modal>
 
 <style>
 	.scrollbar-none { scrollbar-width: none; }

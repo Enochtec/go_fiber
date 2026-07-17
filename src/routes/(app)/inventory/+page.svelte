@@ -165,7 +165,7 @@
 				<p class="text-2xl font-bold tabular-nums relative">KES {fmt(totalRetailValue)}</p>
 				<p class="text-xs text-white/70 mt-1 relative">across {totalProducts} products</p>
 			</div>
-			<div class="relative overflow-hidden rounded-2xl p-4 shadow-sm text-white" style="background:linear-gradient(135deg,#0ea5e9,#2563eb);">
+			<div class="relative overflow-hidden rounded-2xl p-4 shadow-sm text-white" style="background:linear-gradient(135deg,#0fa0a0,#008B8B);">
 				<div class="absolute -top-3 -right-3 h-16 w-16 rounded-full bg-white/10"></div>
 				<div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-white/5"></div>
 				<div class="flex items-center justify-between mb-2 relative">

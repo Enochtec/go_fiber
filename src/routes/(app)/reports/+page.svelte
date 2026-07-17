@@ -44,83 +44,75 @@
 	});
 </script>
 
-<svelte:head><title>Reports — POS</title></svelte:head>
+<svelte:head><title>Reports — Maestro POS</title></svelte:head>
 
-<div class="p-4 md:p-6 space-y-6">
-	<div class="flex items-center justify-between">
+<div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
+
+	<!-- Header -->
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 		<div>
-			<h1 class="text-xl font-bold text-slate-900">Reports</h1>
-			<p class="text-sm text-slate-500 mt-0.5">Business performance overview</p>
+			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Reports</h1>
+			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Business performance overview</p>
 		</div>
 	</div>
 
-	<div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
-		{#each [['sales', 'Daily Sales'], ['products', 'Top Products'], ['inventory', 'Inventory Value']] as [tab, label]}
+	<!-- Tabs -->
+	<div class="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-fit">
+		{#each [['sales', 'Daily Sales'], ['products', 'Top Products'], ['inventory', 'Inventory']] as [tab, label]}
 			<button
 				onclick={() => activeTab = tab as typeof activeTab}
-				class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-				class:bg-white={activeTab === tab}
-				class:text-slate-900={activeTab === tab}
-				class:shadow-sm={activeTab === tab}
-				class:text-slate-500={activeTab !== tab}
-				class:hover:text-slate-700={activeTab !== tab}
-			>
-				{label}
-			</button>
+				class="px-4 py-1.5 text-xs font-semibold rounded-md transition-all
+					{activeTab === tab
+						? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+						: 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}"
+			>{label}</button>
 		{/each}
 	</div>
 
 	{#if loading}
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-			{#each Array(2) as _}
-				<div class="rounded-2xl bg-slate-200 h-72 animate-pulse"></div>
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+			{#each Array(3) as _}
+				<div class="rounded-xl bg-slate-200 dark:bg-slate-700 h-20 animate-pulse"></div>
 			{/each}
 		</div>
+		<div class="rounded-xl bg-slate-200 dark:bg-slate-700 h-64 animate-pulse"></div>
+
 	{:else if activeTab === 'sales'}
-		<div class="grid grid-cols-3 gap-4">
-			<div class="relative overflow-hidden rounded-2xl p-5 shadow-sm text-white" style="background:linear-gradient(135deg,#0ea5e9,#2563eb);">
-				<div class="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
-				<div class="flex items-center gap-3 mb-3 relative">
-					<div class="rounded-xl bg-white/20 p-2.5"><DollarSign size={16} class="text-white" /></div>
-					<p class="text-sm font-medium text-white/80">30-Day Revenue</p>
+		<!-- KPI row -->
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+			{#each [
+				{ label: '30-Day Revenue', value: fmt(totalRevenue),                              icon: DollarSign, accent: 'text-blue-600' },
+				{ label: '30-Day Orders',  value: String(totalOrders),                            icon: BarChart2,  accent: 'text-violet-600' },
+				{ label: 'Avg. Order',     value: fmt(totalOrders > 0 ? totalRevenue/totalOrders : 0), icon: TrendingUp, accent: 'text-emerald-600' },
+			] as kpi}
+				<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4">
+					<kpi.icon size={20} class="{kpi.accent} shrink-0" />
+					<div>
+						<p class="text-xs text-slate-500 dark:text-slate-400">{kpi.label}</p>
+						<p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">{kpi.value}</p>
+					</div>
 				</div>
-				<p class="text-2xl font-bold relative">{fmt(totalRevenue)}</p>
-			</div>
-			<div class="relative overflow-hidden rounded-2xl p-5 shadow-sm text-white" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">
-				<div class="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
-				<div class="flex items-center gap-3 mb-3 relative">
-					<div class="rounded-xl bg-white/20 p-2.5"><BarChart2 size={16} class="text-white" /></div>
-					<p class="text-sm font-medium text-white/80">30-Day Orders</p>
-				</div>
-				<p class="text-2xl font-bold relative">{totalOrders}</p>
-			</div>
-			<div class="relative overflow-hidden rounded-2xl p-5 shadow-sm text-white" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
-				<div class="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
-				<div class="flex items-center gap-3 mb-3 relative">
-					<div class="rounded-xl bg-white/20 p-2.5"><TrendingUp size={16} class="text-white" /></div>
-					<p class="text-sm font-medium text-white/80">Avg. Order Value</p>
-				</div>
-				<p class="text-2xl font-bold relative">{fmt(totalOrders > 0 ? totalRevenue / totalOrders : 0)}</p>
-			</div>
+			{/each}
 		</div>
 
-		<div class="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-			<h2 class="text-sm font-semibold text-slate-800 mb-4">Daily Sales — Last 30 Days</h2>
+		<!-- Bar chart -->
+		<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+			<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-5">Daily Sales — Last 30 Days</h2>
 			{#if dailySales.length === 0}
 				<p class="text-sm text-slate-400 py-12 text-center">No sales data</p>
 			{:else}
-				<div class="flex items-end gap-1.5 h-32">
+				<div class="flex items-end gap-1 h-36 overflow-x-auto">
 					{#each dailySales as row}
-						<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-							<p class="text-[10px] font-medium text-blue-600 leading-none mb-0.5">{fmt(row.total)}</p>
-							<div
-								class="w-full rounded-t-md bg-blue-500 hover:bg-blue-600 transition-colors"
-								style="height: {(row.total / MAX_SALES) * MAX_BAR_HEIGHT}px; min-height: 3px"
-							></div>
-							<p class="text-[10px] text-slate-400 mt-1 leading-none">{fmtDate(row.date)}</p>
+						<div class="group flex-1 min-w-[10px] flex flex-col items-center gap-1 h-full justify-end">
+							<div class="relative w-full">
+								<div class="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+									{fmt(row.total)}
+								</div>
+								<div class="w-full rounded-t bg-blue-600 hover:bg-blue-700 transition-colors"
+									style="height:{Math.max((row.total/MAX_SALES)*MAX_BAR_HEIGHT, 2)}px;"
+								></div>
+							</div>
+							<p class="text-[8px] text-slate-400 leading-none whitespace-nowrap">{fmtDate(row.date)}</p>
 						</div>
 					{/each}
 				</div>
@@ -128,70 +120,75 @@
 		</div>
 
 	{:else if activeTab === 'products'}
-		<div class="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
-			<div class="px-5 py-4 border-b border-slate-100">
-				<h2 class="text-sm font-semibold text-slate-800">Top Products — 30 Days</h2>
+		<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
+				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
 			</div>
-			<table class="w-full text-sm">
-				<thead>
-					<tr class="text-left">
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider">#</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider">Product</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider text-right">Qty Sold</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider text-right">Revenue</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-slate-50">
-					{#if topProducts.length === 0}
-						<tr><td colspan="4" class="px-5 py-16 text-center text-slate-400">No data</td></tr>
-					{:else}
-						{#each topProducts as p, i}
-							<tr class="hover:bg-slate-50 transition-colors">
-								<td class="px-5 py-3.5 text-slate-400 font-medium">{i + 1}</td>
-								<td class="px-5 py-3.5 font-medium text-slate-900">{p.product_name}</td>
-								<td class="px-5 py-3.5 text-right text-slate-600">{p.quantity}</td>
-								<td class="px-5 py-3.5 text-right font-semibold text-slate-900">{fmt(p.revenue)}</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+							<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">#</th>
+							<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Product</th>
+							<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Units Sold</th>
+							<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Revenue</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+						{#if topProducts.length === 0}
+							<tr><td colspan="4" class="px-5 py-16 text-center text-slate-400 dark:text-slate-500">No data yet</td></tr>
+						{:else}
+							{#each topProducts as p, i}
+								<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+									<td class="px-5 py-3 text-xs font-bold text-slate-300 dark:text-slate-600 tabular-nums">{i+1}</td>
+									<td class="px-5 py-3 font-medium text-slate-900 dark:text-slate-100">{p.product_name}</td>
+									<td class="px-5 py-3 text-right text-slate-500 dark:text-slate-400 tabular-nums">{p.quantity_sold}</td>
+									<td class="px-5 py-3 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">{fmt(p.revenue)}</td>
+								</tr>
+							{/each}
+						{/if}
+					</tbody>
+				</table>
+			</div>
 		</div>
 
 	{:else}
-		<div class="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
-			<div class="px-5 py-4 border-b border-slate-100">
-				<h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
-					<Package size={15} class="text-slate-400" />
-					Inventory Value by Category
-				</h2>
+		<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
+				<Package size={14} class="text-slate-400" />
+				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Inventory Value by Category</h2>
 			</div>
-			<table class="w-full text-sm">
-				<thead>
-					<tr class="text-left">
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider">Category</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider text-right">Products</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider text-right">Cost Value</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider text-right">Retail Value</th>
-						<th class="px-5 py-3 font-medium text-slate-400 text-xs uppercase tracking-wider text-right">Profit</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-slate-50">
-					{#if inventoryValue.length === 0}
-						<tr><td colspan="5" class="px-5 py-16 text-center text-slate-400">No data</td></tr>
-					{:else}
-						{#each inventoryValue as row}
-							<tr class="hover:bg-slate-50 transition-colors">
-								<td class="px-5 py-3.5 font-medium text-slate-900">{row.category_name}</td>
-								<td class="px-5 py-3.5 text-right text-slate-500">{row.product_count}</td>
-								<td class="px-5 py-3.5 text-right text-slate-600">{fmt(row.total_cost)}</td>
-								<td class="px-5 py-3.5 text-right font-semibold text-slate-900">{fmt(row.total_value)}</td>
-								<td class="px-5 py-3.5 text-right font-medium text-emerald-600">{fmt(row.total_value - row.total_cost)}</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+							{#each ['Category', 'Products', 'Cost Value', 'Retail Value', 'Gross Profit'] as h, i}
+								<th class="px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide {i > 0 ? 'text-right' : 'text-left'}">{h}</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+						{#if inventoryValue.length === 0}
+							<tr><td colspan="5" class="px-5 py-16 text-center text-slate-400 dark:text-slate-500">No data</td></tr>
+						{:else}
+							{#each inventoryValue as row}
+								{@const profit = row.total_value - row.total_cost}
+								{@const margin = row.total_value > 0 ? (profit / row.total_value * 100) : 0}
+								<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+									<td class="px-5 py-3 font-medium text-slate-900 dark:text-slate-100">{row.category_name}</td>
+									<td class="px-5 py-3 text-right text-slate-500 dark:text-slate-400 tabular-nums">{row.product_count}</td>
+									<td class="px-5 py-3 text-right text-slate-500 dark:text-slate-400 tabular-nums">{fmt(row.total_cost)}</td>
+									<td class="px-5 py-3 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">{fmt(row.total_value)}</td>
+									<td class="px-5 py-3 text-right">
+										<span class="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{fmt(profit)}</span>
+										<span class="text-[10px] text-slate-400 ml-1">({margin.toFixed(1)}%)</span>
+									</td>
+								</tr>
+							{/each}
+						{/if}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	{/if}
 </div>

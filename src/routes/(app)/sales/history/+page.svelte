@@ -72,24 +72,32 @@
 	}
 
 	const statusColors: Record<string, string> = {
-		completed: 'bg-green-50 text-green-700',
-		held: 'bg-yellow-50 text-yellow-700',
-		voided: 'bg-red-50 text-red-700'
+		completed: 'badge-green',
+		held:      'badge-amber',
+		voided:    'badge-red'
 	};
 
 	onMount(fetch);
 </script>
 
-<svelte:head><title>Sales History — POS</title></svelte:head>
+<svelte:head><title>Sales History — Maestro POS</title></svelte:head>
 
-<div class="p-6 space-y-5">
-	<h1 class="text-xl font-semibold text-gray-900">Sales History</h1>
+<div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+		<div>
+			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Sales History</h1>
+			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+				{total} transaction{total !== 1 ? 's' : ''} found
+			</p>
+		</div>
+	</div>
 
-	<div class="flex gap-3 flex-wrap">
+	<!-- Filters -->
+	<div class="flex gap-2 flex-wrap">
 		<select
 			bind:value={statusFilter}
 			onchange={() => { page = 1; fetch(); }}
-			class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+			class="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
 		>
 			<option value="">All Status</option>
 			<option value="completed">Completed</option>
@@ -100,66 +108,66 @@
 			type="date"
 			bind:value={dateFrom}
 			onchange={() => { page = 1; fetch(); }}
-			class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+			class="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
 		/>
 		<input
 			type="date"
 			bind:value={dateTo}
 			onchange={() => { page = 1; fetch(); }}
-			class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+			class="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
 		/>
 	</div>
 
-		<div class="rounded-xl shadow-sm bg-white overflow-hidden">
+	<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
-					<tr class="bg-slate-50">
-					<th class="px-4 py-3 font-medium text-gray-600">Date</th>
-					<th class="px-4 py-3 font-medium text-gray-600">Cashier</th>
-					<th class="px-4 py-3 font-medium text-gray-600">Customer</th>
-					<th class="px-4 py-3 font-medium text-gray-600">Payment</th>
-					<th class="px-4 py-3 font-medium text-gray-600">Status</th>
-					<th class="px-4 py-3 font-medium text-gray-600 text-right">Total</th>
-					<th class="px-4 py-3 font-medium text-gray-600 text-right">Actions</th>
-				</tr>
-			</thead>
-			<tbody class="divide-y divide-slate-100">
-				{#if loading}
-					{#each Array(8) as _}
-						<tr>{#each Array(7) as _}<td class="px-4 py-3"><div class="h-4 bg-gray-100 rounded animate-pulse"></div></td>{/each}</tr>
-					{/each}
-				{:else if sales.length === 0}
-					<tr><td colspan="7" class="px-4 py-12 text-center text-gray-400">No sales found</td></tr>
-				{:else}
-					{#each sales as s}
-						<tr class="hover:bg-gray-50">
-							<td class="px-4 py-3 text-gray-600">{fmtDate(s.created_at)}</td>
-							<td class="px-4 py-3 text-gray-700">{s.cashier_name ?? '—'}</td>
-							<td class="px-4 py-3 text-gray-500">{s.customer_name ?? 'Walk-in'}</td>
-							<td class="px-4 py-3 text-gray-500 capitalize">{s.payment_method}</td>
-							<td class="px-4 py-3">
-								<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {statusColors[s.status] ?? ''}">
-									{s.status}
-								</span>
-							</td>
-							<td class="px-4 py-3 text-right font-semibold text-gray-900">KES {fmt(s.total)}</td>
-							<td class="px-4 py-3 text-right">
-								<div class="flex items-center justify-end gap-1">
-									<button onclick={() => viewDetail(s)} class="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600">
-										<Eye size={14} />
-									</button>
-									{#if s.status !== 'voided'}
-										<button onclick={() => voidSale(s.id)} class="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50">
-											Void
+					<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide whitespace-nowrap">Date</th>
+						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden sm:table-cell">Cashier</th>
+						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">Customer</th>
+						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden lg:table-cell">Payment</th>
+						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
+						<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total</th>
+						<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Actions</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+					{#if loading}
+						{#each Array(8) as _}
+							<tr>{#each Array(7) as _}<td class="px-5 py-3"><div class="h-3.5 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"></div></td>{/each}</tr>
+						{/each}
+					{:else if sales.length === 0}
+						<tr><td colspan="7" class="px-5 py-12 text-center text-sm text-slate-400 dark:text-slate-500">No sales found for the selected filters</td></tr>
+					{:else}
+						{#each sales as s}
+							<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+								<td class="px-5 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmtDate(s.created_at)}</td>
+								<td class="px-5 py-3 text-slate-700 dark:text-slate-200 hidden sm:table-cell">{s.cashier_name ?? '—'}</td>
+								<td class="px-5 py-3 text-slate-500 dark:text-slate-400 hidden md:table-cell">{s.customer_name ?? 'Walk-in'}</td>
+								<td class="px-5 py-3 text-slate-500 dark:text-slate-400 capitalize hidden lg:table-cell">{s.payment_method}</td>
+								<td class="px-5 py-3">
+									<span class="badge {statusColors[s.status] ?? 'badge-slate'} capitalize">{s.status}</span>
+								</td>
+								<td class="px-5 py-3 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(s.total)}</td>
+								<td class="px-5 py-3 text-right">
+									<div class="flex items-center justify-end gap-1">
+										<button onclick={() => viewDetail(s)} class="h-7 w-7 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 transition-colors">
+											<Eye size={13} />
 										</button>
-									{/if}
-								</div>
-							</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
+										{#if s.status !== 'voided'}
+											<button onclick={() => voidSale(s.id)} class="rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+												Void
+											</button>
+										{/if}
+									</div>
+								</td>
+							</tr>
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		</div>
 	</div>
 
 	<Pagination {page} {total} {limit} onchange={(p) => { page = p; fetch(); }} />
@@ -169,47 +177,55 @@
 	{#snippet children()}
 		{#if selectedSale}
 			<div class="space-y-4">
-				<div class="grid grid-cols-2 gap-3 text-sm">
-					<div><span class="text-gray-500">Date:</span> <span class="font-medium">{fmtDate(selectedSale.created_at)}</span></div>
-					<div><span class="text-gray-500">Status:</span> <span class="font-medium capitalize">{selectedSale.status}</span></div>
-					<div><span class="text-gray-500">Cashier:</span> <span class="font-medium">{selectedSale.cashier_name ?? '—'}</span></div>
-					<div><span class="text-gray-500">Customer:</span> <span class="font-medium">{selectedSale.customer_name ?? 'Walk-in'}</span></div>
-					<div><span class="text-gray-500">Payment:</span> <span class="font-medium capitalize">{selectedSale.payment_method}</span></div>
+				<!-- Meta grid -->
+				<div class="grid grid-cols-2 gap-2 rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 text-xs">
+					{#each [
+						['Date',     fmtDate(selectedSale.created_at)],
+						['Status',   selectedSale.status],
+						['Cashier',  selectedSale.cashier_name ?? '—'],
+						['Customer', selectedSale.customer_name ?? 'Walk-in'],
+						['Payment',  selectedSale.payment_method],
+					] as [label, value]}
+						<div>
+							<p class="text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-0.5">{label}</p>
+							<p class="font-semibold text-slate-800 dark:text-slate-200 capitalize">{value}</p>
+						</div>
+					{/each}
 				</div>
 
 				{#if selectedSale.items && selectedSale.items.length > 0}
 					<table class="w-full text-sm">
 						<thead>
-							<tr class="border-b text-left text-gray-500">
-								<th class="pb-2 font-medium">Item</th>
-								<th class="pb-2 font-medium text-right">Qty</th>
-								<th class="pb-2 font-medium text-right">Price</th>
-								<th class="pb-2 font-medium text-right">Total</th>
+							<tr class="border-b border-slate-100 dark:border-slate-700 text-left">
+								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Item</th>
+								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Qty</th>
+								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Price</th>
+								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Total</th>
 							</tr>
 						</thead>
-						<tbody class="divide-y divide-slate-100">
+						<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
 							{#each selectedSale.items as item}
 								<tr>
-									<td class="py-2 text-gray-800">{item.product_name ?? '—'}</td>
-									<td class="py-2 text-right text-gray-600">{item.quantity}</td>
-									<td class="py-2 text-right text-gray-600">KES {fmt(item.unit_price)}</td>
-									<td class="py-2 text-right font-medium">KES {fmt(item.total)}</td>
+									<td class="py-2 text-slate-800 dark:text-slate-200">{item.product_name ?? '—'}</td>
+									<td class="py-2 text-right text-slate-500 dark:text-slate-400 tabular-nums">{item.quantity}</td>
+									<td class="py-2 text-right text-slate-500 dark:text-slate-400 tabular-nums">KES {fmt(item.unit_price)}</td>
+									<td class="py-2 text-right font-semibold text-slate-800 dark:text-slate-200 tabular-nums">KES {fmt(item.total)}</td>
 								</tr>
 							{/each}
 						</tbody>
 					</table>
 				{/if}
 
-				<div class="border-t pt-3 space-y-1.5 text-sm">
-					<div class="flex justify-between text-gray-600"><span>Subtotal</span><span>KES {fmt(selectedSale.subtotal)}</span></div>
+				<div class="border-t border-slate-100 dark:border-slate-700 pt-3 space-y-1.5 text-sm">
+					<div class="flex justify-between text-slate-500 dark:text-slate-400"><span>Subtotal</span><span class="tabular-nums">KES {fmt(selectedSale.subtotal)}</span></div>
 					{#if selectedSale.discount > 0}
-						<div class="flex justify-between text-green-600"><span>Discount</span><span>-KES {fmt(selectedSale.discount)}</span></div>
+						<div class="flex justify-between text-emerald-600 dark:text-emerald-400"><span>Discount</span><span class="tabular-nums">−KES {fmt(selectedSale.discount)}</span></div>
 					{/if}
 					{#if selectedSale.tax > 0}
-						<div class="flex justify-between text-gray-600"><span>Tax</span><span>KES {fmt(selectedSale.tax)}</span></div>
+						<div class="flex justify-between text-slate-500 dark:text-slate-400"><span>Tax</span><span class="tabular-nums">KES {fmt(selectedSale.tax)}</span></div>
 					{/if}
-					<div class="flex justify-between font-bold text-gray-900 text-base border-t pt-2">
-						<span>Total</span><span>KES {fmt(selectedSale.total)}</span>
+					<div class="flex justify-between font-bold text-slate-900 dark:text-slate-100 text-base border-t border-slate-100 dark:border-slate-700 pt-2">
+						<span>Total</span><span class="tabular-nums">KES {fmt(selectedSale.total)}</span>
 					</div>
 				</div>
 			</div>
