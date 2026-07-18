@@ -3,18 +3,22 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { shiftStore } from '$lib/stores/shift.svelte';
 	import { notify } from '$lib/stores/notification.svelte';
+	import { invalidation } from '$lib/stores/invalidation.svelte';
 	import { productsService } from '$lib/services/products';
 	import { customersService } from '$lib/services/customers';
 	import { salesService } from '$lib/services/sales';
 	import Modal from '$lib/components/Modal.svelte';
 	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
+	import Calculator from '$lib/components/Calculator.svelte';
+	import Receipt from '$lib/components/Receipt.svelte';
 	import type { Product, Customer, Sale } from '$lib/types';
 	import {
 		Search, ShoppingCart, Plus, Minus, Trash2, User,
 		Clock, Printer, X, Banknote, Smartphone, Package,
-		Landmark, CreditCard, Receipt, ChevronDown, PlusCircle,
+		ReceiptIcon, ChevronDown, PlusCircle,
 		Percent, FileText, Tag, AlertTriangle, Check,
-		MessageCircle, ArrowLeft, Hash, Scan
+		ArrowLeft, Hash, Scan, Phone,
+		Calculator as CalculatorIcon, Play, StopCircle, LogOut
 	} from '@lucide/svelte';
 
 	// ─── State ───────────────────────────────────────────────────────
@@ -30,7 +34,7 @@
 	let selectedIndex = $state(-1);
 	let showSearchDropdown = $state(false);
 
-	let paymentMethod = $state<'cash' | 'mpesa' | 'bank' | 'card' | 'credit'>('cash');
+	let paymentMethod = $state<'cash' | 'mpesa'>('cash');
 	let amountTendered = $state(0);
 	let checkingOut = $state(false);
 	let productsLoading = $state(false);
@@ -44,6 +48,7 @@
 	let showShiftModal = $state(false);
 	let showCloseShiftModal = $state(false);
 	let showScanner = $state(false);
+	let showCalculator = $state(false);
 
 	let customerSearch = $state('');
 	let discountInput = $state(0);
@@ -60,7 +65,7 @@
 	let lastSale: Sale | null = $state(null);
 	let lastAmountTendered = $state(0);
 	let lastChange = $state(0);
-	let whatsappNumber = $state('');
+	let pointsPhone = $state('');
 	let clockStr = $state('');
 
 	let searchInput: HTMLInputElement;
@@ -87,9 +92,6 @@
 	const payments = [
 		{ id: 'cash' as const, label: 'Cash', icon: Banknote },
 		{ id: 'mpesa' as const, label: 'M-Pesa', icon: Smartphone },
-		{ id: 'card' as const, label: 'Card', icon: CreditCard },
-		{ id: 'bank' as const, label: 'Bank', icon: Landmark },
-		{ id: 'credit' as const, label: 'Credit', icon: Receipt },
 	];
 
 	// ─── Formatters ─────────────────────────────────────────────────
@@ -237,7 +239,7 @@
 
 	function selectCustomer(c: Customer) {
 		cart.setCustomer(c.id, c.name);
-		if (c.phone && !whatsappNumber) whatsappNumber = c.phone;
+		if (c.phone && !pointsPhone) pointsPhone = c.phone;
 		showCustomerModal = false;
 	}
 
@@ -250,7 +252,7 @@
 				name: newCustomerName, phone: newCustomerPhone, email: newCustomerEmail, address: ''
 			});
 			if (res.data) {
-				if (newCustomerPhone) whatsappNumber = newCustomerPhone;
+				if (newCustomerPhone) pointsPhone = newCustomerPhone;
 				selectCustomer(res.data);
 				showNewCustomerModal = false;
 				newCustomerName = ''; newCustomerPhone = ''; newCustomerEmail = '';
@@ -348,31 +350,10 @@
 		cart.clear();
 		amountTendered = 0;
 		paymentMethod = 'cash';
-		whatsappNumber = '';
+		pointsPhone = '';
 		lastSale = null;
 		loadProducts();
 		searchInput?.focus();
-	}
-
-	function printReceipt() { window.print(); }
-
-	function formatPhone(num: string) {
-		const d = num.replace(/\D/g, '');
-		if (d.startsWith('0')) return '254' + d.slice(1);
-		if (d.startsWith('254')) return d;
-		if (d.startsWith('+')) return d.slice(1);
-		return d;
-	}
-
-	function sendWhatsApp() {
-		if (!lastSale) return;
-		const num = whatsappNumber.trim();
-		if (!num) { notify.error('Enter a phone number for WhatsApp'); return; }
-		const items = (lastSale.items ?? []).map(i =>
-			`• ${i.product_name ?? 'Item'} x${i.quantity} = KES ${fmt(i.total)}`
-		).join('\n');
-		const msg = `*POS Receipt*\nReceipt: #${lastSale.id.slice(0, 8).toUpperCase()}\nDate: ${new Date(lastSale.created_at).toLocaleString()}\n\n${items}\n\nSubtotal: KES ${fmt(lastSale.subtotal)}\nTotal: *KES ${fmt(lastSale.total)}*\nPayment: ${lastSale.payment_method}\n\nThank you for your purchase! 🙏`;
-		window.open(`https://wa.me/${formatPhone(num)}?text=${encodeURIComponent(msg)}`, '_blank');
 	}
 
 	// ─── Shift ──────────────────────────────────────────────────────
@@ -403,7 +384,7 @@
 
 	// ─── Keyboard ───────────────────────────────────────────────────
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') { showShiftModal = false; showCloseShiftModal = false; }
+		if (e.key === 'Escape') { showShiftModal = false; showCloseShiftModal = false; showCalculator = false; }
 		if (lastSale !== null || showCustomerModal || showHeldModal || showDiscountModal || showNoteModal || showNewCustomerModal) return;
 		if (e.key === 'F2') { e.preventDefault(); searchInput?.focus(); }
 		if (e.key === 'F4') { e.preventDefault(); openCustomerModal(); }
@@ -415,6 +396,11 @@
 		if (!showCustomerModal && !showHeldModal && lastSale === null && !showDiscountModal && !showNoteModal && !showNewCustomerModal) {
 			searchInput?.focus();
 		}
+	});
+
+	$effect(() => {
+		invalidation.productVersion;
+		if (document.visibilityState === 'visible') loadProducts();
 	});
 
 	onMount(async () => {
@@ -431,8 +417,8 @@
 <svelte:head><title>Checkout — POS</title></svelte:head>
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- ─── Main layout ───────────────────────────────────────────────── -->
-<div class="flex h-full overflow-hidden bg-slate-100">
+	<div class="flex h-full overflow-hidden bg-slate-100">
+
 
 	<!-- Mobile cart overlay -->
 	{#if cartOpen}
@@ -443,42 +429,53 @@
 	<div class="flex flex-1 flex-col overflow-hidden min-w-0">
 
 		<!-- Unified header -->
-		<div class="sticky top-0 z-30 shrink-0 bg-white border-b border-slate-200 shadow-sm">
+		<div class="sticky top-0 z-30 shrink-0 bg-white shadow-sm">
 			<!-- Top row: shift status + clock + search + actions -->
 			<div class="flex items-center gap-2 px-3 py-2">
 				<!-- Shift status -->
 				{#if shiftStore.checked}
 					<div class="flex items-center gap-2 shrink-0">
 						{#if shiftStore.isOpen}
-							<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-							<span class="text-xs font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
+							<span class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+							<span class="text-sm sm:text-base font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
 							<button
 								onclick={() => showCloseShiftModal = true}
-								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors active:scale-95"
+								class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm sm:text-base font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors active:scale-95"
 							>
-								Close Shift
+								<StopCircle size={16} />
+								<span class="hidden xs:inline">Close Shift</span>
 							</button>
 						{:else}
-							<span class="h-2 w-2 rounded-full bg-amber-400 shrink-0"></span>
-							<span class="text-xs font-semibold text-amber-700 hidden sm:inline">No Shift</span>
+							<span class="h-3 w-3 rounded-full bg-amber-400 shrink-0"></span>
+							<span class="text-sm sm:text-base font-semibold text-amber-700 hidden sm:inline">No Shift</span>
 							<button
 								onclick={() => showShiftModal = true}
-								class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors active:scale-95"
+								class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm sm:text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors active:scale-95"
 							>
-								Open Shift
+								<Play size={16} />
+								<span class="hidden xs:inline">Open Shift</span>
 							</button>
 						{/if}
 					</div>
 				{/if}
 
 				<!-- Digital clock -->
-				<div class="hidden md:flex items-center gap-1.5 text-xs text-slate-500 font-mono ml-1 shrink-0" aria-live="polite">
+				<div class="hidden md:flex items-center gap-1.5 text-sm text-slate-500 font-mono ml-1 shrink-0" aria-live="polite">
 					<span id="clock-display">{clockStr}</span>
 				</div>
 
+				<!-- Calculator -->
+				<button
+					onclick={() => showCalculator = true}
+					class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 shrink-0 transition-colors"
+					title="Calculator"
+				>
+					<CalculatorIcon size={17} />
+				</button>
+
 				<!-- Search -->
 				<div class="relative flex-1 min-w-0">
-					<Search size={14} class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+					<Search size={16} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 					<input
 						bind:this={searchInput}
 						bind:value={search}
@@ -486,7 +483,7 @@
 						onkeydown={handleSearchKeydown}
 						onfocus={() => { if (search) showSearchDropdown = true; }}
 						placeholder="Search product… (F2)"
-						class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm focus:outline-none focus:border-slate-300 focus:bg-white transition-colors"
+						class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3.5 text-base sm:text-sm focus:outline-none focus:border-slate-300 focus:bg-white transition-colors"
 					/>
 					{#if search}
 						<button onclick={closeSearch} class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -498,16 +495,16 @@
 				<!-- Scan barcode -->
 				<button
 					onclick={() => showScanner = true}
-					class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 shrink-0 transition-colors"
+					class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 shrink-0 transition-colors"
 					title="Scan Barcode"
 				>
-					<Scan size={15} />
+					<Scan size={17} />
 				</button>
 
 				<!-- Held sales -->
 				<button
 					onclick={async () => { await fetchHeld(); showHeldModal = true; }}
-					class="relative flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shrink-0"
+					class="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shrink-0"
 					title="Held Sales"
 				>
 					<Clock size={15} />
@@ -518,7 +515,7 @@
 			</div>
 			<!-- Mobile clock row -->
 			<div class="md:hidden flex items-center justify-center px-3 pb-1.5">
-				<span class="text-[10px] text-slate-400 font-mono">{clockStr}</span>
+				<span class="text-xs sm:text-sm text-slate-400 font-mono">{clockStr}</span>
 			</div>
 		</div>
 
@@ -567,7 +564,7 @@
 		{/if}
 
 		<!-- Category pills -->
-		<div class="flex gap-2 px-3 py-2 overflow-x-auto shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 scrollbar-none">
+		<div class="flex gap-2 px-3 py-2 overflow-x-auto shrink-0 bg-white dark:bg-slate-900 scrollbar-none">
 			<button
 				onclick={() => { selectedCategory = ''; loadProducts(); }}
 				class="inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all
@@ -663,7 +660,7 @@
 
 	<!-- ── RIGHT: Cart + Payment Panel ───────────────────────────── -->
 	<div
-		class="flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 transition-transform duration-300
+		class="flex flex-col bg-white dark:bg-slate-900 transition-transform duration-300
 			fixed inset-x-0 bottom-0 z-30 max-h-[92vh] rounded-t-3xl shadow-2xl
 			lg:relative lg:inset-auto lg:z-auto lg:max-h-full lg:w-[400px] lg:shrink-0 lg:rounded-none lg:shadow-none lg:translate-y-0
 			{cartOpen ? 'translate-y-0' : 'translate-y-full'}"
@@ -674,7 +671,7 @@
 		</div>
 
 		<!-- Cart header -->
-		<div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 shrink-0">
+		<div class="flex items-center justify-between px-4 py-2.5 shrink-0">
 			<div class="flex items-center gap-2">
 				<ShoppingCart size={16} class="text-slate-500" />
 				<span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Order</span>
@@ -762,7 +759,7 @@
 		</div>
 
 		<!-- Totals -->
-		<div class="border-t border-slate-100 dark:border-slate-700 px-4 py-3 space-y-1.5 text-sm bg-slate-50 dark:bg-slate-900/60 shrink-0">
+		<div class="px-4 py-3 space-y-1.5 text-sm bg-slate-50 dark:bg-slate-900/60 shrink-0">
 			<div class="flex justify-between text-slate-500 dark:text-slate-400">
 				<span>Subtotal</span>
 				<span class="tabular-nums">KES {fmt(cart.subtotal)}</span>
@@ -784,17 +781,17 @@
 					<FileText size={11} /><span class="truncate italic">{cart.note}</span>
 				</div>
 			{/if}
-			<div class="flex justify-between font-bold text-base text-slate-900 dark:text-slate-100 pt-1.5 border-t border-slate-200 dark:border-slate-600">
+			<div class="flex justify-between font-bold text-base text-slate-900 dark:text-slate-100 pt-1.5">
 				<span>Total</span>
 				<span class="tabular-nums">KES {fmt(cart.total)}</span>
 			</div>
 		</div>
 
 		<!-- Payment section -->
-		<div id="payment-section" class="border-t border-slate-100 dark:border-slate-700 px-4 py-3 space-y-3 shrink-0 bg-white dark:bg-slate-900">
+		<div class="px-4 py-3 space-y-3 shrink-0 bg-white dark:bg-slate-900">
 
 			<!-- Payment method tabs -->
-			<div class="grid grid-cols-5 gap-1.5">
+			<div class="grid grid-cols-2 gap-1.5">
 				{#each payments as p}
 					<button
 						onclick={() => paymentMethod = p.id}
@@ -853,13 +850,13 @@
 				</div>
 			{/if}
 
-			<!-- WhatsApp number -->
+			<!-- Points phone number -->
 			<div class="relative">
-				<MessageCircle size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+				<Phone size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
 				<input
 					type="tel"
-					bind:value={whatsappNumber}
-					placeholder="WhatsApp: 0792 397 476"
+					bind:value={pointsPhone}
+					placeholder="Phone (for points): 07XX XXX XXX"
 					class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 py-2.5 pl-9 pr-4 text-sm focus:outline-none"
 				/>
 			</div>
@@ -1033,80 +1030,14 @@
 
 <!-- ─── Receipt overlay ──────────────────────────────────────── -->
 {#if lastSale}
-	<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-		<div class="relative w-full max-w-sm max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-white dark:bg-slate-800 shadow-2xl overflow-hidden">
-			<!-- Header -->
-			<div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-5 py-4 shrink-0">
-				<div class="flex items-center gap-2">
-					<div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-						<Check size={16} class="text-blue-600" />
-					</div>
-					<h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Sale Complete!</h2>
-				</div>
-				<p class="text-sm font-bold tabular-nums text-blue-600">KES {fmt(lastSale.total)}</p>
-			</div>
-
-			<!-- Receipt body -->
-			<div class="px-5 py-4 overflow-y-auto flex-1 receipt-print">
-				<div class="text-center mb-4">
-					<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">POS System</h3>
-					<p class="text-xs text-slate-400">#{lastSale.id.slice(0, 8).toUpperCase()}</p>
-				</div>
-				<div class="text-xs text-slate-500 space-y-1 mb-4">
-					<div class="flex justify-between"><span>Date</span><span>{new Date(lastSale.created_at).toLocaleString()}</span></div>
-					<div class="flex justify-between"><span>Cashier</span><span>{lastSale.cashier_name || '—'}</span></div>
-					{#if lastSale.customer_name}<div class="flex justify-between"><span>Customer</span><span>{lastSale.customer_name}</span></div>{/if}
-				</div>
-
-				<table class="w-full text-xs mb-4 border-t border-b border-dashed border-slate-200 dark:border-slate-600 py-2">
-					<thead><tr class="text-slate-400"><th class="py-1.5 text-left">Item</th><th class="py-1.5 text-center">Qty</th><th class="py-1.5 text-right">Total</th></tr></thead>
-					<tbody>
-						{#each lastSale.items || [] as item}
-							<tr class="border-t border-dashed border-slate-100 dark:border-slate-700">
-								<td class="py-1.5 pr-2 text-slate-700 dark:text-slate-300">{item.product_name ?? '—'}</td>
-								<td class="py-1.5 text-center text-slate-500">{item.quantity}</td>
-								<td class="py-1.5 text-right font-semibold text-slate-800 dark:text-slate-100 tabular-nums">KES {fmt(item.total)}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-
-				<div class="text-sm space-y-1">
-					{#if lastSale.discount > 0}
-						<div class="flex justify-between text-emerald-600"><span>Discount</span><span>-KES {fmt(lastSale.discount)}</span></div>
-					{/if}
-					<div class="flex justify-between font-bold text-slate-900 dark:text-slate-100 border-t border-slate-200 dark:border-slate-600 pt-1">
-						<span>Total</span><span class="tabular-nums">KES {fmt(lastSale.total)}</span>
-					</div>
-					<div class="flex justify-between text-slate-400 text-xs pt-1">
-						<span>Paid via</span><span class="capitalize">{lastSale.payment_method}</span>
-					</div>
-					{#if lastSale.payment_method === 'cash'}
-						<div class="flex justify-between text-slate-400 text-xs">
-							<span>Amount Tendered</span><span class="tabular-nums">KES {fmt(lastAmountTendered)}</span>
-						</div>
-						<div class="flex justify-between font-bold text-emerald-600 text-xs">
-							<span>Change</span><span class="tabular-nums">KES {fmt(lastChange)}</span>
-						</div>
-					{/if}
-				</div>
-				<p class="text-center text-xs text-slate-400 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">Thank you for your purchase! 🙏</p>
-			</div>
-
-			<!-- Actions -->
-			<div class="flex items-center gap-2 border-t border-slate-100 dark:border-slate-700 px-5 py-4 shrink-0">
-				<button onclick={printReceipt} class="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-600 px-3 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-					<Printer size={14} /> Print
-				</button>
-				<button onclick={sendWhatsApp} class="flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-colors">
-					<MessageCircle size={14} /> WhatsApp
-				</button>
-				<button onclick={resetAfterSale} class="flex-1 rounded-xl py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95">
-					New Sale
-				</button>
-			</div>
-		</div>
-	</div>
+	<Receipt
+		sale={lastSale}
+		amountTendered={lastAmountTendered}
+		change={lastChange}
+		{pointsPhone}
+		onclose={() => lastSale = null}
+		onnewsale={resetAfterSale}
+	/>
 {/if}
 
 <!-- ─── Open Shift modal ────────────────────────────────────── -->
@@ -1186,6 +1117,11 @@
 		}}
 		onclose={() => showScanner = false}
 	/>
+{/if}
+
+<!-- Calculator -->
+{#if showCalculator}
+	<Calculator onclose={() => showCalculator = false} />
 {/if}
 
 <style>

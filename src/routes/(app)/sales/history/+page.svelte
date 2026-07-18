@@ -97,7 +97,7 @@
 		<select
 			bind:value={statusFilter}
 			onchange={() => { page = 1; fetch(); }}
-			class="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+			class="rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
 		>
 			<option value="">All Status</option>
 			<option value="completed">Completed</option>
@@ -108,55 +108,55 @@
 			type="date"
 			bind:value={dateFrom}
 			onchange={() => { page = 1; fetch(); }}
-			class="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+			class="rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
 		/>
 		<input
 			type="date"
 			bind:value={dateTo}
 			onchange={() => { page = 1; fetch(); }}
-			class="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+			class="rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
 		/>
 	</div>
 
-	<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+	<div class="bg-white dark:bg-slate-800 overflow-hidden">
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
-					<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
-						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide whitespace-nowrap">Date</th>
-						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden sm:table-cell">Cashier</th>
-						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">Customer</th>
-						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden lg:table-cell">Payment</th>
-						<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
-						<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total</th>
-						<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Actions</th>
+					<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide whitespace-nowrap">Date</th>
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide hidden sm:table-cell">Cashier</th>
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide hidden md:table-cell">Customer</th>
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide hidden lg:table-cell">Payment</th>
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Status</th>
+						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Total</th>
+						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Actions</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
 					{#if loading}
 						{#each Array(8) as _}
-							<tr>{#each Array(7) as _}<td class="px-5 py-3"><div class="h-3.5 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"></div></td>{/each}</tr>
+							<tr>{#each Array(7) as _}<td class="px-4 py-2.5"><div class="h-3.5 bg-slate-100 dark:bg-slate-700 rounded-[1px] animate-pulse"></div></td>{/each}</tr>
 						{/each}
 					{:else if sales.length === 0}
 						<tr><td colspan="7" class="px-5 py-12 text-center text-sm text-slate-400 dark:text-slate-500">No sales found for the selected filters</td></tr>
 					{:else}
 						{#each sales as s}
 							<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-								<td class="px-5 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmtDate(s.created_at)}</td>
-								<td class="px-5 py-3 text-slate-700 dark:text-slate-200 hidden sm:table-cell">{s.cashier_name ?? '—'}</td>
-								<td class="px-5 py-3 text-slate-500 dark:text-slate-400 hidden md:table-cell">{s.customer_name ?? 'Walk-in'}</td>
-								<td class="px-5 py-3 text-slate-500 dark:text-slate-400 capitalize hidden lg:table-cell">{s.payment_method}</td>
-								<td class="px-5 py-3">
+								<td class="px-4 py-2.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmtDate(s.created_at)}</td>
+								<td class="px-4 py-2.5 text-slate-700 dark:text-slate-200 hidden sm:table-cell">{s.cashier_name ?? '—'}</td>
+								<td class="px-4 py-2.5 text-slate-500 dark:text-slate-400 hidden md:table-cell">{s.customer_name ?? 'Walk-in'}</td>
+								<td class="px-4 py-2.5 text-slate-500 dark:text-slate-400 capitalize hidden lg:table-cell">{s.payment_method}</td>
+								<td class="px-4 py-2.5">
 									<span class="badge {statusColors[s.status] ?? 'badge-slate'} capitalize">{s.status}</span>
 								</td>
-								<td class="px-5 py-3 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(s.total)}</td>
-								<td class="px-5 py-3 text-right">
+								<td class="px-4 py-2.5 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(s.total)}</td>
+								<td class="px-4 py-2.5 text-right">
 									<div class="flex items-center justify-end gap-1">
-										<button onclick={() => viewDetail(s)} class="h-7 w-7 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 transition-colors">
+										<button onclick={() => viewDetail(s)} class="h-7 w-7 flex items-center justify-center rounded-[1px] text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 transition-colors">
 											<Eye size={13} />
 										</button>
 										{#if s.status !== 'voided'}
-											<button onclick={() => voidSale(s.id)} class="rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+											<button onclick={() => voidSale(s.id)} class="rounded-[1px] px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
 												Void
 											</button>
 										{/if}
@@ -178,7 +178,7 @@
 		{#if selectedSale}
 			<div class="space-y-4">
 				<!-- Meta grid -->
-				<div class="grid grid-cols-2 gap-2 rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 text-xs">
+				<div class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-900/40 p-3 text-xs">
 					{#each [
 						['Date',     fmtDate(selectedSale.created_at)],
 						['Status',   selectedSale.status],
@@ -197,10 +197,10 @@
 					<table class="w-full text-sm">
 						<thead>
 							<tr class="border-b border-slate-100 dark:border-slate-700 text-left">
-								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Item</th>
-								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Qty</th>
-								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Price</th>
-								<th class="pb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Total</th>
+								<th class="pb-2 text-xs font-semibold text-white uppercase tracking-wide">Item</th>
+								<th class="pb-2 text-xs font-semibold text-white uppercase tracking-wide text-right">Qty</th>
+								<th class="pb-2 text-xs font-semibold text-white uppercase tracking-wide text-right">Price</th>
+								<th class="pb-2 text-xs font-semibold text-white uppercase tracking-wide text-right">Total</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-slate-100 dark:divide-slate-700">

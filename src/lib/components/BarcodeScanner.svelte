@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { Html5Qrcode } from 'html5-qrcode';
 	import { X, CameraOff, LoaderCircle, Scan, Smartphone } from '@lucide/svelte';
 
@@ -27,6 +27,7 @@
 				errorMsg = 'No camera found. Use the search field to find products by name or barcode.';
 				return;
 			}
+			await tick();
 			await startScanning();
 		} catch (e) {
 			status = 'error';
@@ -100,14 +101,17 @@
 	</div>
 
 	<!-- Scanner area -->
-	<div class="flex-1 relative flex items-center justify-center">
+	<div class="flex-1 relative flex items-center justify-center overflow-hidden">
+		<!-- Always rendered so Html5Qrcode can find it -->
+		<div id={SCANNER_ID} class="absolute inset-0"></div>
+
 		{#if status === 'init'}
-			<div class="flex flex-col items-center gap-3 text-white/80">
+			<div class="relative z-10 flex flex-col items-center gap-3 text-white/80">
 				<LoaderCircle size={28} class="animate-spin" />
 				<p class="text-sm">Initializing camera…</p>
 			</div>
 		{:else if status === 'denied' || status === 'error'}
-			<div class="flex flex-col items-center gap-4 px-8 text-center">
+			<div class="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
 				<div class="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
 					<CameraOff size={28} class="text-white/60" />
 				</div>
@@ -118,10 +122,8 @@
 				</button>
 			</div>
 		{:else}
-			<div id={SCANNER_ID} class="w-full h-full"></div>
-
 			<!-- Scanning overlay frame -->
-			<div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+			<div class="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
 				<div class="relative w-64 h-28">
 					<div class="absolute inset-0 rounded-2xl border-2 border-blue-400/60"></div>
 					<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3">

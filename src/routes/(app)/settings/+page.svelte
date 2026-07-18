@@ -80,7 +80,7 @@
 		<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage system configuration</p>
 	</div>
 
-	<section class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+	<section class="bg-white dark:bg-slate-800 overflow-hidden">
 		<div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
 			<div>
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Product Categories</h2>

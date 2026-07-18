@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { productsService, type ProductInput } from '$lib/services/products';
 	import { notify } from '$lib/stores/notification.svelte';
+	import { invalidation } from '$lib/stores/invalidation.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { Product, Category } from '$lib/types';
@@ -102,6 +103,7 @@
 			}
 			showModal = false;
 			fetchProducts();
+			invalidation.invalidateProducts();
 		} catch (err) {
 			notify.error(err instanceof Error ? err.message : 'Save failed');
 		} finally {
@@ -115,6 +117,7 @@
 			await productsService.delete(p.id);
 			notify.success('Product deleted');
 			fetchProducts();
+			invalidation.invalidateProducts();
 		} catch (err) {
 			notify.error(err instanceof Error ? err.message : 'Delete failed');
 		}
@@ -132,7 +135,7 @@
 <div class="p-4 md:p-6 space-y-5 dark:bg-slate-950 min-h-full">
 
 	<!-- Page header -->
-	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-3 border-l-4 border-emerald-500">
 		<div>
 			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Products</h1>
 			<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
@@ -141,8 +144,8 @@
 		</div>
 		<button
 			onclick={openCreate}
-			class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95"
-			style="background-color: #00008B;"
+			class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-95"
+			style="background:linear-gradient(135deg,#059669,#047857);"
 		>
 			<Plus size={16} />
 			Add Product
@@ -157,39 +160,39 @@
 				bind:value={search}
 				oninput={onSearch}
 				placeholder="Search by name, barcode, SKU…"
-				class="w-full rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 bg-white py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none"
+				class="w-full rounded-[1px] border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 bg-white py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none"
 			/>
 		</div>
 		<select
 			bind:value={categoryFilter}
 			onchange={() => { page = 1; fetchProducts(); }}
-			class="rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none"
+			class="rounded-[1px] border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none"
 		>
 			<option value="">All Categories</option>
 			{#each categories as cat}
 				<option value={cat.id}>{cat.name}</option>
 			{/each}
 		</select>
-		<label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 cursor-pointer shadow-sm select-none">
+		<label class="inline-flex items-center gap-2 rounded-[1px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 cursor-pointer shadow-sm select-none">
 			<input type="checkbox" bind:checked={lowStockFilter} onchange={() => { page = 1; fetchProducts(); }} class="rounded accent-teal-600" />
 			Low Stock Only
 		</label>
 	</div>
 
 	<!-- Table card -->
-	<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+	<div class="bg-white dark:bg-slate-800 overflow-hidden">
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
-					<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-12">Image</th>
-						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Product</th>
-						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Category</th>
-						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cost</th>
-						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Price</th>
-						<th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Stock</th>
-						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Margin</th>
-						<th class="px-5 py-3.5"></th>
+					<tr style="background:linear-gradient(135deg,#059669,#047857);">
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide w-12">Image</th>
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Product</th>
+						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Category</th>
+						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Cost</th>
+						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Price</th>
+						<th class="px-4 py-2.5 text-center text-xs font-semibold text-white uppercase tracking-wide">Stock</th>
+						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Margin</th>
+						<th class="px-4 py-2.5"></th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -197,8 +200,8 @@
 						{#each Array(8) as _}
 							<tr>
 								{#each Array(8) as _}
-									<td class="px-5 py-3.5">
-										<div class="h-4 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
+									<td class="px-4 py-2.5">
+										<div class="h-4 bg-slate-100 dark:bg-slate-700 animate-pulse"></div>
 									</td>
 								{/each}
 							</tr>
@@ -218,7 +221,7 @@
 							{@const margin = p.buying_price > 0 ? ((p.selling_price - p.buying_price) / p.buying_price * 100) : 0}
 							<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group">
 								<td class="px-4 py-3.5">
-									<div class="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+									<div class="h-10 w-10 rounded-[1px] overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
 										{#if p.image_url}
 											<img src={p.image_url} alt={p.name} class="h-full w-full object-cover" loading="lazy" />
 										{:else}
@@ -226,7 +229,7 @@
 										{/if}
 									</div>
 								</td>
-								<td class="px-5 py-3.5">
+								<td class="px-4 py-2.5">
 									<p class="font-semibold text-slate-800 dark:text-slate-100">{p.name}</p>
 									<div class="flex items-center gap-2 mt-0.5">
 										{#if p.barcode}
@@ -237,53 +240,53 @@
 										{/if}
 									</div>
 								</td>
-								<td class="px-5 py-3.5">
+								<td class="px-4 py-2.5">
 									{#if p.category_name}
-										<span class="inline-flex rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+										<span class="inline-flex rounded-[1px] bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
 											{p.category_name}
 										</span>
 									{:else}
 										<span class="text-slate-400 text-xs">—</span>
 									{/if}
 								</td>
-								<td class="px-5 py-3.5 text-right text-slate-500 dark:text-slate-400 tabular-nums">
+								<td class="px-4 py-2.5 text-right text-slate-500 dark:text-slate-400 tabular-nums">
 									{fmt(p.buying_price)}
 								</td>
-								<td class="px-5 py-3.5 text-right font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
+								<td class="px-4 py-2.5 text-right font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
 									{fmt(p.selling_price)}
 								</td>
-								<td class="px-5 py-3.5 text-center">
+								<td class="px-4 py-2.5 text-center">
 									{#if p.stock_qty === 0}
-										<span class="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
+										<span class="inline-flex items-center gap-1 rounded-[1px] bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
 											<AlertTriangle size={10} /> Out of stock
 										</span>
 									{:else if p.stock_qty <= p.reorder_level}
-										<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+										<span class="inline-flex items-center gap-1 rounded-[1px] bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
 											<AlertTriangle size={10} /> Low: {p.stock_qty}
 										</span>
 									{:else}
-										<span class="inline-flex rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+										<span class="inline-flex rounded-[1px] bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
 											{p.stock_qty}
 										</span>
 									{/if}
 								</td>
-								<td class="px-5 py-3.5 text-right tabular-nums">
+								<td class="px-4 py-2.5 text-right tabular-nums">
 									<span class="text-xs font-semibold {margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : margin >= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}">
 										{margin.toFixed(1)}%
 									</span>
 								</td>
-								<td class="px-5 py-3.5">
+								<td class="px-4 py-2.5">
 									<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 										<button
 											onclick={() => openEdit(p)}
-											class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+											class="inline-flex h-8 w-8 items-center justify-center rounded-[1px] text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
 											title="Edit"
 										>
 											<Pencil size={14} />
 										</button>
 										<button
 											onclick={() => deleteProduct(p)}
-											class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors"
+											class="inline-flex h-8 w-8 items-center justify-center rounded-[1px] text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors"
 											title="Delete"
 										>
 											<Trash2 size={14} />
@@ -312,24 +315,24 @@
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 			<div class="sm:col-span-2">
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Product Name *</label>
-				<input bind:value={form.name} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="e.g. Coca-Cola 500ml" />
+				<input bind:value={form.name} class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="e.g. Coca-Cola 500ml" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Barcode</label>
 				<div class="flex gap-2">
-					<input bind:value={form.barcode} class="flex-1 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none font-mono" placeholder="Scan or leave blank" />
-					<button onclick={() => showScanner = true} class="flex items-center justify-center rounded-xl border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 px-3 text-slate-500 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-600 transition-colors shrink-0" title="Scan barcode">
+					<input bind:value={form.barcode} class="flex-1 rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none font-mono" placeholder="Scan or leave blank" />
+					<button onclick={() => showScanner = true} class="flex items-center justify-center rounded-[1px] border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 px-3 text-slate-500 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-600 transition-colors shrink-0" title="Scan barcode">
 						<Scan size={18} />
 					</button>
 				</div>
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">SKU</label>
-				<input bind:value={form.sku} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="Optional" />
+				<input bind:value={form.sku} class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="Optional" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Category</label>
-				<select bind:value={form.category_id} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none">
+				<select bind:value={form.category_id} class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none">
 					<option value={null}>No Category</option>
 					{#each categories as cat}
 						<option value={cat.id}>{cat.name}</option>
@@ -338,19 +341,19 @@
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Stock Qty</label>
-				<input type="number" bind:value={form.stock_qty} min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="number" bind:value={form.stock_qty} min="0" class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Reorder Level</label>
-				<input type="number" bind:value={form.reorder_level} min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="number" bind:value={form.reorder_level} min="0" class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cost Price (KES)</label>
-				<input type="number" bind:value={form.buying_price} min="0" step="0.01" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="number" bind:value={form.buying_price} min="0" step="0.01" class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Selling Price (KES)</label>
-				<input type="number" bind:value={form.selling_price} min="0" step="0.01" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="number" bind:value={form.selling_price} min="0" step="0.01" class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div class="sm:col-span-2">
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Product Image</label>
@@ -359,10 +362,10 @@
 		</div>
 	{/snippet}
 	{#snippet footer()}
-		<button onclick={() => showModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+		<button onclick={() => showModal = false} class="rounded-[1px] border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
 			Cancel
 		</button>
-		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed" style="background-color: #00008B;">
+		<button onclick={save} disabled={submitting} class="rounded-[1px] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed" style="background-color: #00008B;">
 			{submitting ? 'Saving…' : editingProduct ? 'Save Changes' : 'Create Product'}
 		</button>
 	{/snippet}

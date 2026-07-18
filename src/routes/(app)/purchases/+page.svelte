@@ -130,39 +130,39 @@
 			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Purchase Orders</h1>
 			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Record stock purchases from suppliers</p>
 		</div>
-		<button onclick={() => { showModal = true; addItem(); }} class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">
+		<button onclick={() => { showModal = true; addItem(); }} class="flex items-center gap-1.5 rounded-[1px] px-3 py-1.5 text-xs font-semibold text-white transition-all active:scale-95" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
 			<Plus size={13} />New Purchase
 		</button>
 	</div>
 
-	<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+	<div class="bg-white dark:bg-slate-800 overflow-hidden">
 		<table class="w-full text-sm">
 			<thead>
-				<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
-					<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</th>
-					<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Supplier</th>
-					<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">Created By</th>
-					<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
-					<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total</th>
+				<tr style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Date</th>
+					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Supplier</th>
+					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide hidden md:table-cell">Created By</th>
+					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Status</th>
+					<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Total</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
 				{#if loading}
 					{#each Array(5) as _}
-						<tr>{#each Array(5) as _}<td class="px-5 py-3"><div class="h-3.5 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"></div></td>{/each}</tr>
+						<tr>{#each Array(5) as _}<td class="px-4 py-2.5"><div class="h-3.5 bg-slate-100 dark:bg-slate-700 rounded-[1px] animate-pulse"></div></td>{/each}</tr>
 					{/each}
 				{:else if purchases.length === 0}
 					<tr><td colspan="5" class="px-5 py-12 text-center text-sm text-slate-400 dark:text-slate-500">No purchase orders yet.</td></tr>
 				{:else}
 					{#each purchases as p}
 						<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-							<td class="px-5 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmtDate(p.created_at)}</td>
-							<td class="px-5 py-3 font-semibold text-slate-900 dark:text-slate-100">{p.supplier_name ?? 'Direct'}</td>
-							<td class="px-5 py-3 text-slate-500 dark:text-slate-400 hidden md:table-cell">{p.user_name ?? '—'}</td>
-							<td class="px-5 py-3">
+							<td class="px-4 py-2.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmtDate(p.created_at)}</td>
+							<td class="px-4 py-2.5 font-semibold text-slate-900 dark:text-slate-100">{p.supplier_name ?? 'Direct'}</td>
+							<td class="px-4 py-2.5 text-slate-500 dark:text-slate-400 hidden md:table-cell">{p.user_name ?? '—'}</td>
+							<td class="px-4 py-2.5">
 								<span class="badge {p.status === 'received' ? 'badge-green' : 'badge-amber'} capitalize">{p.status}</span>
 							</td>
-							<td class="px-5 py-3 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(p.total)}</td>
+							<td class="px-4 py-2.5 text-right font-semibold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmt(p.total)}</td>
 						</tr>
 					{/each}
 				{/if}
@@ -179,7 +179,7 @@
 			<div class="grid grid-cols-2 gap-4">
 				<div>
 					<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Supplier</label>
-					<select bind:value={supplierId} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors">
+					<select bind:value={supplierId} class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors">
 						<option value="">Direct Purchase</option>
 						{#each suppliers as s}
 							<option value={s.id}>{s.name}</option>
@@ -188,7 +188,7 @@
 				</div>
 				<div>
 					<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Status</label>
-					<select bind:value={status} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors">
+					<select bind:value={status} class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors">
 						<option value="received">Received</option>
 						<option value="pending">Pending</option>
 					</select>
@@ -202,17 +202,17 @@
 				</div>
 				<div class="space-y-2">
 					{#each items as item, i}
-						<div class="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/30 p-3 space-y-2">
+						<div class="border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/30 p-3 space-y-2">
 							<div class="relative">
 								<Search size={13} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
 								<input
 									bind:value={item.search}
 									oninput={() => onSearch(i)}
 									placeholder="Search product…"
-									class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pl-8 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors"
+									class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pl-8 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors"
 								/>
 								{#if item.search.trim() && (item.searching || item.results.length > 0)}
-									<ul class="absolute z-20 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg max-h-32 overflow-y-auto">
+									<ul class="absolute z-20 mt-1 w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg max-h-32 overflow-y-auto">
 										{#if item.searching}
 											<li class="px-3 py-2 text-sm text-slate-400">Searching…</li>
 										{:else}
@@ -226,11 +226,11 @@
 							<div class="grid grid-cols-3 gap-2">
 								<div>
 									<label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Qty</label>
-									<input type="number" bind:value={item.quantity} min="1" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" />
+									<input type="number" bind:value={item.quantity} min="1" class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" />
 								</div>
 								<div>
 									<label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Unit Price</label>
-									<input type="number" bind:value={item.unit_price} min="0" step="0.01" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" />
+									<input type="number" bind:value={item.unit_price} min="0" step="0.01" class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" />
 								</div>
 								<div class="flex items-end justify-between">
 									<div>
@@ -247,7 +247,7 @@
 
 			<div>
 				<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Note</label>
-				<input bind:value={note} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Optional note" />
+				<input bind:value={note} class="w-full rounded-[1px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Optional note" />
 			</div>
 
 			<div class="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-3">
@@ -257,8 +257,8 @@
 		</div>
 	{/snippet}
 	{#snippet footer()}
-		<button onclick={() => showModal = false} class="rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={save} disabled={submitting} class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 transition-colors">
+		<button onclick={() => showModal = false} class="rounded-[1px] border border-slate-200 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+		<button onclick={save} disabled={submitting} class="rounded-[1px] bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 transition-colors">
 			{submitting ? 'Saving…' : 'Create Purchase'}
 		</button>
 	{/snippet}

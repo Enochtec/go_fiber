@@ -87,7 +87,7 @@
 <div class="p-4 md:p-6 space-y-5 min-h-full bg-slate-50 dark:bg-slate-950">
 
 	<!-- Page header -->
-	<div class="flex items-center justify-between gap-3">
+	<div class="flex items-center justify-between gap-3 pl-3 border-l-4 border-blue-500">
 		<div>
 			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
 			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -101,7 +101,7 @@
 			<button
 				onclick={loadData}
 				disabled={refreshing}
-				class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+				class="flex h-8 w-8 items-center justify-center bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
 			>
 				<RefreshCw size={13} class={refreshing ? 'animate-spin' : ''} />
 			</button>
@@ -111,12 +111,12 @@
 	{#if loading}
 		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 			{#each Array(6) as _}
-				<div class="rounded-xl bg-slate-200 dark:bg-slate-700 h-20 animate-pulse"></div>
+				<div class="bg-slate-200 dark:bg-slate-700 h-20 animate-pulse"></div>
 			{/each}
 		</div>
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 			{#each [2, 1] as span}
-				<div class="rounded-xl bg-slate-200 dark:bg-slate-700 h-56 animate-pulse lg:col-span-{span}"></div>
+				<div class="bg-slate-200 dark:bg-slate-700 h-56 animate-pulse lg:col-span-{span}"></div>
 			{/each}
 		</div>
 	{:else if stats}
@@ -125,61 +125,89 @@
 		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
 			<!-- Revenue (wider) -->
-			<div class="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Today's Revenue</span>
-					<DollarSign size={14} class="text-blue-500" />
+			<div class="lg:col-span-2 relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+				<div class="absolute -top-6 -right-6 h-28 w-28 bg-white/10"></div>
+				<div class="absolute -bottom-8 -left-8 h-32 w-32 bg-white/5"></div>
+				<div class="flex items-start justify-between relative">
+					<div>
+						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Today's Revenue</span>
+						<p class="text-2xl font-bold mt-1 tracking-tight">{fmt(stats.today_sales)}</p>
+					</div>
+					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
+						<TrendingUp size={20} class="text-white" />
+					</div>
 				</div>
-				<p class="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{fmt(stats.today_sales)}</p>
-				<div class="flex items-center gap-1">
+				<div class="flex items-center gap-1 mt-2 relative">
 					{#if salesTrend >= 0}
-						<TrendingUp size={11} class="text-emerald-500" />
-						<span class="text-xs font-medium text-emerald-600">+{salesTrend}% vs yesterday</span>
+						<span class="text-xs font-medium text-white/90">▲ +{salesTrend}% vs yesterday</span>
 					{:else}
-						<TrendingDown size={11} class="text-red-500" />
-						<span class="text-xs font-medium text-red-500">{salesTrend}% vs yesterday</span>
+						<span class="text-xs font-medium text-white/90">▼ {salesTrend}% vs yesterday</span>
 					{/if}
 				</div>
 			</div>
 
 			<!-- Orders -->
-			<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Orders</span>
-					<ShoppingCart size={14} class="text-violet-500" />
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#9333ea,#7c3aed);">
+				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
+				<div class="flex items-start justify-between relative">
+					<div>
+						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Orders</span>
+						<p class="text-2xl font-bold mt-1 tracking-tight">{stats.today_orders}</p>
+					</div>
+					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
+						<ShoppingCart size={20} class="text-white" />
+					</div>
 				</div>
-				<p class="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{stats.today_orders}</p>
-				<span class="text-xs text-slate-400">transactions today</span>
+				<p class="text-xs text-white/70 mt-2 relative">transactions today</p>
 			</div>
 
 			<!-- Avg Sale -->
-			<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Avg Sale</span>
-					<BarChart2 size={14} class="text-amber-500" />
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#0891b2,#0e7490);">
+				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
+				<div class="flex items-start justify-between relative">
+					<div>
+						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Avg Sale</span>
+						<p class="text-2xl font-bold mt-1 tracking-tight">{fmt(stats.today_avg_sale)}</p>
+					</div>
+					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
+						<BarChart2 size={20} class="text-white" />
+					</div>
 				</div>
-				<p class="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{fmt(stats.today_avg_sale)}</p>
-				<span class="text-xs text-slate-400">per transaction</span>
+				<p class="text-xs text-white/70 mt-2 relative">per transaction</p>
 			</div>
 
 			<!-- Products -->
-			<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Products</span>
-					<Package size={14} class="text-emerald-500" />
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#059669,#047857);">
+				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
+				<div class="flex items-start justify-between relative">
+					<div>
+						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Products</span>
+						<p class="text-2xl font-bold mt-1 tracking-tight">{stats.total_products}</p>
+					</div>
+					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
+						<Package size={20} class="text-white" />
+					</div>
 				</div>
-				<p class="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{stats.total_products}</p>
-				<span class="text-xs text-slate-400">active items</span>
+				<p class="text-xs text-white/70 mt-2 relative">active items</p>
 			</div>
 
 			<!-- Stock Alerts -->
-			<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Stock Alerts</span>
-					<AlertTriangle size={14} class={stats.low_stock_count + stats.out_of_stock > 0 ? 'text-red-500' : 'text-slate-400'} />
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#e11d48,#be123c);">
+				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
+				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
+				<div class="flex items-start justify-between relative">
+					<div>
+						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Stock Alerts</span>
+						<p class="text-2xl font-bold mt-1 tracking-tight">{stats.low_stock_count + stats.out_of_stock}</p>
+					</div>
+					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
+						<AlertTriangle size={20} class="text-white" />
+					</div>
 				</div>
-				<p class="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{stats.low_stock_count + stats.out_of_stock}</p>
-				<span class="text-xs text-slate-400">{stats.out_of_stock} out of stock</span>
+				<p class="text-xs text-white/70 mt-2 relative">{stats.out_of_stock} out of stock</p>
 			</div>
 		</div>
 
@@ -187,7 +215,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
 			<!-- 7-day bar chart -->
-			<div class="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+			<div class="lg:col-span-2 bg-white dark:bg-slate-800 p-5">
 				<div class="flex items-center justify-between mb-5">
 					<div>
 						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Revenue — Last 7 Days</h2>
@@ -207,7 +235,7 @@
 									<div class="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
 										{fmt(day.total)}
 									</div>
-									<div class="w-full rounded-t transition-all bg-blue-600 hover:bg-blue-700"
+									<div class="w-full transition-all bg-blue-600 hover:bg-blue-700"
 										style="height:{h}px; opacity:{day.total > 0 ? 1 : 0.12};"
 									></div>
 								</div>
@@ -234,7 +262,7 @@
 			</div>
 
 			<!-- Payment breakdown -->
-			<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+			<div class="bg-white dark:bg-slate-800 p-5">
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Payments Today</h2>
 				{#if payTotal === 0}
 					<div class="flex items-center justify-center h-36 text-slate-400 text-sm">No payments yet</div>
@@ -276,7 +304,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
 			<!-- Top products -->
-			<div class="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+			<div class="lg:col-span-2 bg-white dark:bg-slate-800 p-5">
 				<div class="flex items-center justify-between mb-4">
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
 					{#if topProducts.length > 0}
@@ -299,8 +327,8 @@
 											<span class="text-xs font-bold text-slate-900 dark:text-slate-100 tabular-nums">{fmt(product.revenue)}</span>
 										</div>
 									</div>
-									<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-										<div class="h-full rounded-full bg-blue-600" style="width:{revW}%;"></div>
+									<div class="h-1.5 bg-slate-100 dark:bg-slate-700 overflow-hidden">
+										<div class="h-full bg-blue-600" style="width:{revW}%;"></div>
 									</div>
 								</div>
 							</div>
@@ -313,7 +341,7 @@
 			<div class="space-y-4">
 
 				<!-- Quick stats grid -->
-				<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+				<div class="bg-white dark:bg-slate-800 p-4">
 					<h2 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Catalogue</h2>
 					<div class="grid grid-cols-2 gap-2">
 						{#each [
@@ -322,7 +350,7 @@
 							{ label: 'Low Stock',        value: stats.low_stock_count,  cls: 'text-amber-600 dark:text-amber-400' },
 							{ label: 'Out of Stock',     value: stats.out_of_stock,     cls: 'text-red-600 dark:text-red-400' },
 						] as s}
-							<div class="rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 text-center">
+							<div class="bg-slate-50 dark:bg-slate-900/40 p-3 text-center">
 								<p class="text-lg font-bold {s.cls}">{s.value}</p>
 								<p class="text-[10px] text-slate-500 mt-0.5 leading-tight">{s.label}</p>
 							</div>
@@ -331,7 +359,7 @@
 				</div>
 
 				<!-- Stock health -->
-				<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+				<div class="bg-white dark:bg-slate-800 p-4">
 					<h2 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Stock Health</h2>
 					<div class="flex items-center gap-4">
 						<div class="relative h-20 w-20 shrink-0">
@@ -365,7 +393,7 @@
 				</div>
 
 				<!-- Recent sales -->
-				<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+				<div class="bg-white dark:bg-slate-800 p-4">
 					<div class="flex items-center gap-2 mb-3">
 						<Clock size={13} class="text-slate-400" />
 						<h2 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Recent Sales</h2>

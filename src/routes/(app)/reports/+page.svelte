@@ -3,7 +3,7 @@
 	import { reportsService } from '$lib/services/reports';
 	import { notify } from '$lib/stores/notification.svelte';
 	import type { DailySalesRow, TopProductRow, InventoryValueRow } from '$lib/types';
-	import { BarChart2, TrendingUp, Package, DollarSign } from '@lucide/svelte';
+	import { BarChart2, TrendingUp, Package, DollarSign, ShoppingCart } from '@lucide/svelte';
 
 	let dailySales = $state<DailySalesRow[]>([]);
 	let topProducts = $state<TopProductRow[]>([]);
@@ -49,7 +49,7 @@
 <div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
 
 	<!-- Header -->
-	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-3 border-l-4 border-violet-500">
 		<div>
 			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Reports</h1>
 			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Business performance overview</p>
@@ -57,11 +57,11 @@
 	</div>
 
 	<!-- Tabs -->
-	<div class="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-fit">
+	<div class="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 w-fit">
 		{#each [['sales', 'Daily Sales'], ['products', 'Top Products'], ['inventory', 'Inventory']] as [tab, label]}
 			<button
 				onclick={() => activeTab = tab as typeof activeTab}
-				class="px-4 py-1.5 text-xs font-semibold rounded-md transition-all
+				class="px-4 py-1.5 text-xs font-semibold transition-all
 					{activeTab === tab
 						? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
 						: 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}"
@@ -72,31 +72,37 @@
 	{#if loading}
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 			{#each Array(3) as _}
-				<div class="rounded-xl bg-slate-200 dark:bg-slate-700 h-20 animate-pulse"></div>
+				<div class="bg-slate-200 dark:bg-slate-700 h-20 animate-pulse"></div>
 			{/each}
 		</div>
-		<div class="rounded-xl bg-slate-200 dark:bg-slate-700 h-64 animate-pulse"></div>
+		<div class="bg-slate-200 dark:bg-slate-700 h-64 animate-pulse"></div>
 
 	{:else if activeTab === 'sales'}
 		<!-- KPI row -->
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 			{#each [
-				{ label: '30-Day Revenue', value: fmt(totalRevenue),                              icon: DollarSign, accent: 'text-blue-600' },
-				{ label: '30-Day Orders',  value: String(totalOrders),                            icon: BarChart2,  accent: 'text-violet-600' },
-				{ label: 'Avg. Order',     value: fmt(totalOrders > 0 ? totalRevenue/totalOrders : 0), icon: TrendingUp, accent: 'text-emerald-600' },
+				{ label: '30-Day Revenue', value: fmt(totalRevenue),                              icon: DollarSign, grad: 'linear-gradient(135deg,#4f46e5,#4338ca)' },
+				{ label: '30-Day Orders',  value: String(totalOrders),                            icon: ShoppingCart, grad: 'linear-gradient(135deg,#db2777,#be185d)' },
+				{ label: 'Avg. Order',     value: fmt(totalOrders > 0 ? totalRevenue/totalOrders : 0), icon: TrendingUp, grad: 'linear-gradient(135deg,#d97706,#b45309)' },
 			] as kpi}
-				<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4">
-					<kpi.icon size={20} class="{kpi.accent} shrink-0" />
-					<div>
-						<p class="text-xs text-slate-500 dark:text-slate-400">{kpi.label}</p>
-						<p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">{kpi.value}</p>
+				<div class="relative overflow-hidden p-5 text-white" style="background:{kpi.grad};">
+					<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
+					<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
+					<div class="flex items-start justify-between relative">
+						<div>
+							<p class="text-xs font-semibold uppercase tracking-wider text-white/80">{kpi.label}</p>
+							<p class="text-xl font-bold mt-1 tracking-tight tabular-nums">{kpi.value}</p>
+						</div>
+						<div class="flex h-10 w-10 items-center justify-center bg-white/20">
+							<kpi.icon size={20} class="text-white" />
+						</div>
 					</div>
 				</div>
 			{/each}
 		</div>
 
 		<!-- Bar chart -->
-		<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+		<div class="bg-white dark:bg-slate-800 p-5">
 			<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-5">Daily Sales — Last 30 Days</h2>
 			{#if dailySales.length === 0}
 				<p class="text-sm text-slate-400 py-12 text-center">No sales data</p>
@@ -108,7 +114,7 @@
 								<div class="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
 									{fmt(row.total)}
 								</div>
-								<div class="w-full rounded-t bg-blue-600 hover:bg-blue-700 transition-colors"
+								<div class="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
 									style="height:{Math.max((row.total/MAX_SALES)*MAX_BAR_HEIGHT, 2)}px;"
 								></div>
 							</div>
@@ -120,7 +126,7 @@
 		</div>
 
 	{:else if activeTab === 'products'}
-		<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+		<div class="bg-white dark:bg-slate-800 overflow-hidden">
 			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
 			</div>
@@ -153,7 +159,7 @@
 		</div>
 
 	{:else}
-		<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+		<div class="bg-white dark:bg-slate-800 overflow-hidden">
 			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
 				<Package size={14} class="text-slate-400" />
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Inventory Value by Category</h2>

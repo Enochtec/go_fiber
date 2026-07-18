@@ -135,15 +135,15 @@
 	<div class="flex flex-col flex-1 overflow-hidden min-w-0 {selected ? 'hidden lg:flex' : 'flex'}">
 
 		<!-- Header -->
-		<div class="flex items-center justify-between px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shrink-0">
+		<div class="flex items-center justify-between px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shrink-0 pl-3 border-l-4 border-violet-500">
 			<div>
 				<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Customers</h1>
 				<p class="text-xs text-slate-400 mt-0.5">{total} total</p>
 			</div>
 			<button
 				onclick={openCreate}
-				class="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all active:scale-95"
-				style="background-color:#00008B;"
+				class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-all active:scale-95"
+				style="background:linear-gradient(135deg,#9333ea,#7c3aed);"
 			>
 				<Plus size={15} /> Add Customer
 			</button>
@@ -282,19 +282,19 @@
 						</div>
 					{:else if customerStats}
 						<div class="grid grid-cols-2 gap-3">
-							<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3">
+							<div class="bg-slate-50 dark:bg-slate-800 p-3">
 								<p class="text-xs text-slate-400 mb-1">Total Orders</p>
 								<p class="text-xl font-bold text-slate-900 dark:text-slate-100">{customerStats.total_orders}</p>
 							</div>
-							<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3">
+							<div class="bg-slate-50 dark:bg-slate-800 p-3">
 								<p class="text-xs text-slate-400 mb-1">Lifetime Spend</p>
 								<p class="text-lg font-bold" style="color:#00008B;">KES {fmt(customerStats.lifetime_spend)}</p>
 							</div>
-							<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3">
+							<div class="bg-slate-50 dark:bg-slate-800 p-3">
 								<p class="text-xs text-slate-400 mb-1">Avg Order</p>
 								<p class="text-lg font-bold text-slate-900 dark:text-slate-100">KES {fmt(customerStats.avg_order)}</p>
 							</div>
-							<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3">
+							<div class="bg-slate-50 dark:bg-slate-800 p-3">
 								<p class="text-xs text-slate-400 mb-1">Last Visit</p>
 								<p class="text-sm font-semibold text-slate-700 dark:text-slate-200">
 									{customerStats.last_visit ? fmtDate(customerStats.last_visit) : 'Never'}
@@ -321,7 +321,7 @@
 					{:else}
 						<ul class="space-y-2">
 							{#each purchaseHistory as sale}
-								<li class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 dark:bg-slate-800 px-3.5 py-3">
+								<li class="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800 px-3.5 py-3">
 									<div class="min-w-0">
 										<p class="text-xs font-bold text-slate-700 dark:text-slate-200 font-mono">#{sale.id.slice(0, 8).toUpperCase()}</p>
 										<p class="text-[10px] text-slate-400 mt-0.5">{fmtTime(sale.created_at)}</p>

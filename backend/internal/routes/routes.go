@@ -20,6 +20,7 @@ type Handlers struct {
 	Shift     *handlers.ShiftHandler
 	Register  *handlers.RegisterHandler
 	Upload    *handlers.UploadHandler
+	Shop      *handlers.ShopHandler
 }
 
 func Setup(app *fiber.App, h *Handlers) {
@@ -35,6 +36,7 @@ func Setup(app *fiber.App, h *Handlers) {
 	protected := api.Group("", middleware.Auth(), middleware.RequireShop())
 
 	protected.Get("/auth/me", h.Auth.Me)
+	protected.Get("/shop/info", h.Shop.Info)
 	protected.Post("/upload", h.Upload.Upload)
 
 	protected.Get("/dashboard", h.Inventory.Dashboard)

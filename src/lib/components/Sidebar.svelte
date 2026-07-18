@@ -14,7 +14,7 @@
 
 	const groups = [
 		{
-			label: 'Main',
+			label: 'Main', color: 'bg-blue-500',
 			links: [
 				{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
 				{ href: '/sales',     label: 'Point of Sale', icon: ShoppingCart, roles: ['admin', 'manager', 'cashier'] },
@@ -22,7 +22,7 @@
 			]
 		},
 		{
-			label: 'Catalogue',
+			label: 'Catalogue', color: 'bg-emerald-500',
 			links: [
 				{ href: '/products',  label: 'Products',   icon: Package,   roles: ['admin', 'manager', 'cashier'] },
 				{ href: '/inventory', label: 'Inventory',  icon: Warehouse,  roles: ['admin', 'manager'] },
@@ -30,20 +30,20 @@
 			]
 		},
 		{
-			label: 'Procurement',
+			label: 'Procurement', color: 'bg-amber-500',
 			links: [
 				{ href: '/suppliers', label: 'Suppliers',  icon: Truck,      roles: ['admin', 'manager'] },
 				{ href: '/purchases', label: 'Purchases',  icon: ShoppingBag, roles: ['admin', 'manager'] },
 			]
 		},
 		{
-			label: 'Analytics',
+			label: 'Analytics', color: 'bg-violet-500',
 			links: [
 				{ href: '/reports',   label: 'Reports',    icon: BarChart2,  roles: ['admin', 'manager'] },
 			]
 		},
 		{
-			label: 'Admin',
+			label: 'Admin', color: 'bg-rose-500',
 			links: [
 				{ href: '/users',     label: 'Users',      icon: UserCog,    roles: ['admin'] },
 				{ href: '/settings',  label: 'Settings',   icon: Settings,   roles: ['admin', 'manager'] },
@@ -78,7 +78,7 @@
 			{@const visible = group.links.filter(l => l.roles.includes(role))}
 			{#if visible.length > 0}
 				<div class="mb-1">
-					<p class="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500">{group.label}</p>
+					<p class="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 flex items-center gap-2"><span class="h-1.5 w-1.5 {group.color}"></span>{group.label}</p>
 					{#each visible as link}
 						{@const active = path === link.href || (link.href !== '/sales' && path.startsWith(link.href + '/') && link.href !== '/dashboard')}
 						<a

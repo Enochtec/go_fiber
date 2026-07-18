@@ -64,6 +64,7 @@ func main() {
 		Shift:     handlers.NewShiftHandler(shiftRepo, validate),
 		Register:  handlers.NewRegisterHandler(registrationSvc, validate),
 		Upload:    uploadHandler,
+		Shop:      handlers.NewShopHandler(shopRepo),
 	}
 
 	app := fiber.New(fiber.Config{
