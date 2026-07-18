@@ -6,6 +6,7 @@
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { Product, Category } from '$lib/types';
 	import { Plus, Search, Pencil, Trash2, AlertTriangle, Package } from '@lucide/svelte';
+	import ImagePicker from '$lib/components/ImagePicker.svelte';
 
 	let products = $state<Product[]>([]);
 	let categories = $state<Category[]>([]);
@@ -179,6 +180,7 @@
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-12">Image</th>
 						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Product</th>
 						<th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Category</th>
 						<th class="px-5 py-3.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cost</th>
@@ -192,7 +194,7 @@
 					{#if loading}
 						{#each Array(8) as _}
 							<tr>
-								{#each Array(7) as _}
+								{#each Array(8) as _}
 									<td class="px-5 py-3.5">
 										<div class="h-4 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
 									</td>
@@ -201,7 +203,7 @@
 						{/each}
 					{:else if products.length === 0}
 						<tr>
-							<td colspan="7" class="px-5 py-16 text-center">
+							<td colspan="8" class="px-5 py-16 text-center">
 								<div class="flex flex-col items-center gap-3 text-slate-400 dark:text-slate-500">
 									<Package size={40} class="opacity-30" />
 									<p class="text-sm font-medium">No products found</p>
@@ -213,6 +215,15 @@
 						{#each products as p}
 							{@const margin = p.buying_price > 0 ? ((p.selling_price - p.buying_price) / p.buying_price * 100) : 0}
 							<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group">
+								<td class="px-4 py-3.5">
+									<div class="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+										{#if p.image_url}
+											<img src={p.image_url} alt={p.name} class="h-full w-full object-cover" loading="lazy" />
+										{:else}
+											<Package size={14} class="text-slate-300" />
+										{/if}
+									</div>
+								</td>
 								<td class="px-5 py-3.5">
 									<p class="font-semibold text-slate-800 dark:text-slate-100">{p.name}</p>
 									<div class="flex items-center gap-2 mt-0.5">
@@ -335,8 +346,8 @@
 				<input type="number" bind:value={form.selling_price} min="0" step="0.01" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div class="sm:col-span-2">
-				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Image URL</label>
-				<input bind:value={form.image_url} class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://…" />
+				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Product Image</label>
+				<ImagePicker value={form.image_url} onchange={(url) => form.image_url = url} />
 			</div>
 		</div>
 	{/snippet}

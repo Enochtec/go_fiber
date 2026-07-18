@@ -211,7 +211,14 @@
 				{:else}
 					<ul class="divide-y divide-slate-50 dark:divide-slate-700/50 max-h-64 overflow-y-auto">
 						{#each lowStockItems as p}
-							<li class="flex items-center justify-between px-5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+							<li class="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+								<div class="h-8 w-8 shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+									{#if p.image_url}
+										<img src={p.image_url} alt={p.name} class="h-full w-full object-cover" loading="lazy" />
+									{:else}
+										<Package size={12} class="text-slate-300" />
+									{/if}
+								</div>
 								<div class="min-w-0 flex-1">
 									<p class="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{p.name}</p>
 									{#if p.category_name}
@@ -369,9 +376,16 @@
 						{:else}
 							{#each searchResults as p}
 								<li>
-									<button onclick={() => selectProduct(p)} class="w-full flex items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+									<button onclick={() => selectProduct(p)} class="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+										<div class="h-8 w-8 shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+											{#if p.image_url}
+												<img src={p.image_url} alt={p.name} class="h-full w-full object-cover" loading="lazy" />
+											{:else}
+												<Package size={12} class="text-slate-300" />
+											{/if}
+										</div>
 										<span class="font-medium text-slate-800 dark:text-slate-100 truncate">{p.name}</span>
-										<span class="text-xs text-slate-400 shrink-0 ml-2">Stock: {p.stock_qty}</span>
+										<span class="text-xs text-slate-400 shrink-0 ml-auto">Stock: {p.stock_qty}</span>
 									</button>
 								</li>
 							{/each}

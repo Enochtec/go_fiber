@@ -19,6 +19,7 @@ type Handlers struct {
 	Report    *handlers.ReportHandler
 	Shift     *handlers.ShiftHandler
 	Register  *handlers.RegisterHandler
+	Upload    *handlers.UploadHandler
 }
 
 func Setup(app *fiber.App, h *Handlers) {
@@ -34,6 +35,7 @@ func Setup(app *fiber.App, h *Handlers) {
 	protected := api.Group("", middleware.Auth())
 
 	protected.Get("/auth/me", h.Auth.Me)
+	protected.Post("/upload", h.Upload.Upload)
 
 	protected.Get("/dashboard", h.Inventory.Dashboard)
 

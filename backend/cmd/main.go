@@ -49,6 +49,7 @@ func main() {
 	inventorySvc := services.NewInventoryService(inventoryRepo, productRepo)
 	reportSvc := services.NewReportService(db)
 	registrationSvc := services.NewRegistrationService(db, shopRepo, userRepo, authSvc)
+	uploadHandler := handlers.NewUploadHandler()
 
 	h := &routes.Handlers{
 		Auth:      handlers.NewAuthHandler(authSvc, userRepo, validate),
@@ -62,6 +63,7 @@ func main() {
 		Report:    handlers.NewReportHandler(reportSvc),
 		Shift:     handlers.NewShiftHandler(shiftRepo, validate),
 		Register:  handlers.NewRegisterHandler(registrationSvc, validate),
+		Upload:    uploadHandler,
 	}
 
 	app := fiber.New(fiber.Config{
@@ -97,6 +99,8 @@ func main() {
 	})
 
 	routes.Setup(app, h)
+
+	app.Static("/uploads", filepath.Join(".", "uploads"))
 
 	webDir := filepath.Join(".", "web")
 	app.Get("/*", func(c *fiber.Ctx) error {
