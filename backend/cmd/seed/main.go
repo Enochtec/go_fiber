@@ -46,7 +46,7 @@ func main() {
 		IsActive: true,
 	}
 
-	if err := repo.Create(user); err != nil {
+	if err := repo.Create("", user); err != nil {
 		log.Fatalf("Failed to create admin: %v", err)
 	}
 

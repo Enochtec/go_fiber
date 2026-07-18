@@ -16,7 +16,7 @@ func NewSaleService(sales *repositories.SaleRepo, products *repositories.Product
 	return &SaleService{sales: sales, products: products}
 }
 
-func (s *SaleService) Create(cashierID string, in *models.CreateSaleInput) (*models.Sale, error) {
+func (s *SaleService) Create(shopID string, cashierID string, in *models.CreateSaleInput) (*models.Sale, error) {
 	status := models.SaleCompleted
 	if in.Status != "" {
 		status = in.Status
@@ -48,13 +48,13 @@ func (s *SaleService) Create(cashierID string, in *models.CreateSaleInput) (*mod
 	}
 	defer tx.Rollback()
 
-	if err := s.sales.Create(tx, sale); err != nil {
+	if err := s.sales.Create(tx, shopID, sale); err != nil {
 		return nil, err
 	}
 
 	for _, inp := range in.Items {
 		if status == models.SaleCompleted {
-			name, stock, err := s.products.GetStock(tx, inp.ProductID)
+			name, stock, err := s.products.GetStock(shopID, tx, inp.ProductID)
 			if err != nil {
 				return nil, fmt.Errorf("product lookup failed: %w", err)
 			}
@@ -70,7 +70,7 @@ func (s *SaleService) Create(cashierID string, in *models.CreateSaleInput) (*mod
 			UnitPrice: inp.UnitPrice,
 			Total:     inp.UnitPrice * float64(inp.Quantity),
 		}
-		if err := s.sales.CreateItem(tx, item); err != nil {
+		if err := s.sales.CreateItem(tx, shopID, item); err != nil {
 			return nil, err
 		}
 
@@ -90,8 +90,8 @@ func (s *SaleService) Create(cashierID string, in *models.CreateSaleInput) (*mod
 	return sale, nil
 }
 
-func (s *SaleService) Void(id string) error {
-	sale, err := s.sales.FindByID(id)
+func (s *SaleService) Void(shopID string, id string) error {
+	sale, err := s.sales.FindByID(shopID, id)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (s *SaleService) Void(id string) error {
 		}
 	}
 
-	if err := s.sales.UpdateStatus(id, models.SaleVoided); err != nil {
+	if err := s.sales.UpdateStatus(shopID, id, models.SaleVoided); err != nil {
 		return err
 	}
 

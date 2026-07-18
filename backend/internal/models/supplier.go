@@ -1,12 +1,15 @@
 package models
 
+import "database/sql"
+
 type Supplier struct {
-	ID        string  `db:"id" json:"id"`
-	Name      string  `db:"name" json:"name"`
-	Email     *string `db:"email" json:"email"`
-	Phone     *string `db:"phone" json:"phone"`
-	Address   *string `db:"address" json:"address"`
-	CreatedAt Time    `db:"created_at" json:"created_at"`
+	ID        string         `db:"id" json:"id"`
+	ShopID    sql.NullString `db:"shop_id" json:"shop_id"`
+	Name      string         `db:"name" json:"name"`
+	Email     *string        `db:"email" json:"email"`
+	Phone     *string        `db:"phone" json:"phone"`
+	Address   *string        `db:"address" json:"address"`
+	CreatedAt Time           `db:"created_at" json:"created_at"`
 }
 
 type SupplierInput struct {

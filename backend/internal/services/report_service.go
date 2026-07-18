@@ -42,7 +42,7 @@ type InventoryValueRow struct {
 	TotalValue   float64 `db:"total_value" json:"total_value"`
 }
 
-func (s *ReportService) DailySales(days int) ([]DailySalesRow, error) {
+func (s *ReportService) DailySales(shopID string, days int) ([]DailySalesRow, error) {
 	since := time.Now().AddDate(0, 0, -days).Format("2006-01-02 15:04:05")
 	var rows []DailySalesRow
 	err := s.db.Select(&rows, `
@@ -52,13 +52,14 @@ func (s *ReportService) DailySales(days int) ([]DailySalesRow, error) {
 			COALESCE(SUM(total), 0) AS total
 		FROM sales
 		WHERE status = 'completed'
-			AND created_at >= $1
+			AND shop_id = $1
+			AND created_at >= $2
 		GROUP BY DATE(created_at)
-		ORDER BY date DESC`, since)
+		ORDER BY date DESC`, shopID, since)
 	return rows, err
 }
 
-func (s *ReportService) MonthlySales(months int) ([]DailySalesRow, error) {
+func (s *ReportService) MonthlySales(shopID string, months int) ([]DailySalesRow, error) {
 	since := time.Now().AddDate(0, -months, 0).Format("2006-01-02 15:04:05")
 	var rows []DailySalesRow
 	err := s.db.Select(&rows, `
@@ -68,13 +69,14 @@ func (s *ReportService) MonthlySales(months int) ([]DailySalesRow, error) {
 			COALESCE(SUM(total), 0) AS total
 		FROM sales
 		WHERE status = 'completed'
-			AND created_at >= $1
+			AND shop_id = $1
+			AND created_at >= $2
 		GROUP BY TO_CHAR(created_at, 'YYYY-MM')
-		ORDER BY TO_CHAR(created_at, 'YYYY-MM') DESC`, since)
+		ORDER BY TO_CHAR(created_at, 'YYYY-MM') DESC`, shopID, since)
 	return rows, err
 }
 
-func (s *ReportService) TopProducts(limit int) ([]TopProductRow, error) {
+func (s *ReportService) TopProducts(shopID string, limit int) ([]TopProductRow, error) {
 	since := time.Now().AddDate(0, 0, -30).Format("2006-01-02 15:04:05")
 	var rows []TopProductRow
 	err := s.db.Select(&rows, `
@@ -88,14 +90,15 @@ func (s *ReportService) TopProducts(limit int) ([]TopProductRow, error) {
 		JOIN products p ON si.product_id = p.id
 		JOIN sales s ON si.sale_id = s.id
 		WHERE s.status = 'completed'
-			AND s.created_at >= $1
+			AND s.shop_id = $1
+			AND s.created_at >= $2
 		GROUP BY si.product_id, p.name
 		ORDER BY quantity DESC
-		LIMIT $2`, since, limit)
+		LIMIT $3`, shopID, since, limit)
 	return rows, err
 }
 
-func (s *ReportService) InventoryValue() ([]InventoryValueRow, error) {
+func (s *ReportService) InventoryValue(shopID string) ([]InventoryValueRow, error) {
 	var rows []InventoryValueRow
 	err := s.db.Select(&rows, `
 		SELECT
@@ -106,7 +109,8 @@ func (s *ReportService) InventoryValue() ([]InventoryValueRow, error) {
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
 		WHERE p.is_active = TRUE
+			AND p.shop_id = $1
 		GROUP BY c.name
-		ORDER BY total_value DESC`)
+		ORDER BY total_value DESC`, shopID)
 	return rows, err
 }

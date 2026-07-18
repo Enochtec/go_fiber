@@ -1,5 +1,7 @@
 package models
 
+import "database/sql"
+
 type PurchaseStatus string
 
 const (
@@ -9,6 +11,7 @@ const (
 
 type Purchase struct {
 	ID           string         `db:"id" json:"id"`
+	ShopID       sql.NullString `db:"shop_id" json:"shop_id"`
 	SupplierID   *string        `db:"supplier_id" json:"supplier_id"`
 	SupplierName *string        `db:"supplier_name" json:"supplier_name"`
 	UserID       string         `db:"user_id" json:"user_id"`
@@ -21,13 +24,14 @@ type Purchase struct {
 }
 
 type PurchaseItem struct {
-	ID          string  `db:"id" json:"id"`
-	PurchaseID  string  `db:"purchase_id" json:"purchase_id"`
-	ProductID   string  `db:"product_id" json:"product_id"`
-	ProductName *string `db:"product_name" json:"product_name"`
-	Quantity    int     `db:"quantity" json:"quantity"`
-	UnitPrice   float64 `db:"unit_price" json:"unit_price"`
-	Total       float64 `db:"total" json:"total"`
+	ID          string         `db:"id" json:"id"`
+	ShopID      sql.NullString `db:"shop_id" json:"shop_id"`
+	PurchaseID  string         `db:"purchase_id" json:"purchase_id"`
+	ProductID   string         `db:"product_id" json:"product_id"`
+	ProductName *string        `db:"product_name" json:"product_name"`
+	Quantity    int            `db:"quantity" json:"quantity"`
+	UnitPrice   float64        `db:"unit_price" json:"unit_price"`
+	Total       float64        `db:"total" json:"total"`
 }
 
 type PurchaseItemInput struct {

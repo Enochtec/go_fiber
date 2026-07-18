@@ -32,7 +32,7 @@ func Setup(app *fiber.App, h *Handlers) {
 	api.Post("/auth/login", h.Auth.Login)
 	api.Post("/auth/register", h.Register.Register)
 
-	protected := api.Group("", middleware.Auth())
+	protected := api.Group("", middleware.Auth(), middleware.RequireShop())
 
 	protected.Get("/auth/me", h.Auth.Me)
 	protected.Post("/upload", h.Upload.Upload)

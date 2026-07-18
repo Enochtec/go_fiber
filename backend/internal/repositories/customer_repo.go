@@ -17,60 +17,65 @@ func NewCustomerRepo(db *sqlx.DB) *CustomerRepo {
 	return &CustomerRepo{db: db}
 }
 
-func (r *CustomerRepo) List(search string, page, limit int) ([]models.Customer, int, error) {
+func (r *CustomerRepo) List(shopID string, search string, page, limit int) ([]models.Customer, int, error) {
 	var total int
 	args := []interface{}{}
 	where := "1=1"
+	i := 1
 
 	if search != "" {
-		where = "name ILIKE $1 OR phone ILIKE $1 OR email ILIKE $1"
+		where = fmt.Sprintf("(name ILIKE $%d OR phone ILIKE $%d OR email ILIKE $%d)", i, i, i)
 		args = append(args, "%"+search+"%")
+		i++
 	}
 
-	err := r.db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM customers WHERE %s", where), args...).Scan(&total)
+	countWhere := fmt.Sprintf("%s AND shop_id = $%d", where, i)
+	countArgs := append(args, shopID)
+
+	err := r.db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM customers WHERE %s", countWhere), countArgs...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * limit
-	args = append(args, limit, offset)
-	i := len(args) - 1
+	args = append(args, shopID, limit, offset)
+	listWhere := fmt.Sprintf("%s AND shop_id = $%d", where, i)
 
 	var customers []models.Customer
 	err = r.db.Select(&customers, fmt.Sprintf(
 		`SELECT * FROM customers WHERE %s ORDER BY name ASC LIMIT $%d OFFSET $%d`,
-		where, i, i+1,
+		listWhere, i+1, i+2,
 	), args...)
 	return customers, total, err
 }
 
-func (r *CustomerRepo) FindByID(id string) (*models.Customer, error) {
+func (r *CustomerRepo) FindByID(shopID string, id string) (*models.Customer, error) {
 	c := &models.Customer{}
-	err := r.db.Get(c, `SELECT * FROM customers WHERE id = $1`, id)
+	err := r.db.Get(c, `SELECT * FROM customers WHERE id = $1 AND shop_id = $2`, id, shopID)
 	if err != nil {
 		return nil, err
 	}
 	return c, nil
 }
 
-func (r *CustomerRepo) Create(c *models.Customer) error {
+func (r *CustomerRepo) Create(shopID string, c *models.Customer) error {
 	c.ID = uuid.New().String()
 	return r.db.QueryRowx(
-		`INSERT INTO customers (id, name, email, phone, address) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at`,
-		c.ID, c.Name, c.Email, c.Phone, c.Address,
+		`INSERT INTO customers (id, name, email, phone, address, shop_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
+		c.ID, c.Name, c.Email, c.Phone, c.Address, shopID,
 	).Scan(&c.ID, &c.CreatedAt)
 }
 
-func (r *CustomerRepo) Update(id string, in *models.CustomerInput) error {
+func (r *CustomerRepo) Update(shopID string, id string, in *models.CustomerInput) error {
 	_, err := r.db.Exec(
-		`UPDATE customers SET name = $1, email = $2, phone = $3, address = $4 WHERE id = $5`,
-		in.Name, in.Email, in.Phone, in.Address, id,
+		`UPDATE customers SET name = $1, email = $2, phone = $3, address = $4 WHERE id = $5 AND shop_id = $6`,
+		in.Name, in.Email, in.Phone, in.Address, id, shopID,
 	)
 	return err
 }
 
-func (r *CustomerRepo) Delete(id string) error {
-	_, err := r.db.Exec(`DELETE FROM customers WHERE id = $1`, id)
+func (r *CustomerRepo) Delete(shopID string, id string) error {
+	_, err := r.db.Exec(`DELETE FROM customers WHERE id = $1 AND shop_id = $2`, id, shopID)
 	return err
 }
 
@@ -81,7 +86,7 @@ type CustomerStats struct {
 	LastVisit     *time.Time `db:"last_visit" json:"last_visit"`
 }
 
-func (r *CustomerRepo) GetStats(id string) (*CustomerStats, error) {
+func (r *CustomerRepo) GetStats(shopID string, id string) (*CustomerStats, error) {
 	var s CustomerStats
 	err := r.db.Get(&s, `
 		SELECT
@@ -90,18 +95,18 @@ func (r *CustomerRepo) GetStats(id string) (*CustomerStats, error) {
 			COALESCE(AVG(total), 0) AS avg_order,
 			MAX(created_at) AS last_visit
 		FROM sales
-		WHERE customer_id = $1 AND status = 'completed'`, id)
+		WHERE customer_id = $1 AND status = 'completed' AND shop_id = $2`, id, shopID)
 	return &s, err
 }
 
-func (r *CustomerRepo) ListPurchaseHistory(id string, limit int) ([]models.Sale, error) {
+func (r *CustomerRepo) ListPurchaseHistory(shopID string, id string, limit int) ([]models.Sale, error) {
 	var sales []models.Sale
 	err := r.db.Select(&sales, `
 		SELECT s.*, u.name AS cashier_name
 		FROM sales s
 		JOIN users u ON u.id = s.cashier_id
-		WHERE s.customer_id = $1 AND s.status = 'completed'
+		WHERE s.customer_id = $1 AND s.status = 'completed' AND s.shop_id = $2
 		ORDER BY s.created_at DESC
-		LIMIT $2`, id, limit)
+		LIMIT $3`, id, shopID, limit)
 	return sales, err
 }

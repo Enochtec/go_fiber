@@ -19,8 +19,9 @@ func NewShiftHandler(shifts *repositories.ShiftRepo, v *validator.Validate) *Shi
 }
 
 func (h *ShiftHandler) Current(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	cashierID := c.Locals("userID").(string)
-	shift, err := h.shifts.GetCurrent(cashierID)
+	shift, err := h.shifts.GetCurrent(shopID, cashierID)
 	if err != nil {
 		return c.JSON(fiber.Map{"data": nil, "open": false})
 	}
@@ -28,11 +29,12 @@ func (h *ShiftHandler) Current(c *fiber.Ctx) error {
 }
 
 func (h *ShiftHandler) Open(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	cashierID := c.Locals("userID").(string)
 
-	existing, _ := h.shifts.GetCurrent(cashierID)
+	existing, _ := h.shifts.GetCurrent(shopID, cashierID)
 	if existing != nil {
-		h.shifts.ForceClose(existing.ID)
+		h.shifts.ForceClose(shopID, existing.ID)
 	}
 
 	var input models.OpenShiftInput
@@ -40,7 +42,7 @@ func (h *ShiftHandler) Open(c *fiber.Ctx) error {
 		return utils.BadRequest(c, "invalid body")
 	}
 
-	shift, err := h.shifts.Open(cashierID, &input)
+	shift, err := h.shifts.Open(shopID, cashierID, &input)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -48,6 +50,7 @@ func (h *ShiftHandler) Open(c *fiber.Ctx) error {
 }
 
 func (h *ShiftHandler) Close(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	cashierID := c.Locals("userID").(string)
 	id := c.Params("id")
 
@@ -56,7 +59,7 @@ func (h *ShiftHandler) Close(c *fiber.Ctx) error {
 		return utils.BadRequest(c, "invalid body")
 	}
 
-	shift, err := h.shifts.Close(id, cashierID, &input)
+	shift, err := h.shifts.Close(shopID, id, cashierID, &input)
 	if err != nil {
 		return utils.BadRequest(c, err.Error())
 	}
@@ -64,6 +67,7 @@ func (h *ShiftHandler) Close(c *fiber.Ctx) error {
 }
 
 func (h *ShiftHandler) List(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	cashierID := c.Locals("userID").(string)
 	role := c.Locals("role").(string)
 
@@ -72,7 +76,7 @@ func (h *ShiftHandler) List(c *fiber.Ctx) error {
 		filterID = c.Query("cashier_id", "")
 	}
 
-	shifts, err := h.shifts.List(filterID, 50)
+	shifts, err := h.shifts.List(shopID, filterID, 50)
 	if err != nil {
 		return utils.Internal(c, err)
 	}

@@ -22,6 +22,7 @@ func NewSaleHandler(sales *repositories.SaleRepo, service *services.SaleService,
 }
 
 func (h *SaleHandler) List(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
 	if page < 1 {
@@ -37,7 +38,7 @@ func (h *SaleHandler) List(c *fiber.Ctx) error {
 		Limit:     limit,
 	}
 
-	sales, total, err := h.sales.List(filter)
+	sales, total, err := h.sales.List(shopID, filter)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -45,7 +46,8 @@ func (h *SaleHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *SaleHandler) GetByID(c *fiber.Ctx) error {
-	sale, err := h.sales.FindByID(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	sale, err := h.sales.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "sale")
 	}
@@ -53,6 +55,7 @@ func (h *SaleHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *SaleHandler) Create(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CreateSaleInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -62,7 +65,7 @@ func (h *SaleHandler) Create(c *fiber.Ctx) error {
 	}
 
 	cashierID := c.Locals("userID").(string)
-	sale, err := h.service.Create(cashierID, &input)
+	sale, err := h.service.Create(shopID, cashierID, &input)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -70,14 +73,16 @@ func (h *SaleHandler) Create(c *fiber.Ctx) error {
 }
 
 func (h *SaleHandler) Void(c *fiber.Ctx) error {
-	if err := h.service.Void(c.Params("id")); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.service.Void(shopID, c.Params("id")); err != nil {
 		return utils.BadRequest(c, err.Error())
 	}
 	return utils.OKMessage(c, "sale voided")
 }
 
 func (h *SaleHandler) Hold(c *fiber.Ctx) error {
-	if err := h.sales.UpdateStatus(c.Params("id"), models.SaleHeld); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.sales.UpdateStatus(shopID, c.Params("id"), models.SaleHeld); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "sale held")

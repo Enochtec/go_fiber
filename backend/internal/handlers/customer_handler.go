@@ -20,13 +20,14 @@ func NewCustomerHandler(customers *repositories.CustomerRepo, v *validator.Valid
 }
 
 func (h *CustomerHandler) List(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
 	if page < 1 {
 		page = 1
 	}
 
-	customers, total, err := h.customers.List(c.Query("search"), page, limit)
+	customers, total, err := h.customers.List(shopID, c.Query("search"), page, limit)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -34,7 +35,8 @@ func (h *CustomerHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *CustomerHandler) GetByID(c *fiber.Ctx) error {
-	customer, err := h.customers.FindByID(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	customer, err := h.customers.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "customer")
 	}
@@ -42,6 +44,7 @@ func (h *CustomerHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *CustomerHandler) Create(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CustomerInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -57,13 +60,14 @@ func (h *CustomerHandler) Create(c *fiber.Ctx) error {
 		Address: input.Address,
 	}
 
-	if err := h.customers.Create(customer); err != nil {
+	if err := h.customers.Create(shopID, customer); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.Created(c, customer)
 }
 
 func (h *CustomerHandler) Update(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CustomerInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -72,11 +76,11 @@ func (h *CustomerHandler) Update(c *fiber.Ctx) error {
 		return utils.BadRequest(c, err.Error())
 	}
 
-	if err := h.customers.Update(c.Params("id"), &input); err != nil {
+	if err := h.customers.Update(shopID, c.Params("id"), &input); err != nil {
 		return utils.Internal(c, err)
 	}
 
-	customer, err := h.customers.FindByID(c.Params("id"))
+	customer, err := h.customers.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "customer")
 	}
@@ -84,14 +88,16 @@ func (h *CustomerHandler) Update(c *fiber.Ctx) error {
 }
 
 func (h *CustomerHandler) Delete(c *fiber.Ctx) error {
-	if err := h.customers.Delete(c.Params("id")); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.customers.Delete(shopID, c.Params("id")); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "customer deleted")
 }
 
 func (h *CustomerHandler) Stats(c *fiber.Ctx) error {
-	stats, err := h.customers.GetStats(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	stats, err := h.customers.GetStats(shopID, c.Params("id"))
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -99,11 +105,12 @@ func (h *CustomerHandler) Stats(c *fiber.Ctx) error {
 }
 
 func (h *CustomerHandler) History(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
 	if limit < 1 || limit > 100 {
 		limit = 20
 	}
-	sales, err := h.customers.ListPurchaseHistory(c.Params("id"), limit)
+	sales, err := h.customers.ListPurchaseHistory(shopID, c.Params("id"), limit)
 	if err != nil {
 		return utils.Internal(c, err)
 	}

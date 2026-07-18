@@ -17,10 +17,10 @@ func NewProductRepo(db *sqlx.DB) *ProductRepo {
 	return &ProductRepo{db: db}
 }
 
-func (r *ProductRepo) List(f models.ProductFilter) ([]models.Product, int, error) {
-	where := []string{"p.is_active = TRUE"}
-	args := []interface{}{}
-	i := 1
+func (r *ProductRepo) List(shopID string, f models.ProductFilter) ([]models.Product, int, error) {
+	where := []string{"p.is_active = TRUE", fmt.Sprintf("p.shop_id = $%d", 1)}
+	args := []interface{}{shopID}
+	i := 2
 
 	if f.Search != "" {
 		where = append(where, fmt.Sprintf("(p.name ILIKE $%d OR p.barcode = $%d OR p.sku ILIKE $%d)", i, i+1, i+2))
@@ -58,65 +58,65 @@ func (r *ProductRepo) List(f models.ProductFilter) ([]models.Product, int, error
 	return products, total, err
 }
 
-func (r *ProductRepo) FindByID(id string) (*models.Product, error) {
+func (r *ProductRepo) FindByID(shopID, id string) (*models.Product, error) {
 	p := &models.Product{}
 	err := r.db.Get(p, `
 		SELECT p.*, c.name AS category_name
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
-		WHERE p.id = $1`, id)
+		WHERE p.id = $1 AND p.shop_id = $2 AND p.is_active = TRUE`, id, shopID)
 	if err != nil {
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *ProductRepo) FindByBarcode(barcode string) (*models.Product, error) {
+func (r *ProductRepo) FindByBarcode(shopID, barcode string) (*models.Product, error) {
 	p := &models.Product{}
 	err := r.db.Get(p, `
 		SELECT p.*, c.name AS category_name
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
-		WHERE p.barcode = $1 AND p.is_active = TRUE`, barcode)
+		WHERE p.barcode = $1 AND p.shop_id = $2 AND p.is_active = TRUE`, barcode, shopID)
 	if err != nil {
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *ProductRepo) Create(p *models.Product) error {
+func (r *ProductRepo) Create(shopID string, p *models.Product) error {
 	p.ID = uuid.New().String()
 	return r.db.QueryRowx(`
-		INSERT INTO products (id, name, barcode, sku, category_id, buying_price, selling_price, stock_qty, reorder_level, image_url)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO products (id, shop_id, name, barcode, sku, category_id, buying_price, selling_price, stock_qty, reorder_level, image_url)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING id, created_at, updated_at`,
-		p.ID, p.Name, p.Barcode, p.SKU, p.CategoryID, p.BuyingPrice, p.SellingPrice, p.StockQty, p.ReorderLevel, p.ImageURL,
+		p.ID, shopID, p.Name, p.Barcode, p.SKU, p.CategoryID, p.BuyingPrice, p.SellingPrice, p.StockQty, p.ReorderLevel, p.ImageURL,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 }
 
-func (r *ProductRepo) Update(id string, in *models.ProductInput) error {
+func (r *ProductRepo) Update(shopID, id string, in *models.ProductInput) error {
 	_, err := r.db.Exec(`
 		UPDATE products SET
 			name = $1, barcode = $2, sku = $3, category_id = $4,
 			buying_price = $5, selling_price = $6, stock_qty = $7,
 			reorder_level = $8, image_url = $9, updated_at = NOW()
-		WHERE id = $10`,
+		WHERE id = $10 AND shop_id = $11`,
 		in.Name, in.Barcode, in.SKU, in.CategoryID,
 		in.BuyingPrice, in.SellingPrice, in.StockQty,
-		in.ReorderLevel, in.ImageURL, id,
+		in.ReorderLevel, in.ImageURL, id, shopID,
 	)
 	return err
 }
 
-func (r *ProductRepo) Delete(id string) error {
-	_, err := r.db.Exec(`UPDATE products SET is_active = FALSE, updated_at = NOW() WHERE id = $1`, id)
+func (r *ProductRepo) Delete(shopID, id string) error {
+	_, err := r.db.Exec(`UPDATE products SET is_active = FALSE, updated_at = NOW() WHERE id = $1 AND shop_id = $2`, id, shopID)
 	return err
 }
 
-func (r *ProductRepo) GetStock(tx *sqlx.Tx, productID string) (string, int, error) {
+func (r *ProductRepo) GetStock(shopID string, tx *sqlx.Tx, productID string) (string, int, error) {
 	var name string
 	var stock int
-	err := tx.QueryRow(`SELECT name, stock_qty FROM products WHERE id = $1`, productID).Scan(&name, &stock)
+	err := tx.QueryRow(`SELECT name, stock_qty FROM products WHERE id = $1 AND shop_id = $2`, productID, shopID).Scan(&name, &stock)
 	return name, stock, err
 }
 
@@ -128,29 +128,29 @@ func (r *ProductRepo) UpdateStock(tx *sqlx.Tx, productID string, delta int) erro
 	return err
 }
 
-func (r *ProductRepo) ListCategories() ([]models.Category, error) {
+func (r *ProductRepo) ListCategories(shopID string) ([]models.Category, error) {
 	var cats []models.Category
-	err := r.db.Select(&cats, `SELECT * FROM categories ORDER BY name ASC`)
+	err := r.db.Select(&cats, `SELECT * FROM categories WHERE shop_id = $1 ORDER BY name ASC`, shopID)
 	return cats, err
 }
 
-func (r *ProductRepo) CreateCategory(c *models.Category) error {
+func (r *ProductRepo) CreateCategory(shopID string, c *models.Category) error {
 	c.ID = uuid.New().String()
 	return r.db.QueryRowx(
-		`INSERT INTO categories (id, name, description) VALUES ($1, $2, $3) RETURNING id, created_at`,
-		c.ID, c.Name, c.Description,
+		`INSERT INTO categories (id, shop_id, name, description) VALUES ($1, $2, $3, $4) RETURNING id, created_at`,
+		c.ID, shopID, c.Name, c.Description,
 	).Scan(&c.ID, &c.CreatedAt)
 }
 
-func (r *ProductRepo) UpdateCategory(id string, in *models.CategoryInput) error {
+func (r *ProductRepo) UpdateCategory(shopID, id string, in *models.CategoryInput) error {
 	_, err := r.db.Exec(
-		`UPDATE categories SET name = $1, description = $2 WHERE id = $3`,
-		in.Name, in.Description, id,
+		`UPDATE categories SET name = $1, description = $2 WHERE id = $3 AND shop_id = $4`,
+		in.Name, in.Description, id, shopID,
 	)
 	return err
 }
 
-func (r *ProductRepo) DeleteCategory(id string) error {
-	_, err := r.db.Exec(`DELETE FROM categories WHERE id = $1`, id)
+func (r *ProductRepo) DeleteCategory(shopID, id string) error {
+	_, err := r.db.Exec(`DELETE FROM categories WHERE id = $1 AND shop_id = $2`, id, shopID)
 	return err
 }

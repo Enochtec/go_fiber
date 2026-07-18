@@ -22,13 +22,14 @@ func NewPurchaseHandler(purchases *repositories.PurchaseRepo, service *services.
 }
 
 func (h *PurchaseHandler) List(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
 	if page < 1 {
 		page = 1
 	}
 
-	purchases, total, err := h.purchases.List(page, limit)
+	purchases, total, err := h.purchases.List(shopID, page, limit)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -36,7 +37,8 @@ func (h *PurchaseHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *PurchaseHandler) GetByID(c *fiber.Ctx) error {
-	purchase, err := h.purchases.FindByID(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	purchase, err := h.purchases.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "purchase")
 	}
@@ -44,6 +46,7 @@ func (h *PurchaseHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *PurchaseHandler) Create(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CreatePurchaseInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -53,7 +56,7 @@ func (h *PurchaseHandler) Create(c *fiber.Ctx) error {
 	}
 
 	userID := c.Locals("userID").(string)
-	purchase, err := h.service.Create(userID, &input)
+	purchase, err := h.service.Create(shopID, userID, &input)
 	if err != nil {
 		return utils.Internal(c, err)
 	}

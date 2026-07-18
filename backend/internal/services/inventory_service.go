@@ -14,7 +14,7 @@ func NewInventoryService(inventory *repositories.InventoryRepo, products *reposi
 	return &InventoryService{inventory: inventory, products: products}
 }
 
-func (s *InventoryService) Adjust(userID string, in *models.StockAdjustmentInput) (*models.StockAdjustment, error) {
+func (s *InventoryService) Adjust(shopID string, userID string, in *models.StockAdjustmentInput) (*models.StockAdjustment, error) {
 	adj := &models.StockAdjustment{
 		ProductID: in.ProductID,
 		UserID:    userID,
@@ -33,7 +33,7 @@ func (s *InventoryService) Adjust(userID string, in *models.StockAdjustmentInput
 		return nil, err
 	}
 
-	if err := s.inventory.CreateAdjustment(tx, adj); err != nil {
+	if err := s.inventory.CreateAdjustment(tx, shopID, adj); err != nil {
 		return nil, err
 	}
 

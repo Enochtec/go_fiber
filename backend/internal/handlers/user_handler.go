@@ -21,7 +21,8 @@ func NewUserHandler(users *repositories.UserRepo, auth *services.AuthService, v 
 }
 
 func (h *UserHandler) List(c *fiber.Ctx) error {
-	users, err := h.users.List()
+	shopID := c.Locals("shopID").(string)
+	users, err := h.users.List(shopID)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -29,7 +30,8 @@ func (h *UserHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) GetByID(c *fiber.Ctx) error {
-	user, err := h.users.FindByID(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	user, err := h.users.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "user")
 	}
@@ -37,6 +39,7 @@ func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) Create(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CreateUserInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -58,13 +61,14 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 		IsActive: true,
 	}
 
-	if err := h.users.Create(user); err != nil {
+	if err := h.users.Create(shopID, user); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.Created(c, user)
 }
 
 func (h *UserHandler) Update(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.UpdateUserInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -89,11 +93,11 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 		fields["password"] = hash
 	}
 
-	if err := h.users.Update(c.Params("id"), fields); err != nil {
+	if err := h.users.Update(shopID, c.Params("id"), fields); err != nil {
 		return utils.Internal(c, err)
 	}
 
-	user, err := h.users.FindByID(c.Params("id"))
+	user, err := h.users.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "user")
 	}
@@ -101,7 +105,8 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) Delete(c *fiber.Ctx) error {
-	if err := h.users.Delete(c.Params("id")); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.users.Delete(shopID, c.Params("id")); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "user deactivated")

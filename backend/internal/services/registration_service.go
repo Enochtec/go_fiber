@@ -84,7 +84,7 @@ func (s *RegistrationService) Register(input *models.RegisterInput) (*models.Reg
 		Role:     models.RoleAdmin,
 		IsActive: true,
 	}
-	if err := s.users.Create(user); err != nil {
+	if err := s.users.Create(shop.ID, user); err != nil {
 		return nil, errors.New("failed to create account")
 	}
 

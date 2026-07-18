@@ -13,7 +13,9 @@ const inflight = new Map<string, Promise<unknown>>();
 const CACHE_TTL = 30_000;
 
 function cacheKey(method: string, path: string): string {
-	return method + ':' + path;
+	const token = authStore.token;
+	const suffix = token ? token.slice(-12) : 'anon';
+	return method + ':' + path + ':' + suffix;
 }
 
 function getCached(method: string, path: string): unknown | undefined {

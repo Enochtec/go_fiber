@@ -20,6 +20,7 @@ func NewProductHandler(products *repositories.ProductRepo, v *validator.Validate
 }
 
 func (h *ProductHandler) List(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
 	if page < 1 {
@@ -37,7 +38,7 @@ func (h *ProductHandler) List(c *fiber.Ctx) error {
 		Limit:      limit,
 	}
 
-	products, total, err := h.products.List(filter)
+	products, total, err := h.products.List(shopID, filter)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -45,7 +46,8 @@ func (h *ProductHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) GetByID(c *fiber.Ctx) error {
-	product, err := h.products.FindByID(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	product, err := h.products.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "product")
 	}
@@ -53,7 +55,8 @@ func (h *ProductHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) GetByBarcode(c *fiber.Ctx) error {
-	product, err := h.products.FindByBarcode(c.Params("barcode"))
+	shopID := c.Locals("shopID").(string)
+	product, err := h.products.FindByBarcode(shopID, c.Params("barcode"))
 	if err != nil {
 		return utils.NotFound(c, "product")
 	}
@@ -61,6 +64,7 @@ func (h *ProductHandler) GetByBarcode(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) Create(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.ProductInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -82,13 +86,14 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 		IsActive:     true,
 	}
 
-	if err := h.products.Create(product); err != nil {
+	if err := h.products.Create(shopID, product); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.Created(c, product)
 }
 
 func (h *ProductHandler) Update(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.ProductInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -97,11 +102,11 @@ func (h *ProductHandler) Update(c *fiber.Ctx) error {
 		return utils.BadRequest(c, err.Error())
 	}
 
-	if err := h.products.Update(c.Params("id"), &input); err != nil {
+	if err := h.products.Update(shopID, c.Params("id"), &input); err != nil {
 		return utils.Internal(c, err)
 	}
 
-	product, err := h.products.FindByID(c.Params("id"))
+	product, err := h.products.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "product")
 	}
@@ -109,14 +114,16 @@ func (h *ProductHandler) Update(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) Delete(c *fiber.Ctx) error {
-	if err := h.products.Delete(c.Params("id")); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.products.Delete(shopID, c.Params("id")); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "product deleted")
 }
 
 func (h *ProductHandler) ListCategories(c *fiber.Ctx) error {
-	cats, err := h.products.ListCategories()
+	shopID := c.Locals("shopID").(string)
+	cats, err := h.products.ListCategories(shopID)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -124,6 +131,7 @@ func (h *ProductHandler) ListCategories(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) CreateCategory(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CategoryInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -133,25 +141,27 @@ func (h *ProductHandler) CreateCategory(c *fiber.Ctx) error {
 	}
 
 	cat := &models.Category{Name: input.Name, Description: input.Description}
-	if err := h.products.CreateCategory(cat); err != nil {
+	if err := h.products.CreateCategory(shopID, cat); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.Created(c, cat)
 }
 
 func (h *ProductHandler) UpdateCategory(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.CategoryInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
 	}
-	if err := h.products.UpdateCategory(c.Params("id"), &input); err != nil {
+	if err := h.products.UpdateCategory(shopID, c.Params("id"), &input); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "category updated")
 }
 
 func (h *ProductHandler) DeleteCategory(c *fiber.Ctx) error {
-	if err := h.products.DeleteCategory(c.Params("id")); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.products.DeleteCategory(shopID, c.Params("id")); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "category deleted")

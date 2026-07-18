@@ -39,7 +39,8 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(string)
-	user, err := h.users.FindByID(userID)
+	shopID := c.Locals("shopID").(string)
+	user, err := h.users.FindByID(shopID, userID)
 	if err != nil {
 		return utils.NotFound(c, "user")
 	}

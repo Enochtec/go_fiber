@@ -25,25 +25,27 @@ func NewInventoryHandler(inventory *repositories.InventoryRepo, service *service
 }
 
 func (h *InventoryHandler) Dashboard(c *fiber.Ctx) error {
-	if v, ok := h.cache.Get("dashboard"); ok {
+	shopID := c.Locals("shopID").(string)
+	if v, ok := h.cache.Get("dashboard:" + shopID); ok {
 		return utils.OK(c, v)
 	}
-	stats, err := h.inventory.GetDashboardStats()
+	stats, err := h.inventory.GetDashboardStats(shopID)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
-	h.cache.Set("dashboard", stats)
+	h.cache.Set("dashboard:"+shopID, stats)
 	return utils.OK(c, stats)
 }
 
 func (h *InventoryHandler) ListAdjustments(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
 	if page < 1 {
 		page = 1
 	}
 
-	adjs, total, err := h.inventory.ListAdjustments(page, limit)
+	adjs, total, err := h.inventory.ListAdjustments(shopID, page, limit)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -51,6 +53,7 @@ func (h *InventoryHandler) ListAdjustments(c *fiber.Ctx) error {
 }
 
 func (h *InventoryHandler) Adjust(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.StockAdjustmentInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -60,7 +63,7 @@ func (h *InventoryHandler) Adjust(c *fiber.Ctx) error {
 	}
 
 	userID := c.Locals("userID").(string)
-	adj, err := h.service.Adjust(userID, &input)
+	adj, err := h.service.Adjust(shopID, userID, &input)
 	if err != nil {
 		return utils.Internal(c, err)
 	}

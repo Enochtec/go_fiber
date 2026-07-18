@@ -14,7 +14,7 @@ func NewPurchaseService(purchases *repositories.PurchaseRepo, products *reposito
 	return &PurchaseService{purchases: purchases, products: products}
 }
 
-func (s *PurchaseService) Create(userID string, in *models.CreatePurchaseInput) (*models.Purchase, error) {
+func (s *PurchaseService) Create(shopID string, userID string, in *models.CreatePurchaseInput) (*models.Purchase, error) {
 	status := models.PurchaseReceived
 	if in.Status != "" {
 		status = in.Status
@@ -40,7 +40,7 @@ func (s *PurchaseService) Create(userID string, in *models.CreatePurchaseInput) 
 	}
 	defer tx.Rollback()
 
-	if err := s.purchases.Create(tx, purchase); err != nil {
+	if err := s.purchases.Create(tx, shopID, purchase); err != nil {
 		return nil, err
 	}
 
@@ -52,7 +52,7 @@ func (s *PurchaseService) Create(userID string, in *models.CreatePurchaseInput) 
 			UnitPrice:  inp.UnitPrice,
 			Total:      inp.UnitPrice * float64(inp.Quantity),
 		}
-		if err := s.purchases.CreateItem(tx, item); err != nil {
+		if err := s.purchases.CreateItem(tx, shopID, item); err != nil {
 			return nil, err
 		}
 

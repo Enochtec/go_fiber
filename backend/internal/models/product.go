@@ -1,10 +1,13 @@
 package models
 
+import "database/sql"
+
 type Category struct {
-	ID          string  `db:"id" json:"id"`
-	Name        string  `db:"name" json:"name"`
-	Description *string `db:"description" json:"description"`
-	CreatedAt   Time    `db:"created_at" json:"created_at"`
+	ID          string         `db:"id" json:"id"`
+	ShopID      sql.NullString `db:"shop_id" json:"shop_id"`
+	Name        string         `db:"name" json:"name"`
+	Description *string        `db:"description" json:"description"`
+	CreatedAt   Time           `db:"created_at" json:"created_at"`
 }
 
 type CategoryInput struct {
@@ -13,20 +16,21 @@ type CategoryInput struct {
 }
 
 type Product struct {
-	ID           string  `db:"id" json:"id"`
-	Name         string  `db:"name" json:"name"`
-	Barcode      *string `db:"barcode" json:"barcode"`
-	SKU          *string `db:"sku" json:"sku"`
-	CategoryID   *string `db:"category_id" json:"category_id"`
-	CategoryName *string `db:"category_name" json:"category_name"`
-	BuyingPrice  float64 `db:"buying_price" json:"buying_price"`
-	SellingPrice float64 `db:"selling_price" json:"selling_price"`
-	StockQty     int     `db:"stock_qty" json:"stock_qty"`
-	ReorderLevel int     `db:"reorder_level" json:"reorder_level"`
-	ImageURL     *string `db:"image_url" json:"image_url"`
-	IsActive     bool    `db:"is_active" json:"is_active"`
-	CreatedAt    Time    `db:"created_at" json:"created_at"`
-	UpdatedAt    Time    `db:"updated_at" json:"updated_at"`
+	ID           string         `db:"id" json:"id"`
+	ShopID       sql.NullString `db:"shop_id" json:"shop_id"`
+	Name         string         `db:"name" json:"name"`
+	Barcode      *string        `db:"barcode" json:"barcode"`
+	SKU          *string        `db:"sku" json:"sku"`
+	CategoryID   *string        `db:"category_id" json:"category_id"`
+	CategoryName *string        `db:"category_name" json:"category_name"`
+	BuyingPrice  float64        `db:"buying_price" json:"buying_price"`
+	SellingPrice float64        `db:"selling_price" json:"selling_price"`
+	StockQty     int            `db:"stock_qty" json:"stock_qty"`
+	ReorderLevel int            `db:"reorder_level" json:"reorder_level"`
+	ImageURL     *string        `db:"image_url" json:"image_url"`
+	IsActive     bool           `db:"is_active" json:"is_active"`
+	CreatedAt    Time           `db:"created_at" json:"created_at"`
+	UpdatedAt    Time           `db:"updated_at" json:"updated_at"`
 }
 
 type ProductInput struct {

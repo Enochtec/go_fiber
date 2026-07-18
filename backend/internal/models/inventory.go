@@ -1,14 +1,17 @@
 package models
 
+import "database/sql"
+
 type StockAdjustment struct {
-	ID          string  `db:"id" json:"id"`
-	ProductID   string  `db:"product_id" json:"product_id"`
-	ProductName *string `db:"product_name" json:"product_name"`
-	UserID      string  `db:"user_id" json:"user_id"`
-	UserName    *string `db:"user_name" json:"user_name"`
-	Quantity    int     `db:"quantity" json:"quantity"`
-	Reason      string  `db:"reason" json:"reason"`
-	CreatedAt   Time    `db:"created_at" json:"created_at"`
+	ID          string         `db:"id" json:"id"`
+	ShopID      sql.NullString `db:"shop_id" json:"shop_id"`
+	ProductID   string         `db:"product_id" json:"product_id"`
+	ProductName *string        `db:"product_name" json:"product_name"`
+	UserID      string         `db:"user_id" json:"user_id"`
+	UserName    *string        `db:"user_name" json:"user_name"`
+	Quantity    int            `db:"quantity" json:"quantity"`
+	Reason      string         `db:"reason" json:"reason"`
+	CreatedAt   Time           `db:"created_at" json:"created_at"`
 }
 
 type StockAdjustmentInput struct {

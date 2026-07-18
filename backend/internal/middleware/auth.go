@@ -49,3 +49,16 @@ func RequireRole(roles ...string) fiber.Handler {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"success": false, "error": "forbidden"})
 	}
 }
+
+// RequireShop rejects requests from users who do not belong to a shop.
+// This prevents users without a shop_id (e.g. legacy seed admin) from accessing
+// shop-scoped resources.
+func RequireShop() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		shopID := c.Locals("shopID")
+		if shopID == nil || shopID.(string) == "" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"success": false, "error": "no shop assigned"})
+		}
+		return c.Next()
+	}
+}

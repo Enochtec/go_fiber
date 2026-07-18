@@ -19,7 +19,8 @@ func NewSupplierHandler(suppliers *repositories.SupplierRepo, v *validator.Valid
 }
 
 func (h *SupplierHandler) List(c *fiber.Ctx) error {
-	suppliers, err := h.suppliers.List()
+	shopID := c.Locals("shopID").(string)
+	suppliers, err := h.suppliers.List(shopID)
 	if err != nil {
 		return utils.Internal(c, err)
 	}
@@ -27,7 +28,8 @@ func (h *SupplierHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *SupplierHandler) GetByID(c *fiber.Ctx) error {
-	supplier, err := h.suppliers.FindByID(c.Params("id"))
+	shopID := c.Locals("shopID").(string)
+	supplier, err := h.suppliers.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "supplier")
 	}
@@ -35,6 +37,7 @@ func (h *SupplierHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *SupplierHandler) Create(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.SupplierInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -50,13 +53,14 @@ func (h *SupplierHandler) Create(c *fiber.Ctx) error {
 		Address: input.Address,
 	}
 
-	if err := h.suppliers.Create(supplier); err != nil {
+	if err := h.suppliers.Create(shopID, supplier); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.Created(c, supplier)
 }
 
 func (h *SupplierHandler) Update(c *fiber.Ctx) error {
+	shopID := c.Locals("shopID").(string)
 	var input models.SupplierInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
@@ -65,11 +69,11 @@ func (h *SupplierHandler) Update(c *fiber.Ctx) error {
 		return utils.BadRequest(c, err.Error())
 	}
 
-	if err := h.suppliers.Update(c.Params("id"), &input); err != nil {
+	if err := h.suppliers.Update(shopID, c.Params("id"), &input); err != nil {
 		return utils.Internal(c, err)
 	}
 
-	supplier, err := h.suppliers.FindByID(c.Params("id"))
+	supplier, err := h.suppliers.FindByID(shopID, c.Params("id"))
 	if err != nil {
 		return utils.NotFound(c, "supplier")
 	}
@@ -77,7 +81,8 @@ func (h *SupplierHandler) Update(c *fiber.Ctx) error {
 }
 
 func (h *SupplierHandler) Delete(c *fiber.Ctx) error {
-	if err := h.suppliers.Delete(c.Params("id")); err != nil {
+	shopID := c.Locals("shopID").(string)
+	if err := h.suppliers.Delete(shopID, c.Params("id")); err != nil {
 		return utils.Internal(c, err)
 	}
 	return utils.OKMessage(c, "supplier deleted")

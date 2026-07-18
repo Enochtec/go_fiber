@@ -15,9 +15,9 @@ func NewPurchaseRepo(db *sqlx.DB) *PurchaseRepo {
 	return &PurchaseRepo{db: db}
 }
 
-func (r *PurchaseRepo) List(page, limit int) ([]models.Purchase, int, error) {
+func (r *PurchaseRepo) List(shopID string, page, limit int) ([]models.Purchase, int, error) {
 	var total int
-	err := r.db.QueryRow(`SELECT COUNT(*) FROM purchases`).Scan(&total)
+	err := r.db.QueryRow(`SELECT COUNT(*) FROM purchases WHERE shop_id = $1`, shopID).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -29,19 +29,20 @@ func (r *PurchaseRepo) List(page, limit int) ([]models.Purchase, int, error) {
 		FROM purchases p
 		LEFT JOIN suppliers s ON p.supplier_id = s.id
 		JOIN users u ON p.user_id = u.id
+		WHERE p.shop_id = $1
 		ORDER BY p.created_at DESC
-		LIMIT $1 OFFSET $2`, limit, offset)
+		LIMIT $2 OFFSET $3`, shopID, limit, offset)
 	return purchases, total, err
 }
 
-func (r *PurchaseRepo) FindByID(id string) (*models.Purchase, error) {
+func (r *PurchaseRepo) FindByID(shopID string, id string) (*models.Purchase, error) {
 	p := &models.Purchase{}
 	err := r.db.Get(p, `
 		SELECT p.*, s.name AS supplier_name, u.name AS user_name
 		FROM purchases p
 		LEFT JOIN suppliers s ON p.supplier_id = s.id
 		JOIN users u ON p.user_id = u.id
-		WHERE p.id = $1`, id)
+		WHERE p.id = $1 AND p.shop_id = $2`, id, shopID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,21 +55,21 @@ func (r *PurchaseRepo) FindByID(id string) (*models.Purchase, error) {
 	return p, err
 }
 
-func (r *PurchaseRepo) Create(tx *sqlx.Tx, p *models.Purchase) error {
+func (r *PurchaseRepo) Create(tx *sqlx.Tx, shopID string, p *models.Purchase) error {
 	p.ID = uuid.New().String()
 	return tx.QueryRowx(`
-		INSERT INTO purchases (id, supplier_id, user_id, total, status, note)
-		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
-		p.ID, p.SupplierID, p.UserID, p.Total, p.Status, p.Note,
+		INSERT INTO purchases (id, supplier_id, user_id, total, status, note, shop_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
+		p.ID, p.SupplierID, p.UserID, p.Total, p.Status, p.Note, shopID,
 	).Scan(&p.ID, &p.CreatedAt)
 }
 
-func (r *PurchaseRepo) CreateItem(tx *sqlx.Tx, item *models.PurchaseItem) error {
+func (r *PurchaseRepo) CreateItem(tx *sqlx.Tx, shopID string, item *models.PurchaseItem) error {
 	item.ID = uuid.New().String()
 	return tx.QueryRowx(`
-		INSERT INTO purchase_items (id, purchase_id, product_id, quantity, unit_price, total)
-		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-		item.ID, item.PurchaseID, item.ProductID, item.Quantity, item.UnitPrice, item.Total,
+		INSERT INTO purchase_items (id, purchase_id, product_id, quantity, unit_price, total, shop_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+		item.ID, item.PurchaseID, item.ProductID, item.Quantity, item.UnitPrice, item.Total, shopID,
 	).Scan(&item.ID)
 }
 

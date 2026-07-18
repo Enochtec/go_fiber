@@ -7,13 +7,14 @@
 	import { customersService } from '$lib/services/customers';
 	import { salesService } from '$lib/services/sales';
 	import Modal from '$lib/components/Modal.svelte';
+	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
 	import type { Product, Customer, Sale } from '$lib/types';
 	import {
 		Search, ShoppingCart, Plus, Minus, Trash2, User,
 		Clock, Printer, X, Banknote, Smartphone, Package,
 		Landmark, CreditCard, Receipt, ChevronDown, PlusCircle,
 		Percent, FileText, Tag, AlertTriangle, Check,
-		MessageCircle, ArrowLeft, Hash
+		MessageCircle, ArrowLeft, Hash, Scan
 	} from '@lucide/svelte';
 
 	// ─── State ───────────────────────────────────────────────────────
@@ -42,6 +43,7 @@
 	let showNewCustomerModal = $state(false);
 	let showShiftModal = $state(false);
 	let showCloseShiftModal = $state(false);
+	let showScanner = $state(false);
 
 	let customerSearch = $state('');
 	let discountInput = $state(0);
@@ -492,6 +494,15 @@
 						</button>
 					{/if}
 				</div>
+
+				<!-- Scan barcode -->
+				<button
+					onclick={() => showScanner = true}
+					class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 shrink-0 transition-colors"
+					title="Scan Barcode"
+				>
+					<Scan size={15} />
+				</button>
 
 				<!-- Held sales -->
 				<button
@@ -1164,6 +1175,18 @@
 		<button onclick={closeShift} class="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">Close Shift</button>
 	{/snippet}
 </Modal>
+
+<!-- Barcode Scanner -->
+{#if showScanner}
+	<BarcodeScanner
+		onscan={(code) => {
+			showScanner = false;
+			search = code;
+			searchBarcodeOrSKU(code);
+		}}
+		onclose={() => showScanner = false}
+	/>
+{/if}
 
 <style>
 	.scrollbar-none { scrollbar-width: none; }

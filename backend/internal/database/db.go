@@ -40,6 +40,7 @@ func migrate(db *sqlx.DB) error {
 		schemaShops,
 		schemaShopSettings,
 		schemaUsersV2,
+		schemaTenantIsolation,
 	}
 
 	for _, s := range schemas {
@@ -269,4 +270,28 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT '';
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_shop ON users(shop_id);
+`
+
+const schemaTenantIsolation = `
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE purchases ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE purchase_items ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE stock_adjustments ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE shifts ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+
+CREATE INDEX IF NOT EXISTS idx_categories_shop ON categories(shop_id);
+CREATE INDEX IF NOT EXISTS idx_products_shop ON products(shop_id);
+CREATE INDEX IF NOT EXISTS idx_customers_shop ON customers(shop_id);
+CREATE INDEX IF NOT EXISTS idx_suppliers_shop ON suppliers(shop_id);
+CREATE INDEX IF NOT EXISTS idx_sales_shop ON sales(shop_id);
+CREATE INDEX IF NOT EXISTS idx_sale_items_shop ON sale_items(shop_id);
+CREATE INDEX IF NOT EXISTS idx_purchases_shop ON purchases(shop_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_items_shop ON purchase_items(shop_id);
+CREATE INDEX IF NOT EXISTS idx_stock_adjustments_shop ON stock_adjustments(shop_id);
+CREATE INDEX IF NOT EXISTS idx_shifts_shop ON shifts(shop_id);
 `
