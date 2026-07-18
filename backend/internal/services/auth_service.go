@@ -35,7 +35,7 @@ func (s *AuthService) Login(email, password string) (*models.User, string, error
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		log.Printf("[auth] login failed: password mismatch for %s (user exists)", email)
+		log.Printf("[auth] login failed: password mismatch for %s", email)
 		return nil, "", errors.New("invalid credentials")
 	}
 
@@ -60,9 +60,15 @@ func generateToken(user *models.User) (string, error) {
 		hours = h
 	}
 
+	shopID := ""
+	if user.ShopID.Valid {
+		shopID = user.ShopID.String
+	}
+
 	claims := &middleware.Claims{
 		UserID: user.ID,
 		Role:   string(user.Role),
+		ShopID: shopID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(hours) * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

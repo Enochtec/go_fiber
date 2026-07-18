@@ -11,6 +11,7 @@ import (
 type Claims struct {
 	UserID string `json:"user_id"`
 	Role   string `json:"role"`
+	ShopID string `json:"shop_id"`
 	jwt.RegisteredClaims
 }
 
@@ -32,6 +33,7 @@ func Auth() fiber.Handler {
 
 		c.Locals("userID", claims.UserID)
 		c.Locals("role", claims.Role)
+		c.Locals("shopID", claims.ShopID)
 		return c.Next()
 	}
 }

@@ -35,8 +35,17 @@ func Connect() (*sqlx.DB, error) {
 }
 
 func migrate(db *sqlx.DB) error {
-	if _, err := db.Exec(schema); err != nil {
-		return err
+	schemas := []string{
+		schemaV1,
+		schemaShops,
+		schemaShopSettings,
+		schemaUsersV2,
+	}
+
+	for _, s := range schemas {
+		if _, err := db.Exec(s); err != nil {
+			return err
+		}
 	}
 
 	var count int
@@ -65,7 +74,7 @@ func migrate(db *sqlx.DB) error {
 	return nil
 }
 
-const schema = `
+const schemaV1 = `
 CREATE TABLE IF NOT EXISTS users (
 	id TEXT PRIMARY KEY,
 	name TEXT NOT NULL,
@@ -215,4 +224,49 @@ CREATE TABLE IF NOT EXISTS shifts (
 CREATE INDEX IF NOT EXISTS idx_shifts_cashier ON shifts(cashier_id);
 CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
 CREATE INDEX IF NOT EXISTS idx_shifts_created_at ON shifts(created_at DESC);
+`
+
+const schemaShops = `
+CREATE TABLE IF NOT EXISTS shops (
+	id TEXT PRIMARY KEY,
+	name TEXT NOT NULL,
+	business_type TEXT NOT NULL DEFAULT 'retail',
+	email TEXT DEFAULT '',
+	phone TEXT DEFAULT '',
+	address TEXT DEFAULT '',
+	country TEXT NOT NULL DEFAULT '',
+	county TEXT NOT NULL DEFAULT '',
+	town TEXT NOT NULL DEFAULT '',
+	currency TEXT NOT NULL DEFAULT 'KES',
+	timezone TEXT NOT NULL DEFAULT 'Africa/Nairobi',
+	logo TEXT DEFAULT '',
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+`
+
+const schemaShopSettings = `
+CREATE TABLE IF NOT EXISTS shop_settings (
+	id TEXT PRIMARY KEY,
+	shop_id TEXT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+	tax_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
+	receipt_footer TEXT DEFAULT 'Thank you for your business!',
+	invoice_prefix TEXT DEFAULT 'INV-',
+	default_payment_method TEXT DEFAULT 'cash',
+	low_stock_threshold INTEGER NOT NULL DEFAULT 10,
+	enable_notifications BOOLEAN NOT NULL DEFAULT TRUE,
+	currency TEXT NOT NULL DEFAULT 'KES',
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shop_settings_shop ON shop_settings(shop_id);
+`
+
+const schemaUsersV2 = `
+ALTER TABLE users ADD COLUMN IF NOT EXISTS shop_id TEXT REFERENCES shops(id);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT '';
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_shop ON users(shop_id);
 `

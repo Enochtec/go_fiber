@@ -41,12 +41,14 @@ func main() {
 	purchaseRepo := repositories.NewPurchaseRepo(db)
 	inventoryRepo := repositories.NewInventoryRepo(db)
 	shiftRepo := repositories.NewShiftRepo(db)
+	shopRepo := repositories.NewShopRepo(db)
 
 	authSvc := services.NewAuthService(userRepo)
 	saleSvc := services.NewSaleService(saleRepo, productRepo)
 	purchaseSvc := services.NewPurchaseService(purchaseRepo, productRepo)
 	inventorySvc := services.NewInventoryService(inventoryRepo, productRepo)
 	reportSvc := services.NewReportService(db)
+	registrationSvc := services.NewRegistrationService(db, shopRepo, userRepo, authSvc)
 
 	h := &routes.Handlers{
 		Auth:      handlers.NewAuthHandler(authSvc, userRepo, validate),
@@ -59,6 +61,7 @@ func main() {
 		Inventory: handlers.NewInventoryHandler(inventoryRepo, inventorySvc, validate),
 		Report:    handlers.NewReportHandler(reportSvc),
 		Shift:     handlers.NewShiftHandler(shiftRepo, validate),
+		Register:  handlers.NewRegisterHandler(registrationSvc, validate),
 	}
 
 	app := fiber.New(fiber.Config{
@@ -82,7 +85,6 @@ func main() {
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
 
-	// Cache static assets aggressively
 	app.Use(func(c *fiber.Ctx) error {
 		if err := c.Next(); err != nil {
 			return err
@@ -125,5 +127,3 @@ func main() {
 		log.Fatalf("Server error: %v", err)
 	}
 }
-
-

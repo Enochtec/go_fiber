@@ -2,12 +2,69 @@ export type Role = 'admin' | 'manager' | 'cashier';
 
 export interface User {
 	id: string;
+	shop_id: string | null;
 	name: string;
+	username: string;
 	email: string;
+	phone: string;
 	role: Role;
 	is_active: boolean;
 	created_at: string;
 	updated_at: string;
+}
+
+export interface Shop {
+	id: string;
+	name: string;
+	business_type: string;
+	email: string;
+	phone: string;
+	address: string;
+	country: string;
+	county: string;
+	town: string;
+	currency: string;
+	timezone: string;
+	logo: string;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface ShopSettings {
+	id: string;
+	shop_id: string;
+	tax_rate: number;
+	receipt_footer: string;
+	invoice_prefix: string;
+	default_payment_method: string;
+	low_stock_threshold: number;
+	enable_notifications: boolean;
+	currency: string;
+}
+
+export interface RegisterInput {
+	shop_name: string;
+	business_type: string;
+	business_email: string;
+	business_phone: string;
+	country: string;
+	county: string;
+	town: string;
+	address: string;
+	currency: string;
+	timezone: string;
+	owner_name: string;
+	owner_email: string;
+	owner_phone: string;
+	username: string;
+	password: string;
+	confirm_password: string;
+}
+
+export interface RegisterResult {
+	user: User;
+	shop: Shop;
+	token: string;
 }
 
 export interface Category {

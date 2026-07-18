@@ -4,19 +4,22 @@
 	import { authService } from '$lib/services/auth';
 	import { notify } from '$lib/stores/notification.svelte';
 	import Notification from '$lib/components/Notification.svelte';
-	import { Store } from '@lucide/svelte';
+	import { Store, LoaderCircle } from '@lucide/svelte';
 
 	let email = $state('');
 	let password = $state('');
+	let remember = $state(false);
 	let loading = $state(false);
 
 	async function login(e: SubmitEvent) {
 		e.preventDefault();
 		loading = true;
 		try {
-			const res = await authService.login(email, password);
+			const res = await authService.login(email.trim(), password);
 			if (res.data) {
 				authStore.set(res.data.user, res.data.token);
+				if (remember) localStorage.setItem('pos_remember', email);
+				else localStorage.removeItem('pos_remember');
 				goto('/dashboard');
 			}
 		} catch (err) {
@@ -79,7 +82,7 @@
 
 		<div class="w-full max-w-sm">
 			<div class="hidden lg:block mb-8">
-				<h2 class="text-2xl font-bold text-slate-900">Sign in</h2>
+				<h2 class="text-2xl font-bold text-slate-900">Welcome back</h2>
 				<p class="mt-1 text-sm text-slate-500">Enter your credentials to access the system</p>
 			</div>
 
@@ -110,16 +113,36 @@
 					/>
 				</div>
 
+				<div class="flex items-center justify-between">
+					<label class="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" bind:checked={remember}
+							class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20" />
+						<span class="text-xs text-slate-600">Remember me</span>
+					</label>
+					<a href="/forgot-password" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Forgot password?</a>
+				</div>
+
 				<button
 					type="submit"
 					disabled={loading}
 					class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.99]"
 				>
-					{loading ? 'Signing in…' : 'Sign in'}
+					{#if loading}
+						<span class="inline-flex items-center gap-2"><LoaderCircle size={15} class="animate-spin" /> Signing in…</span>
+					{:else}
+						Sign in
+					{/if}
 				</button>
 			</form>
 
-			<p class="mt-6 text-center text-xs text-slate-400">
+			<div class="mt-6 text-center">
+				<p class="text-xs text-slate-400">
+					Don't have an account?
+					<a href="/register" class="font-semibold text-blue-600 hover:text-blue-700">Create one</a>
+				</p>
+			</div>
+
+			<p class="mt-4 text-center text-xs text-slate-400">
 				Secure access · All sessions are encrypted
 			</p>
 		</div>

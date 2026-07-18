@@ -1,5 +1,7 @@
 package models
 
+import "database/sql"
+
 type Role string
 
 const (
@@ -9,14 +11,17 @@ const (
 )
 
 type User struct {
-	ID        string    `db:"id" json:"id"`
-	Name      string    `db:"name" json:"name"`
-	Email     string    `db:"email" json:"email"`
-	Password  string    `db:"password" json:"-"`
-	Role      Role      `db:"role" json:"role"`
-	IsActive  bool      `db:"is_active" json:"is_active"`
-	CreatedAt Time `db:"created_at" json:"created_at"`
-	UpdatedAt Time `db:"updated_at" json:"updated_at"`
+	ID        string       `db:"id" json:"id"`
+	ShopID    sql.NullString `db:"shop_id" json:"shop_id"`
+	Name      string       `db:"name" json:"name"`
+	Username  string       `db:"username" json:"username"`
+	Email     string       `db:"email" json:"email"`
+	Phone     string       `db:"phone" json:"phone"`
+	Password  string       `db:"password" json:"-"`
+	Role      Role         `db:"role" json:"role"`
+	IsActive  bool         `db:"is_active" json:"is_active"`
+	CreatedAt Time         `db:"created_at" json:"created_at"`
+	UpdatedAt Time         `db:"updated_at" json:"updated_at"`
 }
 
 type CreateUserInput struct {

@@ -24,6 +24,24 @@ func (r *UserRepo) FindByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
+func (r *UserRepo) FindByUsername(username string) (*models.User, error) {
+	user := &models.User{}
+	err := r.db.Get(user, `SELECT * FROM users WHERE username = $1 AND is_active = TRUE`, username)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (r *UserRepo) FindByPhone(phone string) (*models.User, error) {
+	user := &models.User{}
+	err := r.db.Get(user, `SELECT * FROM users WHERE phone = $1 AND is_active = TRUE`, phone)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (r *UserRepo) FindByID(id string) (*models.User, error) {
 	user := &models.User{}
 	err := r.db.Get(user, `SELECT * FROM users WHERE id = $1`, id)
@@ -42,8 +60,10 @@ func (r *UserRepo) List() ([]models.User, error) {
 func (r *UserRepo) Create(u *models.User) error {
 	u.ID = uuid.New().String()
 	return r.db.QueryRowx(
-		`INSERT INTO users (id, name, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at, updated_at`,
-		u.ID, u.Name, u.Email, u.Password, u.Role,
+		`INSERT INTO users (id, shop_id, name, username, email, phone, password, role)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id, created_at, updated_at`,
+		u.ID, u.ShopID, u.Name, u.Username, u.Email, u.Phone, u.Password, u.Role,
 	).Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
 }
 
