@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-	--color-brand:      #008B8B;
-	--color-brand-dark: #006B6B;
-	--color-brand-light:#e0f7f7;
+	--color-brand:      #3F00FF;
+	--color-brand-dark: #3200CC;
+	--color-brand-light:#EEF0FF;
 	--color-sidebar:    #0f172a;
 
-	/* Remap the blue palette → teal (#008B8B) so every bg-blue-*, text-blue-*, etc. uses the new brand */
-	--color-blue-50:  #f0fafa;
-	--color-blue-100: #d8f4f4;
-	--color-blue-200: #b3e5e5;
-	--color-blue-300: #7dd0d0;
-	--color-blue-400: #3db8b8;
-	--color-blue-500: #0fa0a0;
-	--color-blue-600: #008B8B;
-	--color-blue-700: #007070;
-	--color-blue-800: #005858;
-	--color-blue-900: #003f3f;
-	--color-blue-950: #002525;
+	/* Blue palette → #3F00FF */
+	--color-blue-50:  #EEF0FF;
+	--color-blue-100: #DBDFFF;
+	--color-blue-200: #B8BFFF;
+	--color-blue-300: #8A8FFF;
+	--color-blue-400: #5C5FFF;
+	--color-blue-500: #3F30FF;
+	--color-blue-600: #3F00FF;
+	--color-blue-700: #3200CC;
+	--color-blue-800: #260099;
+	--color-blue-900: #1A0066;
+	--color-blue-950: #0D0033;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -44,7 +44,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
-	outline: 2px solid #008B8B;
+	outline: 2px solid #3F00FF;
 	outline-offset: 2px;
 }
 
@@ -71,10 +71,30 @@ input[type='number']::-webkit-outer-spin-button {
 	color: #0f172a;
 	transition: border-color 150ms;
 }
-.field:focus { border-color: #008B8B; }
+.field:focus { border-color: #3F00FF; }
 
 /* ─── Badge variants ─── */
 .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 600; line-height: 1.25rem; }
+
+/* ─── Font size boost ─── */
+@media (max-width: 640px) {
+	:where(.text-xs) { font-size: 0.875rem; }
+	:where(.text-sm) { font-size: 1rem; }
+	:where(.text-base) { font-size: 1.125rem; }
+	:where(.text-lg) { font-size: 1.25rem; }
+	:where(.text-xl) { font-size: 1.375rem; }
+	:where(.text-2xl) { font-size: 1.625rem; }
+	:where(.text-3xl) { font-size: 2rem; }
+}
+@media (min-width: 641px) {
+	:where(.text-xs) { font-size: 0.8125rem; }
+	:where(.text-sm) { font-size: 0.9375rem; }
+	:where(.text-base) { font-size: 1.0625rem; }
+	:where(.text-lg) { font-size: 1.1875rem; }
+	:where(.text-xl) { font-size: 1.3125rem; }
+	:where(.text-2xl) { font-size: 1.5625rem; }
+	:where(.text-3xl) { font-size: 1.9375rem; }
+}
 .badge-blue   { background: #e0f7f7; color: #006060; }
 .badge-green  { background: #f0fdf4; color: #15803d; }
 .badge-amber  { background: #fffbeb; color: #b45309; }

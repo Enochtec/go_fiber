@@ -3,7 +3,6 @@
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { authService } from '$lib/services/auth';
-	import { shiftStore } from '$lib/stores/shift.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 	import { onMount } from 'svelte';
@@ -37,7 +36,6 @@
 				goto('/login');
 			}
 		}
-		shiftStore.fetch();
 	});
 </script>
 

@@ -129,7 +129,7 @@
 <div class="p-4 md:p-6 space-y-5 bg-slate-50 dark:bg-slate-950 min-h-full">
 
 	<!-- Header -->
-	<div class="flex items-center justify-between pl-3 border-l-4 border-cyan-600">
+	<div class="flex items-center justify-between pl-3 border-l-4" style="border-color:#3F00FF;">
 		<div>
 			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Inventory</h1>
 			<p class="text-xs text-slate-400 mt-0.5">Stock overview and adjustments</p>
@@ -137,7 +137,7 @@
 		<button
 			onclick={() => showModal = true}
 			class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-95"
-			style="background:linear-gradient(135deg,#0891b2,#0e7490);"
+			style="background:linear-gradient(135deg,#3F00FF,#3200CC);"
 		>
 			<Plus size={15} /> Adjust Stock
 		</button>
@@ -153,7 +153,7 @@
 	{:else}
 		<!-- ── Stock value cards ─────────────────────────────────── -->
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#10b981,#059669);">
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#39FF14,#2ECC40);">
 				<div class="absolute -top-3 -right-3 h-16 w-16 bg-white/10"></div>
 				<div class="absolute -bottom-5 -left-5 h-24 w-24 bg-white/5"></div>
 				<div class="flex items-center justify-between mb-2 relative">
@@ -165,7 +165,7 @@
 				<p class="text-2xl font-bold tabular-nums relative">KES {fmt(totalRetailValue)}</p>
 				<p class="text-xs text-white/70 mt-1 relative">across {totalProducts} products</p>
 			</div>
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#0fa0a0,#008B8B);">
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#3F00FF,#3200CC);">
 				<div class="absolute -top-3 -right-3 h-16 w-16 bg-white/10"></div>
 				<div class="absolute -bottom-5 -left-5 h-24 w-24 bg-white/5"></div>
 				<div class="flex items-center justify-between mb-2 relative">
@@ -177,7 +177,7 @@
 				<p class="text-2xl font-bold tabular-nums relative">KES {fmt(totalCostValue)}</p>
 				<p class="text-xs text-white/70 mt-1 relative">Margin: KES {fmt(totalRetailValue - totalCostValue)}</p>
 			</div>
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#FF2400,#CC0000);">
 				<div class="absolute -top-3 -right-3 h-16 w-16 bg-white/10"></div>
 				<div class="absolute -bottom-5 -left-5 h-24 w-24 bg-white/5"></div>
 				<div class="flex items-center justify-between mb-2 relative">
@@ -240,7 +240,7 @@
 			<!-- Fast movers -->
 			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
-					<TrendingUp size={14} style="color:#00008B;" class="shrink-0" />
+					<TrendingUp size={14} style="color:#3F00FF;" class="shrink-0" />
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Fast Movers — 30 Days</h2>
 				</div>
 				{#if fastMovers.length === 0}
@@ -261,7 +261,7 @@
 									</div>
 								</div>
 								<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-									<div class="h-full rounded-full" style="width:{maxQty > 0 ? (p.quantity_sold / maxQty) * 100 : 0}%; background-color:#00008B;"></div>
+									<div class="h-full rounded-full" style="width:{maxQty > 0 ? (p.quantity_sold / maxQty) * 100 : 0}%; background-color:#3F00FF;"></div>
 								</div>
 							</li>
 						{/each}
@@ -279,12 +279,12 @@
 				<div class="overflow-x-auto">
 					<table class="w-full text-sm">
 						<thead>
-							<tr class="bg-slate-50 dark:bg-slate-900/50">
-								<th class="px-5 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Category</th>
-								<th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Products</th>
-								<th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cost Value</th>
-								<th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Retail Value</th>
-								<th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Margin</th>
+							<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+								<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Category</th>
+								<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Products</th>
+								<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Cost Value</th>
+								<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Retail Value</th>
+								<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Margin</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -318,9 +318,9 @@
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
-					<tr class="bg-slate-50 dark:bg-slate-900/50">
+					<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 						{#each ['Product', 'Qty', 'Reason', 'By', 'Date'] as h}
-							<th class="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide {h === 'Qty' ? 'text-center' : ''}">{h}</th>
+							<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide {h === 'Qty' ? 'text-center' : ''}">{h}</th>
 						{/each}
 					</tr>
 				</thead>
@@ -393,7 +393,7 @@
 					</ul>
 				{/if}
 				{#if selectedProduct}
-					<p class="mt-1.5 text-xs font-medium" style="color:#00008B;">Current stock: {selectedProduct.stock_qty} units</p>
+					<p class="mt-1.5 text-xs font-medium" style="color:#3F00FF;">Current stock: {selectedProduct.stock_qty} units</p>
 				{/if}
 			</div>
 			<div>
@@ -408,7 +408,7 @@
 	{/snippet}
 	{#snippet footer()}
 		<button onclick={() => showModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-all active:scale-95" style="background-color:#00008B;">
+		<button onclick={save} disabled={submitting} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-all active:scale-95" style="background-color:#3F00FF;">
 			{submitting ? 'Saving…' : 'Apply'}
 		</button>
 	{/snippet}

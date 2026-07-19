@@ -124,8 +124,8 @@
 		<!-- ── KPI tiles ─── -->
 		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
-			<!-- Revenue (wider) -->
-			<div class="lg:col-span-2 relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+			<!-- Revenue (wider) — Primary -->
+			<div class="lg:col-span-2 relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#3F00FF,#3200CC);">
 				<div class="absolute -top-6 -right-6 h-28 w-28 bg-white/10"></div>
 				<div class="absolute -bottom-8 -left-8 h-32 w-32 bg-white/5"></div>
 				<div class="flex items-start justify-between relative">
@@ -146,8 +146,8 @@
 				</div>
 			</div>
 
-			<!-- Orders -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#9333ea,#7c3aed);">
+			<!-- Orders — Secondary -->
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#7B68EE,#6A5ACD);">
 				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
 				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
 				<div class="flex items-start justify-between relative">
@@ -162,8 +162,8 @@
 				<p class="text-xs text-white/70 mt-2 relative">transactions today</p>
 			</div>
 
-			<!-- Avg Sale -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#0891b2,#0e7490);">
+			<!-- Avg Sale — Gold -->
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#FFD700,#DAA520);">
 				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
 				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
 				<div class="flex items-start justify-between relative">
@@ -178,8 +178,8 @@
 				<p class="text-xs text-white/70 mt-2 relative">per transaction</p>
 			</div>
 
-			<!-- Products -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#059669,#047857);">
+			<!-- Products — Neon Green -->
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#39FF14,#2ECC40);">
 				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
 				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
 				<div class="flex items-start justify-between relative">
@@ -194,8 +194,8 @@
 				<p class="text-xs text-white/70 mt-2 relative">active items</p>
 			</div>
 
-			<!-- Stock Alerts -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#e11d48,#be123c);">
+			<!-- Stock Alerts — Red -->
+			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#FF2400,#CC0000);">
 				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
 				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
 				<div class="flex items-start justify-between relative">
@@ -270,7 +270,7 @@
 					{@const cashPct  = (stats.today_cash_sales / payTotal) * 100}
 					{@const mpesaPct = (stats.today_mpesa     / payTotal) * 100}
 					{@const cardPct  = (stats.today_card      / payTotal) * 100}
-					{@const grad = `conic-gradient(#008B8B 0% ${cashPct}%, #10b981 ${cashPct}% ${cashPct+mpesaPct}%, #8b5cf6 ${cashPct+mpesaPct}% 100%)`}
+					{@const grad = `conic-gradient(#3F00FF 0% ${cashPct}%, #10b981 ${cashPct}% ${cashPct+mpesaPct}%, #8b5cf6 ${cashPct+mpesaPct}% 100%)`}
 					<div class="flex flex-col gap-5">
 						<div class="flex justify-center">
 							<div class="relative h-28 w-28 rounded-full" style="background:{grad};">
@@ -282,7 +282,7 @@
 						</div>
 						<div class="space-y-2.5">
 							{#each [
-								{ label: 'Cash',   value: stats.today_cash_sales, color: '#008B8B', icon: Banknote   },
+								{ label: 'Cash',   value: stats.today_cash_sales, color: '#3F00FF', icon: Banknote   },
 								{ label: 'M-Pesa', value: stats.today_mpesa,       color: '#10b981', icon: Smartphone },
 								{ label: 'Card',   value: stats.today_card,        color: '#8b5cf6', icon: CreditCard },
 							] as pm}

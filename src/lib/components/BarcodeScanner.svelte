@@ -101,23 +101,23 @@
 	</div>
 
 	<!-- Scanner area -->
-	<div class="flex-1 relative flex items-center justify-center overflow-hidden">
-		<!-- Always rendered so Html5Qrcode can find it -->
-		<div id={SCANNER_ID} class="absolute inset-0"></div>
+	<div class="flex-1 relative bg-black">
+		<!-- Scanner container with proper dimensions for html5-qrcode -->
+		<div id={SCANNER_ID} class="w-full h-full min-h-[300px]"></div>
 
 		{#if status === 'init'}
-			<div class="relative z-10 flex flex-col items-center gap-3 text-white/80">
+			<div class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 text-white/80">
 				<LoaderCircle size={28} class="animate-spin" />
 				<p class="text-sm">Initializing camera…</p>
 			</div>
 		{:else if status === 'denied' || status === 'error'}
-			<div class="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
-				<div class="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
+			<div class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 px-8 text-center">
+				<div class="flex h-16 w-16 items-center justify-center bg-white/10">
 					<CameraOff size={28} class="text-white/60" />
 				</div>
 				<p class="text-white font-semibold text-sm">Camera Unavailable</p>
 				<p class="text-white/60 text-xs max-w-xs">{errorMsg}</p>
-				<button onclick={onclose} class="rounded-lg bg-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/20 transition-colors">
+				<button onclick={onclose} class="bg-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/20 transition-colors">
 					Use Manual Search
 				</button>
 			</div>
@@ -125,9 +125,9 @@
 			<!-- Scanning overlay frame -->
 			<div class="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
 				<div class="relative w-64 h-28">
-					<div class="absolute inset-0 rounded-2xl border-2 border-blue-400/60"></div>
+					<div class="absolute inset-0 border-2 border-blue-400/60"></div>
 					<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3">
-						<div class="flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 shadow-lg">
+						<div class="flex items-center gap-1.5 bg-blue-600 px-3 py-1 shadow-lg">
 							<Scan size={11} class="text-white" />
 							<span class="text-[10px] font-semibold text-white">Scanning</span>
 						</div>

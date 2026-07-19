@@ -190,7 +190,7 @@
 								class="w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 {selected?.id === c.id ? 'bg-slate-50 dark:bg-slate-800/50' : ''}"
 							>
 								<!-- Avatar -->
-								<div class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-sm font-bold text-white" style="background-color:#00008B;">
+								<div class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-sm font-bold text-white" style="background-color:#3F00FF;">
 									{initials(c.name)}
 								</div>
 								<div class="flex-1 min-w-0">
@@ -241,7 +241,7 @@
 				<!-- Profile section -->
 				<div class="px-5 py-5 border-b border-slate-100 dark:border-slate-700">
 					<div class="flex items-center gap-4 mb-4">
-						<div class="h-16 w-16 shrink-0 rounded-2xl flex items-center justify-center text-xl font-bold text-white" style="background-color:#00008B;">
+						<div class="h-16 w-16 shrink-0 rounded-2xl flex items-center justify-center text-xl font-bold text-white" style="background-color:#3F00FF;">
 							{initials(selected.name)}
 						</div>
 						<div>
@@ -288,7 +288,7 @@
 							</div>
 							<div class="bg-slate-50 dark:bg-slate-800 p-3">
 								<p class="text-xs text-slate-400 mb-1">Lifetime Spend</p>
-								<p class="text-lg font-bold" style="color:#00008B;">KES {fmt(customerStats.lifetime_spend)}</p>
+								<p class="text-lg font-bold" style="color:#3F00FF;">KES {fmt(customerStats.lifetime_spend)}</p>
 							</div>
 							<div class="bg-slate-50 dark:bg-slate-800 p-3">
 								<p class="text-xs text-slate-400 mb-1">Avg Order</p>

@@ -184,7 +184,7 @@
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
-					<tr style="background:linear-gradient(135deg,#059669,#047857);">
+					<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide w-12">Image</th>
 						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Product</th>
 						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Category</th>

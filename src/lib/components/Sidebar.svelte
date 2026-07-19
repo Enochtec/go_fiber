@@ -60,8 +60,8 @@
 <aside class="flex h-full w-64 shrink-0 flex-col bg-slate-900 select-none">
 	<!-- Logo -->
 	<div class="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
-		<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600">
-			<Store size={16} class="text-white" />
+		<div class="flex h-8 w-8 shrink-0 items-center justify-center">
+			<Store size={18} class="text-blue-400" />
 		</div>
 		<div class="flex-1 min-w-0">
 			<p class="text-sm font-bold text-white leading-none">Maestro POS</p>
@@ -87,8 +87,8 @@
 							onclick={() => onclose?.()}
 							class="flex items-center gap-2.5 mx-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
 								{active
-									? 'bg-blue-600 text-white'
-									: 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}"
+									? 'bg-blue-600/20 text-blue-300'
+									: 'text-slate-400 hover:text-slate-300 hover:bg-white/5'}"
 						>
 							<link.icon size={15} class="shrink-0" />
 							<span>{link.label}</span>

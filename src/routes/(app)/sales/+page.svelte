@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { shiftStore } from '$lib/stores/shift.svelte';
 	import { notify } from '$lib/stores/notification.svelte';
 	import { invalidation } from '$lib/stores/invalidation.svelte';
 	import { productsService } from '$lib/services/products';
@@ -18,7 +17,7 @@
 		ReceiptIcon, ChevronDown, PlusCircle,
 		Percent, FileText, Tag, AlertTriangle, Check,
 		ArrowLeft, Hash, Scan, Phone,
-		Calculator as CalculatorIcon, Play, StopCircle, LogOut
+		Calculator as CalculatorIcon
 	} from '@lucide/svelte';
 
 	// ─── State ───────────────────────────────────────────────────────
@@ -45,8 +44,6 @@
 	let showDiscountModal = $state(false);
 	let showNoteModal = $state(false);
 	let showNewCustomerModal = $state(false);
-	let showShiftModal = $state(false);
-	let showCloseShiftModal = $state(false);
 	let showScanner = $state(false);
 	let showCalculator = $state(false);
 
@@ -54,9 +51,6 @@
 	let discountInput = $state(0);
 	let taxRateInput = $state(0);
 	let noteInput = $state('');
-	let openingFloat = $state(0);
-	let shiftNotes = $state('');
-	let closingCash = $state(0);
 
 	let newCustomerName = $state('');
 	let newCustomerPhone = $state('');
@@ -193,7 +187,6 @@
 	}
 
 	function addToCart(product: Product) {
-		if (!shiftStore.isOpen) { notify.error('Open a shift before making sales'); return; }
 		if (product.stock_qty <= 0) {
 			notify.error(`"${product.name}" is out of stock`);
 			return;
@@ -205,7 +198,6 @@
 	}
 
 	function setQuantity(productId: string, qty: number) {
-		if (!shiftStore.isOpen) { notify.error('Open a shift first'); return; }
 		const item = cart.items.find(i => i.product.id === productId);
 		if (!item) return;
 		if (qty > item.product.stock_qty) {
@@ -320,7 +312,6 @@
 	function applyNote() { cart.setNote(noteInput); showNoteModal = false; }
 
 	async function completeSale() {
-		if (!shiftStore.isOpen) { notify.error('Open a shift before completing sale'); return; }
 		if (cart.items.length === 0) { notify.error('Cart is empty'); return; }
 		if (paymentMethod === 'cash' && amountTendered < cart.total) {
 			notify.error('Amount tendered is less than total');
@@ -356,35 +347,9 @@
 		searchInput?.focus();
 	}
 
-	// ─── Shift ──────────────────────────────────────────────────────
-	async function openShift() {
-		try {
-			await shiftStore.open(openingFloat, shiftNotes);
-			showShiftModal = false;
-			showCloseShiftModal = false;
-			openingFloat = 0;
-			shiftNotes = '';
-			notify.success('Shift opened');
-		} catch (err) {
-			notify.error(err instanceof Error ? err.message : 'Failed to open shift');
-		}
-	}
-
-	async function closeShift() {
-		try {
-			const shift = await shiftStore.close(closingCash, shiftNotes);
-			showCloseShiftModal = false;
-			closingCash = 0;
-			shiftNotes = '';
-			notify.success(`Shift closed. Variance: KES ${fmt(shift.variance ?? 0)}`);
-		} catch (err) {
-			notify.error(err instanceof Error ? err.message : 'Failed to close shift');
-		}
-	}
-
 	// ─── Keyboard ───────────────────────────────────────────────────
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') { showShiftModal = false; showCloseShiftModal = false; showCalculator = false; }
+		if (e.key === 'Escape') { showCalculator = false; }
 		if (lastSale !== null || showCustomerModal || showHeldModal || showDiscountModal || showNoteModal || showNewCustomerModal) return;
 		if (e.key === 'F2') { e.preventDefault(); searchInput?.focus(); }
 		if (e.key === 'F4') { e.preventDefault(); openCustomerModal(); }
@@ -406,7 +371,6 @@
 	onMount(async () => {
 		updateClock();
 		clockTimer = setInterval(updateClock, 1000);
-		await shiftStore.fetch();
 		const catRes = await productsService.listCategories();
 		categories = catRes.data ?? [];
 		await loadProducts();
@@ -430,48 +394,12 @@
 
 		<!-- Unified header -->
 		<div class="sticky top-0 z-30 shrink-0 bg-white shadow-sm">
-			<!-- Top row: shift status + clock + search + actions -->
 			<div class="flex items-center gap-2 px-3 py-2">
-				<!-- Shift status -->
-				{#if shiftStore.checked}
-					<div class="flex items-center gap-2 shrink-0">
-						{#if shiftStore.isOpen}
-							<span class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-							<span class="text-sm sm:text-base font-semibold text-emerald-700 hidden sm:inline">Shift Open</span>
-							<button
-								onclick={() => showCloseShiftModal = true}
-								class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm sm:text-base font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors active:scale-95"
-							>
-								<StopCircle size={16} />
-								<span class="hidden xs:inline">Close Shift</span>
-							</button>
-						{:else}
-							<span class="h-3 w-3 rounded-full bg-amber-400 shrink-0"></span>
-							<span class="text-sm sm:text-base font-semibold text-amber-700 hidden sm:inline">No Shift</span>
-							<button
-								onclick={() => showShiftModal = true}
-								class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm sm:text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors active:scale-95"
-							>
-								<Play size={16} />
-								<span class="hidden xs:inline">Open Shift</span>
-							</button>
-						{/if}
-					</div>
-				{/if}
 
 				<!-- Digital clock -->
-				<div class="hidden md:flex items-center gap-1.5 text-sm text-slate-500 font-mono ml-1 shrink-0" aria-live="polite">
+				<div class="hidden md:flex items-center gap-1.5 text-sm text-slate-500 font-mono shrink-0" aria-live="polite">
 					<span id="clock-display">{clockStr}</span>
 				</div>
-
-				<!-- Calculator -->
-				<button
-					onclick={() => showCalculator = true}
-					class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 shrink-0 transition-colors"
-					title="Calculator"
-				>
-					<CalculatorIcon size={17} />
-				</button>
 
 				<!-- Search -->
 				<div class="relative flex-1 min-w-0">
@@ -483,7 +411,7 @@
 						onkeydown={handleSearchKeydown}
 						onfocus={() => { if (search) showSearchDropdown = true; }}
 						placeholder="Search product… (F2)"
-						class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3.5 text-base sm:text-sm focus:outline-none focus:border-slate-300 focus:bg-white transition-colors"
+						class="w-full rounded border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3.5 text-base sm:text-sm focus:outline-none focus:border-slate-300 focus:bg-white transition-colors"
 					/>
 					{#if search}
 						<button onclick={closeSearch} class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -492,26 +420,33 @@
 					{/if}
 				</div>
 
-				<!-- Scan barcode -->
-				<button
-					onclick={() => showScanner = true}
-					class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 shrink-0 transition-colors"
-					title="Scan Barcode"
-				>
-					<Scan size={17} />
-				</button>
-
-				<!-- Held sales -->
-				<button
-					onclick={async () => { await fetchHeld(); showHeldModal = true; }}
-					class="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shrink-0"
-					title="Held Sales"
-				>
-					<Clock size={15} />
-					{#if heldSales.length > 0}
-						<span class="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center bg-blue-600">{heldSales.length}</span>
-					{/if}
-				</button>
+				<!-- Toolbar group: Calculator | Scan | Held Sales -->
+				<div class="flex items-center bg-slate-100 p-0.5 gap-px shrink-0">
+					<button
+						onclick={() => showCalculator = true}
+						class="flex h-8 w-8 items-center justify-center bg-purple-600 text-white hover:bg-purple-500 transition-colors"
+						title="Calculator"
+					>
+						<CalculatorIcon size={15} />
+					</button>
+					<button
+						onclick={() => showScanner = true}
+						class="flex h-8 w-8 items-center justify-center bg-blue-600 text-white hover:bg-blue-500 transition-colors"
+						title="Scan Barcode"
+					>
+						<Scan size={15} />
+					</button>
+					<button
+						onclick={async () => { await fetchHeld(); showHeldModal = true; }}
+						class="relative flex h-8 w-8 items-center justify-center bg-amber-600 text-white hover:bg-amber-500 transition-colors"
+						title="Held Sales"
+					>
+						<Clock size={14} />
+						{#if heldSales.length > 0}
+							<span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-red-500 text-[9px] font-bold text-white">{heldSales.length}</span>
+						{/if}
+					</button>
+				</div>
 			</div>
 			<!-- Mobile clock row -->
 			<div class="md:hidden flex items-center justify-center px-3 pb-1.5">
@@ -523,7 +458,7 @@
 		{#if showSearchDropdown}
 			<div
 				bind:this={searchResultsEl}
-				class="absolute top-[52px] left-0 right-0 lg:right-[400px] z-20 mx-3 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+				class="absolute top-[52px] left-0 right-0 lg:right-[400px] z-20 mx-3 max-h-72 overflow-y-auto rounded border border-slate-200 bg-white shadow-xl"
 			>
 				{#if searching}
 					<div class="flex items-center justify-center gap-2 px-4 py-6 text-sm text-slate-400">
@@ -540,9 +475,9 @@
 							class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-b border-slate-100 last:border-0"
 							class:bg-blue-50={selectedIndex === idx}
 						>
-							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-slate-100">
 								{#if product.image_url}
-									<img src={product.image_url} alt={product.name} class="h-full w-full object-cover rounded-lg" />
+									<img src={product.image_url} alt={product.name} class="h-full w-full object-cover rounded" />
 								{:else}
 									<Package size={14} class="text-slate-400" />
 								{/if}
@@ -609,7 +544,7 @@
 							class="group relative rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-left transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-0.5 flex flex-col"
 						>
 							<!-- Product image -->
-							<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 mb-2.5 flex items-center justify-center">
+							<div class="relative w-full aspect-square rounded overflow-hidden bg-slate-100 dark:bg-slate-700 mb-2.5 flex items-center justify-center">
 								{#if product.image_url}
 									<img src={product.image_url} alt={product.name} class="w-full h-full object-cover" />
 								{:else}
@@ -680,17 +615,17 @@
 				{/if}
 			</div>
 			<div class="flex items-center gap-1">
-				<button onclick={openCustomerModal} class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+				<button onclick={openCustomerModal} class="flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
 					<User size={12} />
 					{cart.customerName ?? 'Walk-in'}
 					<ChevronDown size={10} />
 				</button>
 				{#if cart.customerName}
-					<button onclick={removeCustomer} class="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+					<button onclick={removeCustomer} class="h-7 w-7 flex items-center justify-center rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
 						<X size={13} />
 					</button>
 				{/if}
-				<button onclick={() => cartOpen = false} class="lg:hidden h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
+				<button onclick={() => cartOpen = false} class="lg:hidden h-7 w-7 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100">
 					<X size={15} />
 				</button>
 			</div>
@@ -710,7 +645,7 @@
 						<li class="px-4 py-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
 							<div class="flex items-start gap-2.5">
 								<!-- Thumbnail -->
-								<div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+								<div class="h-10 w-10 shrink-0 rounded overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
 									{#if item.product.image_url}
 										<img src={item.product.image_url} alt={item.product.name} class="h-full w-full object-cover" />
 									{:else}
@@ -730,7 +665,7 @@
 							</div>
 							<div class="flex items-center justify-between mt-2.5 pl-[52px]">
 								<!-- Qty stepper -->
-								<div class="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
+								<div class="flex items-center gap-1 rounded border border-slate-200 dark:border-slate-600 overflow-hidden">
 									<button
 										onclick={() => setQuantity(item.product.id, item.quantity - 1)}
 										class="h-8 w-8 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -795,7 +730,7 @@
 				{#each payments as p}
 					<button
 						onclick={() => paymentMethod = p.id}
-						class="flex flex-col items-center gap-1 rounded-xl border py-2.5 text-[10px] font-semibold transition-all active:scale-95
+						class="flex flex-col items-center gap-1 rounded border py-2.5 text-[10px] font-semibold transition-all active:scale-95
 							{paymentMethod === p.id
 								? 'bg-blue-600 border-blue-600 text-white shadow-sm'
 								: 'border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300'}"
@@ -817,7 +752,7 @@
 							min={0}
 							step="50"
 							placeholder="0.00"
-							class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 py-3 pl-14 pr-4 text-xl font-bold text-right tabular-nums focus:outline-none"
+							class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 py-3 pl-14 pr-4 text-xl font-bold text-right tabular-nums focus:outline-none"
 						/>
 					</div>
 					<!-- Quick amounts -->
@@ -825,14 +760,14 @@
 						{#each [500, 1000, 2000, 5000] as amt}
 							<button
 								onclick={() => amountTendered = amt}
-								class="rounded-lg border border-slate-200 dark:border-slate-600 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+								class="rounded border border-slate-200 dark:border-slate-600 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
 							>
 								{amt.toLocaleString()}
 							</button>
 						{/each}
 					</div>
 					{#if amountTendered > 0}
-						<div class="flex items-center justify-between rounded-xl px-4 py-2.5 {change > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}">
+						<div class="flex items-center justify-between rounded px-4 py-2.5 {change > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}">
 							<span class="text-sm font-semibold {change > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600'}">
 								{change > 0 ? 'Change' : 'Short'}
 							</span>
@@ -843,7 +778,7 @@
 					{/if}
 				</div>
 			{:else if paymentMethod === 'mpesa'}
-				<div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
+				<div class="rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
 					<Smartphone size={20} class="mx-auto mb-1 text-emerald-600" />
 					<p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">M-Pesa</p>
 					<p class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">Amount: KES {fmt(cart.total)}</p>
@@ -857,19 +792,19 @@
 					type="tel"
 					bind:value={pointsPhone}
 					placeholder="Phone (for points): 07XX XXX XXX"
-					class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 py-2.5 pl-9 pr-4 text-sm focus:outline-none"
+					class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 py-2.5 pl-9 pr-4 text-sm focus:outline-none"
 				/>
 			</div>
 
 			<!-- Utility row -->
 			<div class="grid grid-cols-3 gap-1.5">
-				<button onclick={openDiscountModal} class="flex items-center justify-center gap-1 rounded-xl border border-slate-200 dark:border-slate-600 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+				<button onclick={openDiscountModal} class="flex items-center justify-center gap-1 rounded border border-slate-200 dark:border-slate-600 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
 					<Tag size={12} /> Discount
 				</button>
-				<button onclick={() => { noteInput = cart.note; showNoteModal = true; }} class="flex items-center justify-center gap-1 rounded-xl border border-slate-200 dark:border-slate-600 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+				<button onclick={() => { noteInput = cart.note; showNoteModal = true; }} class="flex items-center justify-center gap-1 rounded border border-slate-200 dark:border-slate-600 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
 					<FileText size={12} /> Notes
 				</button>
-				<button onclick={holdSale} disabled={cart.items.length === 0} class="flex items-center justify-center gap-1 rounded-xl border border-slate-200 dark:border-slate-600 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors">
+				<button onclick={holdSale} disabled={cart.items.length === 0} class="flex items-center justify-center gap-1 rounded border border-slate-200 dark:border-slate-600 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors">
 					<Clock size={12} /> Hold
 				</button>
 			</div>
@@ -879,7 +814,7 @@
 				<button
 					onclick={completeSale}
 					disabled={cart.items.length === 0 || checkingOut}
-					class="w-full rounded-xl py-4 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-50 transition-all active:scale-[0.98]"
+					class="w-full rounded py-4 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-50 transition-all active:scale-[0.98]"
 				>
 					{#if checkingOut}
 						<span class="flex items-center justify-center gap-2">
@@ -893,7 +828,7 @@
 				<button
 					onclick={() => cart.clear()}
 					disabled={cart.items.length === 0}
-					class="w-full rounded-xl border border-red-200 dark:border-red-800 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 transition-colors"
+					class="w-full rounded border border-red-200 dark:border-red-800 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 transition-colors"
 				>
 					Clear Cart
 				</button>
@@ -920,10 +855,10 @@
 					oninput={onCustomerSearch}
 					placeholder="Search customers…"
 					autofocus
-					class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-2.5 pl-9 text-sm focus:outline-none"
+					class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-2.5 pl-9 text-sm focus:outline-none"
 				/>
 			</div>
-			<ul class="max-h-60 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700 rounded-xl border border-slate-200 dark:border-slate-600">
+			<ul class="max-h-60 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700 rounded border border-slate-200 dark:border-slate-600">
 				{#each customers as c}
 					<li>
 						<button
@@ -946,7 +881,7 @@
 			</ul>
 			<button
 				onclick={() => { showCustomerModal = false; showNewCustomerModal = true; }}
-				class="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+				class="w-full flex items-center justify-center gap-2 rounded border border-dashed border-slate-300 dark:border-slate-600 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
 			>
 				<PlusCircle size={15} /> Add New Customer
 			</button>
@@ -960,21 +895,21 @@
 		<div class="space-y-3.5">
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Name *</label>
-				<input type="text" bind:value={newCustomerName} placeholder="Full name" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="text" bind:value={newCustomerName} placeholder="Full name" class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Phone</label>
-				<input type="tel" bind:value={newCustomerPhone} placeholder="+254…" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="tel" bind:value={newCustomerPhone} placeholder="+254…" class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Email</label>
-				<input type="email" bind:value={newCustomerEmail} placeholder="customer@email.com" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="email" bind:value={newCustomerEmail} placeholder="customer@email.com" class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 		</div>
 	{/snippet}
 	{#snippet footer()}
-		<button onclick={() => showNewCustomerModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={createNewCustomer} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95">Save</button>
+		<button onclick={() => showNewCustomerModal = false} class="rounded border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+		<button onclick={createNewCustomer} class="rounded px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95">Save</button>
 	{/snippet}
 </Modal>
 
@@ -988,7 +923,7 @@
 						<p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{new Date(sale.created_at).toLocaleString()}</p>
 						<p class="text-xs text-slate-400">{sale.items?.length ?? 0} items · KES {fmt(sale.total)}</p>
 					</div>
-					<button onclick={() => resumeSale(sale)} class="rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Resume</button>
+					<button onclick={() => resumeSale(sale)} class="rounded px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Resume</button>
 				</li>
 			{:else}
 				<li class="py-12 text-center text-sm text-slate-400">No held sales</li>
@@ -1003,28 +938,28 @@
 		<div class="space-y-4">
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Discount Amount (KES)</label>
-				<input type="number" bind:value={discountInput} min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="number" bind:value={discountInput} min="0" class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 			<div>
 				<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Tax Rate (%)</label>
-				<input type="number" bind:value={taxRateInput} min="0" max="100" step="0.5" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
+				<input type="number" bind:value={taxRateInput} min="0" max="100" step="0.5" class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none" />
 			</div>
 		</div>
 	{/snippet}
 	{#snippet footer()}
-		<button onclick={() => showDiscountModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={applyDiscount} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Apply</button>
+		<button onclick={() => showDiscountModal = false} class="rounded border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
+		<button onclick={applyDiscount} class="rounded px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Apply</button>
 	{/snippet}
 </Modal>
 
 <!-- ─── Note modal ───────────────────────────────────────────── -->
 <Modal open={showNoteModal} title="Sale Notes" onclose={() => showNoteModal = false} size="sm">
 	{#snippet children()}
-		<textarea bind:value={noteInput} rows={3} placeholder="Add a note…" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none resize-none"></textarea>
+		<textarea bind:value={noteInput} rows={3} placeholder="Add a note…" class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3.5 py-2.5 text-sm focus:outline-none resize-none"></textarea>
 	{/snippet}
 	{#snippet footer()}
-		<button onclick={() => showNoteModal = false} class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-		<button onclick={applyNote} class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Save</button>
+		<button onclick={() => showNoteModal = false} class="rounded border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
+		<button onclick={applyNote} class="rounded px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Save</button>
 	{/snippet}
 </Modal>
 
@@ -1039,73 +974,6 @@
 		onnewsale={resetAfterSale}
 	/>
 {/if}
-
-<!-- ─── Open Shift modal ────────────────────────────────────── -->
-<Modal open={showShiftModal} title="Open Shift" onclose={() => showShiftModal = false} size="sm">
-	{#snippet children()}
-		<div class="space-y-4">
-			<div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4">
-				<p class="text-sm font-semibold text-blue-800 dark:text-blue-200">Starting a new shift</p>
-				<p class="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Enter the opening cash float to begin.</p>
-			</div>
-			<div>
-				<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Opening Float (KES)</label>
-				<input type="number" bind:value={openingFloat} min="0" step="50" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="e.g. 5,000" />
-			</div>
-			<div>
-				<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Notes (optional)</label>
-				<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Shift notes…" />
-			</div>
-		</div>
-	{/snippet}
-	{#snippet footer()}
-		<button onclick={() => showShiftModal = false} class="rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={openShift} class="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">Open Shift</button>
-	{/snippet}
-</Modal>
-
-<!-- ─── Close Shift modal ─────────────────────────────────────── -->
-<Modal open={showCloseShiftModal} title="Close Shift" onclose={() => showCloseShiftModal = false} size="sm">
-	{#snippet children()}
-		<div class="space-y-4">
-			{#if shiftStore.current}
-				<div class="rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 p-4 space-y-2.5 text-sm">
-					<div class="flex justify-between text-slate-500 dark:text-slate-400">
-						<span>Opening Float</span>
-						<span class="font-semibold tabular-nums text-slate-800 dark:text-slate-200">KES {fmt(shiftStore.current.opening_float)}</span>
-					</div>
-					<div class="flex justify-between text-emerald-600 dark:text-emerald-400">
-						<span>Cash Sales</span>
-						<span class="font-semibold tabular-nums">+ KES {fmt(shiftStore.current.cash_sales)}</span>
-					</div>
-					<div class="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-2.5 font-bold text-slate-800 dark:text-slate-200">
-						<span>Expected Cash</span>
-						<span class="tabular-nums">KES {fmt(shiftStore.current.opening_float + shiftStore.current.cash_sales)}</span>
-					</div>
-				</div>
-				<div>
-					<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cash Counted (KES)</label>
-					<input type="number" bind:value={closingCash} min="0" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Enter actual cash in drawer…" />
-				</div>
-				{#if closingCash > 0}
-					{@const variance = closingCash - (shiftStore.current.opening_float + shiftStore.current.cash_sales)}
-					<div class="rounded-lg p-4 text-center border {variance >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}">
-						<p class="text-xs font-semibold uppercase tracking-wide {variance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600'}">{variance >= 0 ? 'Cash Surplus' : 'Cash Shortage'}</p>
-						<p class="text-3xl font-bold tabular-nums mt-1 {variance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700'}">KES {fmt(Math.abs(variance))}</p>
-					</div>
-				{/if}
-				<div>
-					<label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Closing Notes (optional)</label>
-					<input bind:value={shiftNotes} class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Notes…" />
-				</div>
-			{/if}
-		</div>
-	{/snippet}
-	{#snippet footer()}
-		<button onclick={() => showCloseShiftModal = false} class="rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-		<button onclick={closeShift} class="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">Close Shift</button>
-	{/snippet}
-</Modal>
 
 <!-- Barcode Scanner -->
 {#if showScanner}

@@ -138,7 +138,7 @@
 	<div class="bg-white dark:bg-slate-800 overflow-hidden">
 		<table class="w-full text-sm">
 			<thead>
-				<tr style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+				<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Date</th>
 					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Supplier</th>
 					<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide hidden md:table-cell">Created By</th>

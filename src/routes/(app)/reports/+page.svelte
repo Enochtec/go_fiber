@@ -49,7 +49,7 @@
 <div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
 
 	<!-- Header -->
-	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-3 border-l-4 border-violet-500">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-3 border-l-4" style="border-color:#3F00FF;">
 		<div>
 			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Reports</h1>
 			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Business performance overview</p>
@@ -81,9 +81,9 @@
 		<!-- KPI row -->
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 			{#each [
-				{ label: '30-Day Revenue', value: fmt(totalRevenue),                              icon: DollarSign, grad: 'linear-gradient(135deg,#4f46e5,#4338ca)' },
-				{ label: '30-Day Orders',  value: String(totalOrders),                            icon: ShoppingCart, grad: 'linear-gradient(135deg,#db2777,#be185d)' },
-				{ label: 'Avg. Order',     value: fmt(totalOrders > 0 ? totalRevenue/totalOrders : 0), icon: TrendingUp, grad: 'linear-gradient(135deg,#d97706,#b45309)' },
+				{ label: '30-Day Revenue', value: fmt(totalRevenue),                              icon: DollarSign, grad: 'linear-gradient(135deg,#3F00FF,#3200CC)' },
+				{ label: '30-Day Orders',  value: String(totalOrders),                            icon: ShoppingCart, grad: 'linear-gradient(135deg,#7B68EE,#6A5ACD)' },
+				{ label: 'Avg. Order',     value: fmt(totalOrders > 0 ? totalRevenue/totalOrders : 0), icon: TrendingUp, grad: 'linear-gradient(135deg,#FFD700,#DAA520)' },
 			] as kpi}
 				<div class="relative overflow-hidden p-5 text-white" style="background:{kpi.grad};">
 					<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
@@ -133,11 +133,11 @@
 			<div class="overflow-x-auto">
 				<table class="w-full text-sm">
 					<thead>
-						<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-							<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">#</th>
-							<th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Product</th>
-							<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Units Sold</th>
-							<th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Revenue</th>
+						<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+							<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">#</th>
+							<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Product</th>
+							<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Units Sold</th>
+							<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Revenue</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -167,9 +167,9 @@
 			<div class="overflow-x-auto">
 				<table class="w-full text-sm">
 					<thead>
-						<tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+						<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 							{#each ['Category', 'Products', 'Cost Value', 'Retail Value', 'Gross Profit'] as h, i}
-								<th class="px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide {i > 0 ? 'text-right' : 'text-left'}">{h}</th>
+								<th class="px-4 py-2.5 text-xs font-semibold text-white uppercase tracking-wide {i > 0 ? 'text-right' : 'text-left'}">{h}</th>
 							{/each}
 						</tr>
 					</thead>
