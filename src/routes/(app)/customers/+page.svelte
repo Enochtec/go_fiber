@@ -12,7 +12,7 @@
 	import ExportModal from '$lib/components/ExportModal.svelte';
 	import { shopService } from '$lib/services/shop';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { exportCustomers, downloadCSV, safeFilename } from '$lib/services/export';
+	import { exportCustomers } from '$lib/services/export';
 
 	// ─── List state ──────────────────────────────────────────────
 	let customers = $state<Customer[]>([]);
@@ -140,7 +140,7 @@
 			const res = await customersService.list(scope === 'filtered' ? search : '', 1, 10000);
 			data = res.data ?? [];
 		}
-		downloadCSV(exportCustomers(data, shopName, userName), safeFilename(shopName, 'Customers'));
+		await exportCustomers(data, shopName, userName);
 	}
 
 	onMount(fetchList);

@@ -11,7 +11,7 @@
 	import ExportModal from '$lib/components/ExportModal.svelte';
 	import { shopService } from '$lib/services/shop';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { exportInventory, downloadCSV, safeFilename } from '$lib/services/export';
+	import { exportInventory } from '$lib/services/export';
 
 	// ─── State ───────────────────────────────────────────────────
 	let adjustments = $state<StockAdjustment[]>([]);
@@ -139,7 +139,7 @@
 			selling_price: p.selling_price,
 			category_name: p.category_name
 		}));
-		downloadCSV(exportInventory(rows, shopName, userName), safeFilename(shopName, 'Inventory'));
+		await exportInventory(rows, shopName, userName);
 	}
 
 	onMount(() => { fetchAdjustments(); fetchOverview(); });

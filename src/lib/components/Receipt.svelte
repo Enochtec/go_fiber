@@ -62,8 +62,6 @@
 	function buildReceiptHTML(): string {
 		const shop = shopInfo?.shop;
 		const s    = shopInfo?.settings;
-		const logo = shop?.logo ? `<img src="${shop.logo}" alt="logo" style="height:48px;width:auto;object-fit:contain;margin-bottom:4px;" />` : '';
-
 		let itemsHtml = '';
 		for (const item of lineItems) {
 			itemsHtml += `<tr>
@@ -117,7 +115,6 @@
 </head>
 <body>
   <div class="hdr">
-    ${logo}
     <div class="nm">${shop?.name || 'MAESTRO POS'}</div>
     ${shop?.address ? `<div class="sm">${shop.address}</div>` : ''}
     ${contact ? `<div class="sm">${contact}</div>` : ''}
@@ -371,9 +368,6 @@
 				<div bind:this={receiptRef} class="w-[80mm] bg-white shadow-lg px-5 py-4" style="font-family:'Courier New',Courier,monospace;font-size:10px;color:#000;">
 
 					<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:6px;">
-						{#if shopInfo?.shop?.logo}
-							<img src={shopInfo.shop.logo} alt="logo" class="h-12 w-auto object-contain mx-auto mb-1" />
-						{/if}
 						<p style="font-size:13px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">{shopInfo?.shop?.name || 'MAESTRO POS'}</p>
 						{#if shopInfo?.shop?.address}<p style="font-size:8px;margin-top:1px;">{shopInfo.shop.address}</p>{/if}
 						{#if shopInfo?.shop?.phone || shopInfo?.shop?.email}

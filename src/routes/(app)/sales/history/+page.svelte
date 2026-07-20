@@ -9,7 +9,7 @@
 	import ExportModal from '$lib/components/ExportModal.svelte';
 	import { shopService } from '$lib/services/shop';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { exportSales, downloadCSV, safeFilename } from '$lib/services/export';
+	import { exportSales } from '$lib/services/export';
 
 	let sales = $state<Sale[]>([]);
 	let total = $state(0);
@@ -98,7 +98,7 @@
 			});
 			data = res.data ?? [];
 		}
-		downloadCSV(exportSales(data, shopName, userName), safeFilename(shopName, 'Sales'));
+		await exportSales(data, shopName, userName);
 	}
 
 	onMount(fetch);

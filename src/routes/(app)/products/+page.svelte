@@ -12,7 +12,7 @@
 	import ExportModal from '$lib/components/ExportModal.svelte';
 	import { shopService } from '$lib/services/shop';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { exportProducts, downloadCSV, safeFilename } from '$lib/services/export';
+	import { exportProducts } from '$lib/services/export';
 
 	let products = $state<Product[]>([]);
 	let categories = $state<Category[]>([]);
@@ -63,7 +63,7 @@
 			});
 			data = res.data ?? [];
 		}
-		downloadCSV(exportProducts(data, shopName, userName), safeFilename(shopName, 'Products'));
+		await exportProducts(data, shopName, userName);
 	}
 
 	async function fetchProducts() {

@@ -11,7 +11,7 @@
 	import ExportModal from '$lib/components/ExportModal.svelte';
 	import { shopService } from '$lib/services/shop';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { exportPurchases, downloadCSV, safeFilename } from '$lib/services/export';
+	import { exportPurchases } from '$lib/services/export';
 
 	let purchases = $state<Purchase[]>([]);
 	let suppliers = $state<Supplier[]>([]);
@@ -25,7 +25,7 @@
 		const info = await shopService.getInfo();
 		const shopName = info?.shop?.name ?? 'Export';
 		const userName = authStore.user?.name ?? 'System';
-		downloadCSV(exportPurchases(purchases, shopName, userName), safeFilename(shopName, 'Purchases'));
+		await exportPurchases(purchases, shopName, userName);
 	}
 
 	let showModal = $state(false);
