@@ -13,3 +13,4 @@ MaestroPOS/
 pos
 pos.exe
 nul
+.env.local

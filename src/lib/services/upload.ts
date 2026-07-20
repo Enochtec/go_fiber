@@ -1,24 +1,14 @@
-import { authStore } from '$lib/stores/auth.svelte';
-
-const BASE = import.meta.env.VITE_API_URL || '/api';
+import { api } from './api';
 
 export async function uploadImage(file: File): Promise<string> {
-	const form = new FormData();
-	form.append('file', file);
+	const fd = new FormData();
+	fd.append('file', file);
 
-	const token = authStore.token;
-	const headers: Record<string, string> = {};
-	if (token) headers['Authorization'] = `Bearer ${token}`;
+	const res = await api.upload<{ url: string }>('/upload', fd);
 
-	const res = await fetch(BASE + '/upload', { method: 'POST', headers, body: form });
-
-	if (res.status === 401) {
-		authStore.clear();
-		window.location.href = '/login';
-		throw new Error('Unauthorized');
+	if (!res.success || !res.data) {
+		throw new Error(res.error ?? 'Upload failed');
 	}
 
-	const data = await res.json();
-	if (!data.success) throw new Error(data.error || 'Upload failed');
-	return data.data.url;
+	return res.data.url;
 }

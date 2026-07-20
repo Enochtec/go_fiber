@@ -21,6 +21,8 @@ type Handlers struct {
 	Register  *handlers.RegisterHandler
 	Upload    *handlers.UploadHandler
 	Shop      *handlers.ShopHandler
+	Mpesa     *handlers.MpesaHandler
+	Email     *handlers.EmailHandler
 }
 
 func Setup(app *fiber.App, h *Handlers) {
@@ -105,4 +107,13 @@ func Setup(app *fiber.App, h *Handlers) {
 	shifts.Get("/", h.Shift.List)
 	shifts.Post("/open", h.Shift.Open)
 	shifts.Post("/:id/close", h.Shift.Close)
+
+	// M-Pesa (callback has no auth — Safaricom calls it directly)
+	mpesa := protected.Group("/mpesa")
+	mpesa.Post("/stk-push", h.Mpesa.STKPush)
+	mpesa.Get("/status/:checkoutRequestID", h.Mpesa.Status)
+	api.Post("/mpesa/callback", h.Mpesa.Callback)
+
+	// Email
+	protected.Post("/email/receipt", h.Email.SendReceipt)
 }

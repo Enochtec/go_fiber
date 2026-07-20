@@ -85,7 +85,7 @@
 				{ label: '30-Day Orders',  value: String(totalOrders),                            icon: ShoppingCart, grad: 'linear-gradient(135deg,#7B68EE,#6A5ACD)' },
 				{ label: 'Avg. Order',     value: fmt(totalOrders > 0 ? totalRevenue/totalOrders : 0), icon: TrendingUp, grad: 'linear-gradient(135deg,#FFD700,#DAA520)' },
 			] as kpi}
-				<div class="relative overflow-hidden p-5 text-white" style="background:{kpi.grad};">
+				<div class="relative overflow-hidden rounded-[1px] p-5 text-white" style="background:{kpi.grad};">
 					<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
 					<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
 					<div class="flex items-start justify-between relative">
@@ -102,7 +102,7 @@
 		</div>
 
 		<!-- Bar chart -->
-		<div class="bg-white dark:bg-slate-800 p-5">
+		<div class="rounded-[1px] bg-white dark:bg-slate-800 p-5">
 			<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-5">Daily Sales — Last 30 Days</h2>
 			{#if dailySales.length === 0}
 				<p class="text-sm text-slate-400 py-12 text-center">No sales data</p>
@@ -126,7 +126,7 @@
 		</div>
 
 	{:else if activeTab === 'products'}
-		<div class="bg-white dark:bg-slate-800 overflow-hidden">
+		<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
 			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
 			</div>
@@ -159,7 +159,7 @@
 		</div>
 
 	{:else}
-		<div class="bg-white dark:bg-slate-800 overflow-hidden">
+		<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
 			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
 				<Package size={14} class="text-slate-400" />
 				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Inventory Value by Category</h2>

@@ -5,35 +5,48 @@
 	import { salesService } from '$lib/services/sales';
 	import { productsService } from '$lib/services/products';
 	import { notify } from '$lib/stores/notification.svelte';
-	import type { DashboardStats, DailySalesRow, TopProductRow, Sale, Product } from '$lib/types';
+	import type { DashboardStats, DailySalesRow, TopProductRow, Product, InventoryValueRow } from '$lib/types';
 	import {
 		TrendingUp, TrendingDown, ShoppingCart, Package, AlertTriangle,
-		Users, DollarSign, RefreshCw, Banknote, Smartphone, CreditCard, BarChart2, Clock
+		Users, DollarSign, RefreshCw,
+		Activity, Layers, Target, Zap
 	} from '@lucide/svelte';
+	import LineAreaChart from '$lib/components/charts/LineAreaChart.svelte';
+	import BarChart      from '$lib/components/charts/BarChart.svelte';
+	import DonutChart    from '$lib/components/charts/DonutChart.svelte';
+	import HBarChart     from '$lib/components/charts/HBarChart.svelte';
 
 	let stats = $state<DashboardStats | null>(null);
 	let dailySales = $state<DailySalesRow[]>([]);
+	let monthlySales = $state<DailySalesRow[]>([]);
 	let topProducts = $state<TopProductRow[]>([]);
-	let recentSales = $state<Sale[]>([]);
+	let inventoryValue = $state<InventoryValueRow[]>([]);
 	let lowStockProducts = $state<Product[]>([]);
 	let loading = $state(true);
 	let refreshing = $state(false);
 	let lastRefreshed = $state<Date | null>(null);
 
-	const MAX_BAR = 140;
-	const MAX_REV = $derived(dailySales.length > 0 ? Math.max(...dailySales.map(d => d.total)) : 0);
-	const MAX_PROD = $derived(topProducts.length > 0 ? Math.max(...topProducts.map(p => p.revenue)) : 0);
+
 
 	function fmt(n: number) {
 		if (n >= 1_000_000) return `KES ${(n/1_000_000).toFixed(1)}M`;
 		if (n >= 1_000) return `KES ${(n/1_000).toFixed(1)}K`;
 		return `KES ${n.toFixed(0)}`;
 	}
+	function fmtCompact(n: number) {
+		if (n >= 1_000_000) return `${(n/1_000_000).toFixed(1)}M`;
+		if (n >= 1_000) return `${(n/1_000).toFixed(1)}K`;
+		return n.toFixed(0);
+	}
 	function fmtFull(n: number) {
 		return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 	}
 	function fmtDate(s: string) {
 		return new Date(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+	}
+	function fmtMonth(s: string) {
+		const d = new Date(s + '-01');
+		return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 	}
 	function fmtTime(s: string) {
 		return new Date(s).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -46,17 +59,19 @@
 	async function loadData() {
 		refreshing = true;
 		try {
-			const [statsRes, salesRes, topRes, recentRes, lowRes] = await Promise.all([
+			const [statsRes, salesRes, monthlyRes, topRes, invValRes, lowRes] = await Promise.all([
 				inventoryService.dashboard(),
 				reportsService.dailySales(7),
+				reportsService.monthlySales(12),
 				reportsService.topProducts(8),
-				salesService.list({ status: 'completed', page: 1, limit: 8 }),
+				reportsService.inventoryValue(),
 				productsService.list({ low_stock: true, limit: 10 })
 			]);
 			stats = statsRes.data ?? null;
 			dailySales = salesRes.data ?? [];
+			monthlySales = monthlyRes.data ?? [];
 			topProducts = topRes.data ?? [];
-			recentSales = recentRes.data ?? [];
+			inventoryValue = invValRes.data ?? [];
 			lowStockProducts = lowRes.data ?? [];
 			lastRefreshed = new Date();
 		} catch (err) {
@@ -74,349 +89,422 @@
 	});
 	onDestroy(() => clearInterval(interval));
 
-	const salesTrend = $derived(stats ? pct(stats.today_sales, stats.yesterday_sales) : 0);
-	const payTotal = $derived(stats ? stats.today_cash_sales + stats.today_mpesa + stats.today_card : 0);
+	// ── Core derived values ─────────────────────────────────────────────────────
+	const salesTrend      = $derived(stats ? pct(stats.today_sales, stats.yesterday_sales) : 0);
+	const payTotal        = $derived(stats ? stats.today_cash_sales + stats.today_mpesa + stats.today_card : 0);
 	const healthyProducts = $derived(stats ? stats.total_products - stats.low_stock_count - stats.out_of_stock : 0);
-	const healthPct = $derived(stats && stats.total_products > 0 ? (healthyProducts / stats.total_products) * 100 : 0);
-	const lowPct = $derived(stats && stats.total_products > 0 ? (stats.low_stock_count / stats.total_products) * 100 : 0);
-	const outPct = $derived(stats && stats.total_products > 0 ? (stats.out_of_stock / stats.total_products) * 100 : 0);
+	const healthPct       = $derived(stats && stats.total_products > 0 ? (healthyProducts / stats.total_products) * 100 : 0);
+	const totalInvValue   = $derived(inventoryValue.reduce((s, r) => s + r.total_value, 0));
+	const totalInvCost    = $derived(inventoryValue.reduce((s, r) => s + r.total_cost, 0));
+	const invMargin       = $derived(totalInvValue > 0 ? ((totalInvValue - totalInvCost) / totalInvValue) * 100 : 0);
+	const monthlyGrowth   = $derived(monthlySales.length >= 2 ? pct(monthlySales[0].total, monthlySales[1].total) : 0);
+	const avgDaily        = $derived(dailySales.length > 0 ? dailySales.reduce((s, d) => s + d.total, 0) / dailySales.length : 0);
+	const thisWeekTotal   = $derived(dailySales.reduce((s, d) => s + d.total, 0));
+	const weekPace        = $derived(stats?.month_sales ? Math.min((thisWeekTotal / (stats.month_sales / 4)) * 100, 100) : 0);
+
+	// ── Chart datasets ───────────────────────────────────────────────────────────
+	const lineLabels   = $derived(dailySales.map(d => fmtDate(d.date).split(' ').slice(0, 2).join(' ')));
+	const lineDatasets = $derived([{ label: 'Revenue', data: dailySales.map(d => d.total), color: '#6366f1' }]);
+
+	const barLabels  = $derived([...monthlySales].reverse().map(m => fmtMonth(m.date)));
+	const barData    = $derived([...monthlySales].reverse().map(m => m.total));
+
+	const payLabels  = ['Cash', 'M-Pesa', 'Card'];
+	const payColors  = ['#6366f1', '#10b981', '#8b5cf6'];
+	const payData    = $derived(stats ? [stats.today_cash_sales, stats.today_mpesa, stats.today_card] : [0, 0, 0]);
+	const payCenter  = $derived(fmt(payTotal));
+
+	const stockLabels = ['Healthy', 'Low Stock', 'Out of Stock'];
+	const stockColors = ['#10b981', '#f59e0b', '#ef4444'];
+	const stockData   = $derived(stats ? [healthyProducts, stats.low_stock_count, stats.out_of_stock] : [0, 0, 0]);
+	const stockCenter = $derived(`${healthPct.toFixed(0)}%`);
+
+	const invLabels  = $derived(inventoryValue.map(v => v.category_name));
+	const invColors  = ['#6366f1', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#0ea5e9', '#ec4899'];
+	const invData    = $derived(inventoryValue.map(v => v.total_value));
+
+	const hBarLabels = $derived(topProducts.slice(0, 7).map(p => p.product_name));
+	const hBarData   = $derived(topProducts.slice(0, 7).map(p => p.revenue));
+	const hBarSub    = $derived(topProducts.slice(0, 7).map(p => p.quantity_sold));
+
+	// ── Mini SVG sparklines ──────────────────────────────────────────────────────
+	function sparkPath(values: number[], w = 80, h = 28): string {
+		if (values.length < 2) return '';
+		const max = Math.max(...values, 1);
+		return values.map((v, i) => {
+			const x = (i / (values.length - 1)) * w;
+			const y = h - 4 - ((v / max) * (h - 8));
+			return `${x},${y}`;
+		}).join(' ');
+	}
+	const sparkRev    = $derived(sparkPath(dailySales.map(d => d.total)));
+	const sparkOrders = $derived(sparkPath(dailySales.map(d => d.orders)));
 </script>
 
 <svelte:head><title>Dashboard — Maestro POS</title></svelte:head>
 
-<div class="p-4 md:p-6 space-y-5 min-h-full bg-slate-50 dark:bg-slate-950">
+<div class="min-h-full bg-slate-50 dark:bg-slate-950 p-4 md:p-6 space-y-6">
 
-	<!-- Page header -->
-	<div class="flex items-center justify-between gap-3 pl-3 border-l-4 border-blue-500">
+	<!-- ── Header ─────────────────────────────────────────────────────────── -->
+	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
+			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Business Overview</h1>
 			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
 				{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 			</p>
 		</div>
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-3">
 			{#if lastRefreshed}
-				<span class="text-xs text-slate-400 hidden sm:block">Updated {lastRefreshed.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+				<span class="text-xs text-slate-400 hidden sm:block">
+					Updated {lastRefreshed.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+				</span>
 			{/if}
 			<button
 				onclick={loadData}
 				disabled={refreshing}
-				class="flex h-8 w-8 items-center justify-center bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+				class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
 			>
-				<RefreshCw size={13} class={refreshing ? 'animate-spin' : ''} />
+				<RefreshCw size={12} class={refreshing ? 'animate-spin' : ''} />
+				Refresh
 			</button>
 		</div>
 	</div>
 
 	{#if loading}
-		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-			{#each Array(6) as _}
-				<div class="bg-slate-200 dark:bg-slate-700 h-20 animate-pulse"></div>
+		<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+			{#each Array(4) as _}
+				<div class="h-28 bg-slate-200 dark:bg-slate-700 animate-pulse rounded"></div>
 			{/each}
 		</div>
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-			{#each [2, 1] as span}
-				<div class="bg-slate-200 dark:bg-slate-700 h-56 animate-pulse lg:col-span-{span}"></div>
-			{/each}
+			<div class="h-80 bg-slate-200 dark:bg-slate-700 animate-pulse rounded lg:col-span-2"></div>
+			<div class="h-80 bg-slate-200 dark:bg-slate-700 animate-pulse rounded"></div>
 		</div>
 	{:else if stats}
 
-		<!-- ── KPI tiles ─── -->
-		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+		<!-- ── KPI Cards ─────────────────────────────────────────────────── -->
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-			<!-- Revenue (wider) — Primary -->
-			<div class="lg:col-span-2 relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#3F00FF,#3200CC);">
-				<div class="absolute -top-6 -right-6 h-28 w-28 bg-white/10"></div>
-				<div class="absolute -bottom-8 -left-8 h-32 w-32 bg-white/5"></div>
-				<div class="flex items-start justify-between relative">
-					<div>
-						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Today's Revenue</span>
-						<p class="text-2xl font-bold mt-1 tracking-tight">{fmt(stats.today_sales)}</p>
+			<!-- Today Revenue -->
+			<div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="absolute inset-y-0 left-0 w-1 bg-indigo-500"></div>
+				<div class="flex items-start justify-between pl-2">
+					<div class="flex-1 min-w-0">
+						<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Today Revenue</p>
+						<p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1.5 tracking-tight tabular-nums truncate">{fmt(stats.today_sales)}</p>
+						<div class="flex items-center gap-1 mt-2">
+							{#if salesTrend >= 0}
+								<span class="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">▲ +{salesTrend}%</span>
+							{:else}
+								<span class="inline-flex items-center text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-full">▼ {salesTrend}%</span>
+							{/if}
+							<span class="text-[10px] text-slate-400">vs yesterday</span>
+						</div>
 					</div>
-					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
-						<TrendingUp size={20} class="text-white" />
+					<div class="flex flex-col items-end gap-2 shrink-0 ml-2">
+						<div class="h-9 w-9 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded">
+							<DollarSign size={17} class="text-indigo-600 dark:text-indigo-400" />
+						</div>
+						{#if sparkRev}
+							<svg viewBox="0 0 80 28" class="w-20 h-7 text-indigo-400 opacity-80" preserveAspectRatio="none">
+								<polyline points={sparkRev} fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							</svg>
+						{/if}
 					</div>
-				</div>
-				<div class="flex items-center gap-1 mt-2 relative">
-					{#if salesTrend >= 0}
-						<span class="text-xs font-medium text-white/90">▲ +{salesTrend}% vs yesterday</span>
-					{:else}
-						<span class="text-xs font-medium text-white/90">▼ {salesTrend}% vs yesterday</span>
-					{/if}
 				</div>
 			</div>
 
-			<!-- Orders — Secondary -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#7B68EE,#6A5ACD);">
-				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
-				<div class="flex items-start justify-between relative">
-					<div>
-						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Orders</span>
-						<p class="text-2xl font-bold mt-1 tracking-tight">{stats.today_orders}</p>
+			<!-- Orders Today -->
+			<div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="absolute inset-y-0 left-0 w-1 bg-emerald-500"></div>
+				<div class="flex items-start justify-between pl-2">
+					<div class="flex-1 min-w-0">
+						<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Orders Today</p>
+						<p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1.5 tracking-tight tabular-nums">{stats.today_orders}</p>
+						<p class="text-[10px] text-slate-400 mt-2">{fmt(stats.today_avg_sale)} avg value</p>
 					</div>
-					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
-						<ShoppingCart size={20} class="text-white" />
+					<div class="flex flex-col items-end gap-2 shrink-0 ml-2">
+						<div class="h-9 w-9 flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded">
+							<ShoppingCart size={17} class="text-emerald-600 dark:text-emerald-400" />
+						</div>
+						{#if sparkOrders}
+							<svg viewBox="0 0 80 28" class="w-20 h-7 text-emerald-400 opacity-80" preserveAspectRatio="none">
+								<polyline points={sparkOrders} fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							</svg>
+						{/if}
 					</div>
 				</div>
-				<p class="text-xs text-white/70 mt-2 relative">transactions today</p>
 			</div>
 
-			<!-- Avg Sale — Gold -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#FFD700,#DAA520);">
-				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
-				<div class="flex items-start justify-between relative">
-					<div>
-						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Avg Sale</span>
-						<p class="text-2xl font-bold mt-1 tracking-tight">{fmt(stats.today_avg_sale)}</p>
+			<!-- Month Revenue -->
+			<div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="absolute inset-y-0 left-0 w-1 bg-violet-500"></div>
+				<div class="flex items-start justify-between pl-2">
+					<div class="flex-1 min-w-0">
+						<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Month Revenue</p>
+						<p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1.5 tracking-tight tabular-nums truncate">{fmt(stats.month_sales)}</p>
+						<div class="flex items-center gap-1 mt-2">
+							{#if monthlyGrowth >= 0}
+								<span class="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">▲ +{monthlyGrowth}%</span>
+							{:else}
+								<span class="inline-flex items-center text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-full">▼ {monthlyGrowth}%</span>
+							{/if}
+							<span class="text-[10px] text-slate-400">MoM</span>
+						</div>
 					</div>
-					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
-						<BarChart2 size={20} class="text-white" />
+					<div class="h-9 w-9 shrink-0 ml-2 flex items-center justify-center bg-violet-50 dark:bg-violet-900/30 rounded">
+						<TrendingUp size={17} class="text-violet-600 dark:text-violet-400" />
 					</div>
 				</div>
-				<p class="text-xs text-white/70 mt-2 relative">per transaction</p>
 			</div>
 
-			<!-- Products — Neon Green -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#39FF14,#2ECC40);">
-				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
-				<div class="flex items-start justify-between relative">
-					<div>
-						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Products</span>
-						<p class="text-2xl font-bold mt-1 tracking-tight">{stats.total_products}</p>
+			<!-- Customers + Alerts -->
+			<div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="absolute inset-y-0 left-0 w-1 bg-amber-500"></div>
+				<div class="flex items-start justify-between pl-2">
+					<div class="flex-1 min-w-0">
+						<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Customers</p>
+						<p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1.5 tracking-tight tabular-nums">{stats.total_customers}</p>
+						<div class="flex items-center gap-1.5 mt-2">
+							<AlertTriangle size={10} class="text-red-500 shrink-0" />
+							<span class="text-[10px] font-semibold text-red-500">{stats.low_stock_count + stats.out_of_stock}</span>
+							<span class="text-[10px] text-slate-400">stock alerts</span>
+						</div>
 					</div>
-					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
-						<Package size={20} class="text-white" />
-					</div>
-				</div>
-				<p class="text-xs text-white/70 mt-2 relative">active items</p>
-			</div>
-
-			<!-- Stock Alerts — Red -->
-			<div class="relative overflow-hidden p-4 text-white" style="background:linear-gradient(135deg,#FF2400,#CC0000);">
-				<div class="absolute -top-6 -right-6 h-24 w-24 bg-white/10"></div>
-				<div class="absolute -bottom-6 -left-6 h-20 w-20 bg-white/5"></div>
-				<div class="flex items-start justify-between relative">
-					<div>
-						<span class="text-xs font-semibold uppercase tracking-wider text-white/80">Stock Alerts</span>
-						<p class="text-2xl font-bold mt-1 tracking-tight">{stats.low_stock_count + stats.out_of_stock}</p>
-					</div>
-					<div class="flex h-10 w-10 items-center justify-center bg-white/20">
-						<AlertTriangle size={20} class="text-white" />
+					<div class="h-9 w-9 shrink-0 ml-2 flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded">
+						<Users size={17} class="text-amber-600 dark:text-amber-400" />
 					</div>
 				</div>
-				<p class="text-xs text-white/70 mt-2 relative">{stats.out_of_stock} out of stock</p>
 			</div>
 		</div>
 
-		<!-- ── Revenue chart + Payment breakdown ── -->
+		<!-- ── Row 2: 7-Day Line Chart + Payment Donut ─────────────────── -->
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-			<!-- 7-day bar chart -->
-			<div class="lg:col-span-2 bg-white dark:bg-slate-800 p-5">
-				<div class="flex items-center justify-between mb-5">
+			<!-- 7-Day Area Line Chart -->
+			<div class="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="flex items-start justify-between mb-5">
 					<div>
-						<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Revenue — Last 7 Days</h2>
-						<p class="text-xs text-slate-400 mt-0.5">{fmt(stats.month_sales)} this month</p>
+						<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100">Revenue Trend — Last 7 Days</h2>
+						<p class="text-xs text-slate-400 mt-0.5">Daily revenue with smooth area fill</p>
+					</div>
+					<div class="flex items-center gap-1.5 text-xs text-slate-400 shrink-0">
+						<span class="w-4 h-0.5 bg-indigo-500 rounded inline-block"></span> Revenue
 					</div>
 				</div>
 				{#if dailySales.length === 0}
-					<div class="flex items-center justify-center h-36 text-slate-400 text-sm">No sales data yet</div>
+					<div class="flex items-center justify-center h-56 text-slate-400 text-sm">No sales data yet</div>
 				{:else}
-					{@const bestDay = dailySales.reduce((a,b) => a.total > b.total ? a : b)}
-					{@const dailyAvg = dailySales.reduce((s,d) => s + d.total, 0) / dailySales.length}
-					<div class="flex items-end gap-2 h-36">
-						{#each dailySales as day}
-							{@const h = MAX_REV > 0 ? Math.max((day.total / MAX_REV) * MAX_BAR, 3) : 3}
-							<div class="group flex-1 flex flex-col items-center gap-1 h-full justify-end">
-								<div class="relative w-full">
-									<div class="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-										{fmt(day.total)}
-									</div>
-									<div class="w-full transition-all bg-blue-600 hover:bg-blue-700"
-										style="height:{h}px; opacity:{day.total > 0 ? 1 : 0.12};"
-									></div>
-								</div>
-								<p class="text-[9px] text-slate-400 text-center leading-tight">{fmtDate(day.date).split(' ').slice(0,2).join(' ')}</p>
-							</div>
-						{/each}
-					</div>
-					<div class="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+					<LineAreaChart labels={lineLabels} datasets={lineDatasets} height={220} />
+					{@const bestDay = dailySales.reduce((a, b) => a.total > b.total ? a : b)}
+					<div class="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-slate-100 dark:border-slate-700">
 						<div>
-							<p class="text-[10px] text-slate-400 uppercase tracking-wide">Best Day</p>
-							<p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">{fmtDate(bestDay.date)}</p>
-							<p class="text-[10px] font-semibold text-emerald-600">{fmt(bestDay.total)}</p>
+							<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Best Day</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmtDate(bestDay.date)}</p>
+							<p class="text-[10px] font-bold text-indigo-600 mt-0.5">{fmt(bestDay.total)}</p>
 						</div>
 						<div>
-							<p class="text-[10px] text-slate-400 uppercase tracking-wide">Daily Avg</p>
-							<p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">{fmt(dailyAvg)}</p>
+							<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Daily Average</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmt(avgDaily)}</p>
 						</div>
 						<div>
-							<p class="text-[10px] text-slate-400 uppercase tracking-wide">vs Yesterday</p>
-							<p class="text-xs font-bold {salesTrend >= 0 ? 'text-emerald-600' : 'text-red-500'} mt-0.5">{salesTrend >= 0 ? '+' : ''}{salesTrend}%</p>
+							<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Week Total</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmt(thisWeekTotal)}</p>
 						</div>
 					</div>
 				{/if}
 			</div>
 
-			<!-- Payment breakdown -->
-			<div class="bg-white dark:bg-slate-800 p-5">
-				<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Payments Today</h2>
+			<!-- Payment Method Donut -->
+			<div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100">Payment Split</h2>
+				<p class="text-xs text-slate-400 mt-0.5 mb-4">Today's revenue by method</p>
 				{#if payTotal === 0}
-					<div class="flex items-center justify-center h-36 text-slate-400 text-sm">No payments yet</div>
+					<div class="flex items-center justify-center h-56 text-slate-400 text-sm">No payments today</div>
 				{:else}
-					{@const cashPct  = (stats.today_cash_sales / payTotal) * 100}
-					{@const mpesaPct = (stats.today_mpesa     / payTotal) * 100}
-					{@const cardPct  = (stats.today_card      / payTotal) * 100}
-					{@const grad = `conic-gradient(#3F00FF 0% ${cashPct}%, #10b981 ${cashPct}% ${cashPct+mpesaPct}%, #8b5cf6 ${cashPct+mpesaPct}% 100%)`}
-					<div class="flex flex-col gap-5">
-						<div class="flex justify-center">
-							<div class="relative h-28 w-28 rounded-full" style="background:{grad};">
-								<div class="absolute inset-[10px] rounded-full bg-white dark:bg-slate-800 flex flex-col items-center justify-center">
-									<p class="text-base font-bold text-slate-800 dark:text-slate-100">{fmt(payTotal)}</p>
-									<p class="text-[9px] text-slate-400 uppercase tracking-wide">total</p>
+					<DonutChart labels={payLabels} data={payData} colors={payColors} cutout="0" height={190} />
+					<div class="mt-5 space-y-3">
+						{#each [
+							{ label: 'Cash',   value: stats.today_cash_sales, color: '#6366f1' },
+							{ label: 'M-Pesa', value: stats.today_mpesa,       color: '#10b981' },
+							{ label: 'Card',   value: stats.today_card,        color: '#8b5cf6' },
+						] as pm}
+							{@const p = payTotal > 0 ? ((pm.value / payTotal) * 100).toFixed(1) : '0'}
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-2">
+									<span class="h-2.5 w-2.5 rounded-full shrink-0" style="background:{pm.color}"></span>
+									<span class="text-xs text-slate-600 dark:text-slate-300">{pm.label}</span>
+								</div>
+								<div class="text-right">
+									<span class="text-xs font-bold text-slate-800 dark:text-slate-100 tabular-nums">{fmt(pm.value)}</span>
+									<span class="text-[10px] text-slate-400 ml-1">{p}%</span>
 								</div>
 							</div>
-						</div>
-						<div class="space-y-2.5">
-							{#each [
-								{ label: 'Cash',   value: stats.today_cash_sales, color: '#3F00FF', icon: Banknote   },
-								{ label: 'M-Pesa', value: stats.today_mpesa,       color: '#10b981', icon: Smartphone },
-								{ label: 'Card',   value: stats.today_card,        color: '#8b5cf6', icon: CreditCard },
-							] as pm}
-								<div class="flex items-center justify-between">
-									<div class="flex items-center gap-2 min-w-0">
-										<span class="h-2 w-2 shrink-0 rounded-full" style="background:{pm.color};"></span>
-										<span class="text-xs text-slate-600 dark:text-slate-300">{pm.label}</span>
-									</div>
-									<span class="text-xs font-semibold text-slate-800 dark:text-slate-100 tabular-nums">{fmt(pm.value)}</span>
-								</div>
-							{/each}
-						</div>
+						{/each}
 					</div>
 				{/if}
 			</div>
 		</div>
 
-		<!-- ── Top Products + Side panels ── -->
+		<!-- ── Row 3: 12-Month Bar Chart + Performance ─────────────────── -->
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-			<!-- Top products -->
-			<div class="lg:col-span-2 bg-white dark:bg-slate-800 p-5">
-				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Top Products — 30 Days</h2>
-					{#if topProducts.length > 0}
-						<span class="text-xs text-slate-400">{topProducts.reduce((s,p)=>s+p.quantity_sold,0)} units sold</span>
+			<!-- 12-Month Bar Chart -->
+			<div class="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="flex items-start justify-between mb-5">
+					<div>
+						<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100">Monthly Revenue — Last 12 Months</h2>
+						<p class="text-xs text-slate-400 mt-0.5">Peak month highlighted in solid indigo</p>
+					</div>
+					{#if monthlySales.length >= 2}
+						<span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full shrink-0 {monthlyGrowth >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'}">
+							{monthlyGrowth >= 0 ? `▲ +${monthlyGrowth}%` : `▼ ${monthlyGrowth}%`}
+						</span>
 					{/if}
 				</div>
-				{#if topProducts.length === 0}
-					<div class="flex items-center justify-center h-32 text-slate-400 text-sm">No sales data yet</div>
+				{#if monthlySales.length === 0}
+					<div class="flex items-center justify-center h-56 text-slate-400 text-sm">No historical data yet</div>
 				{:else}
-					<div class="space-y-3">
-						{#each topProducts.slice(0,6) as product, i}
-							{@const revW = MAX_PROD > 0 ? (product.revenue / MAX_PROD) * 100 : 0}
-							<div class="flex items-center gap-3">
-								<span class="text-xs font-bold text-slate-300 dark:text-slate-600 w-4 shrink-0 text-right tabular-nums">{i+1}</span>
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center justify-between mb-1">
-										<span class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{product.product_name}</span>
-										<div class="flex items-center gap-2 shrink-0 ml-2">
-											<span class="text-[10px] text-slate-400">{product.quantity_sold} sold</span>
-											<span class="text-xs font-bold text-slate-900 dark:text-slate-100 tabular-nums">{fmt(product.revenue)}</span>
-										</div>
-									</div>
-									<div class="h-1.5 bg-slate-100 dark:bg-slate-700 overflow-hidden">
-										<div class="h-full bg-blue-600" style="width:{revW}%;"></div>
-									</div>
-								</div>
+					<BarChart labels={barLabels} data={barData} height={235} />
+					{@const highest = monthlySales.reduce((a, b) => a.total > b.total ? a : b)}
+					<div class="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-slate-100 dark:border-slate-700">
+						<div>
+							<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Best Month</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmtMonth(highest.date)}</p>
+							<p class="text-[10px] font-bold text-indigo-600 mt-0.5">{fmt(highest.total)}</p>
+						</div>
+						<div>
+							<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Monthly Avg</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmt(monthlySales.reduce((s, m) => s + m.total, 0) / monthlySales.length)}</p>
+						</div>
+						<div>
+							<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">12-Month Total</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmt(monthlySales.reduce((s, m) => s + m.total, 0))}</p>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Performance Panel -->
+			<div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="flex items-center gap-2 mb-5">
+					<Activity size={14} class="text-indigo-600" />
+					<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100">Performance</h2>
+				</div>
+				<div class="space-y-5">
+					<div>
+						<div class="flex items-center justify-between mb-2">
+							<div class="flex items-center gap-1.5"><Zap size={11} class="text-indigo-500"/><span class="text-xs font-semibold text-slate-600 dark:text-slate-300">MoM Growth</span></div>
+							<span class="text-sm font-bold {monthlyGrowth >= 0 ? 'text-emerald-600' : 'text-red-500'}">{monthlyGrowth >= 0 ? '+' : ''}{monthlyGrowth}%</span>
+						</div>
+						<div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+							<div class="h-full rounded-full {monthlyGrowth >= 0 ? 'bg-emerald-500' : 'bg-red-500'}" style="width:{Math.min(Math.abs(monthlyGrowth), 100)}%"></div>
+						</div>
+					</div>
+					<div>
+						<div class="flex items-center justify-between mb-2">
+							<div class="flex items-center gap-1.5"><Layers size={11} class="text-violet-500"/><span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Gross Margin</span></div>
+							<span class="text-sm font-bold text-violet-600">{invMargin.toFixed(1)}%</span>
+						</div>
+						<div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+							<div class="h-full bg-violet-500 rounded-full" style="width:{Math.min(invMargin, 100)}%"></div>
+						</div>
+				</div>
+				<div>
+					<div class="flex items-center justify-between mb-2">
+						<div class="flex items-center gap-1.5"><Target size={11} class="text-amber-500"/><span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Weekly Pace</span></div>
+							<span class="text-sm font-bold text-amber-600">{weekPace.toFixed(0)}%</span>
+						</div>
+						<div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+							<div class="h-full bg-amber-500 rounded-full" style="width:{weekPace}%"></div>
+						</div>
+						<p class="text-[10px] text-slate-400 mt-1">of expected monthly pace</p>
+					</div>
+					<div class="border-t border-slate-100 dark:border-slate-700 pt-4 grid grid-cols-2 gap-2.5">
+						{#each [
+							{ label: 'Avg Daily',    value: fmt(avgDaily),                  cls: 'text-slate-800 dark:text-slate-100' },
+							{ label: 'Products',     value: String(stats.total_products),    cls: 'text-slate-800 dark:text-slate-100' },
+							{ label: 'Low Stock',    value: String(stats.low_stock_count),   cls: 'text-amber-600' },
+							{ label: 'Out of Stock', value: String(stats.out_of_stock),      cls: 'text-red-500' },
+						] as s}
+							<div class="bg-slate-50 dark:bg-slate-900/40 p-3">
+								<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{s.label}</p>
+								<p class="text-sm font-bold {s.cls} mt-0.5">{s.value}</p>
 							</div>
 						{/each}
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ── Row 4: Top Products HBar + Stock Donut + Inventory Donut ── -->
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+			<!-- Top Products Horizontal Bar Chart -->
+			<div class="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+				<div class="flex items-start justify-between mb-5">
+					<div>
+						<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100">Top Products — Last 30 Days</h2>
+						<p class="text-xs text-slate-400 mt-0.5">Revenue &amp; units sold side-by-side</p>
+					</div>
+					{#if topProducts.length > 0}
+						<span class="text-xs font-semibold text-slate-500 shrink-0">{topProducts.reduce((s, p) => s + p.quantity_sold, 0)} units total</span>
+					{/if}
+				</div>
+				{#if topProducts.length === 0}
+					<div class="flex items-center justify-center h-48 text-slate-400 text-sm">No sales data yet</div>
+				{:else}
+					<HBarChart labels={hBarLabels} data={hBarData} subData={hBarSub} label="Revenue (KES)" subLabel="Units Sold" height={260} />
 				{/if}
 			</div>
 
 			<!-- Right column -->
 			<div class="space-y-4">
 
-				<!-- Quick stats grid -->
-				<div class="bg-white dark:bg-slate-800 p-4">
-					<h2 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Catalogue</h2>
-					<div class="grid grid-cols-2 gap-2">
-						{#each [
-							{ label: 'Active Products', value: stats.total_products, cls: 'text-blue-600 dark:text-blue-400' },
-							{ label: 'Customers',        value: stats.total_customers, cls: 'text-violet-600 dark:text-violet-400' },
-							{ label: 'Low Stock',        value: stats.low_stock_count,  cls: 'text-amber-600 dark:text-amber-400' },
-							{ label: 'Out of Stock',     value: stats.out_of_stock,     cls: 'text-red-600 dark:text-red-400' },
-						] as s}
-							<div class="bg-slate-50 dark:bg-slate-900/40 p-3 text-center">
-								<p class="text-lg font-bold {s.cls}">{s.value}</p>
-								<p class="text-[10px] text-slate-500 mt-0.5 leading-tight">{s.label}</p>
-							</div>
-						{/each}
-					</div>
-				</div>
-
-				<!-- Stock health -->
-				<div class="bg-white dark:bg-slate-800 p-4">
-					<h2 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Stock Health</h2>
-					<div class="flex items-center gap-4">
-						<div class="relative h-20 w-20 shrink-0">
-							<svg class="h-full w-full -rotate-90" viewBox="0 0 36 36">
-								<circle cx="18" cy="18" r="15" fill="none" stroke="#e2e8f0" stroke-width="3" class="dark:stroke-slate-700"/>
-								<circle cx="18" cy="18" r="15" fill="none" stroke="#22c55e" stroke-width="3" stroke-dasharray="{healthPct} {100-healthPct}" stroke-linecap="round"/>
-								<circle cx="18" cy="18" r="15" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="{lowPct} {100-lowPct}" stroke-dashoffset="{-healthPct}" stroke-linecap="round"/>
-								<circle cx="18" cy="18" r="15" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="{outPct} {100-outPct}" stroke-dashoffset="{-(healthPct+lowPct)}" stroke-linecap="round"/>
-							</svg>
-							<div class="absolute inset-0 flex flex-col items-center justify-center">
-								<p class="text-sm font-bold text-slate-800 dark:text-slate-100">{healthPct.toFixed(0)}%</p>
-								<p class="text-[8px] text-slate-400 uppercase">OK</p>
-							</div>
-						</div>
-						<div class="flex-1 space-y-1.5 text-xs">
+				<!-- Stock Health Donut -->
+				<div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+					<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">Stock Health</h2>
+					<p class="text-xs text-slate-400 mb-3">Product availability breakdown</p>
+					{#if stats.total_products === 0}
+						<p class="text-xs text-slate-400 py-4 text-center">No products</p>
+					{:else}
+						<DonutChart labels={stockLabels} data={stockData} colors={stockColors} centerLabel="Healthy" centerValue={stockCenter} height={160} />
+						<div class="mt-4 space-y-2">
 							{#each [
-								{ label: 'Healthy',      value: healthyProducts,      dot: 'bg-emerald-500' },
-								{ label: 'Low Stock',    value: stats.low_stock_count, dot: 'bg-amber-500' },
-								{ label: 'Out of Stock', value: stats.out_of_stock,    dot: 'bg-red-500' },
+								{ label: 'Healthy',      value: healthyProducts,       color: '#10b981' },
+								{ label: 'Low Stock',    value: stats.low_stock_count,  color: '#f59e0b' },
+								{ label: 'Out of Stock', value: stats.out_of_stock,     color: '#ef4444' },
 							] as row}
 								<div class="flex items-center justify-between">
-									<div class="flex items-center gap-1.5">
-										<span class="h-2 w-2 rounded-full {row.dot}"></span>
-										<span class="text-slate-600 dark:text-slate-300">{row.label}</span>
+									<div class="flex items-center gap-2">
+										<span class="h-2.5 w-2.5 rounded-full shrink-0" style="background:{row.color}"></span>
+										<span class="text-xs text-slate-600 dark:text-slate-300">{row.label}</span>
 									</div>
-									<span class="font-bold text-slate-700 dark:text-slate-200">{row.value}</span>
+									<span class="text-xs font-bold text-slate-800 dark:text-slate-100">{row.value}</span>
 								</div>
 							{/each}
 						</div>
-					</div>
-				</div>
-
-				<!-- Recent sales -->
-				<div class="bg-white dark:bg-slate-800 p-4">
-					<div class="flex items-center gap-2 mb-3">
-						<Clock size={13} class="text-slate-400" />
-						<h2 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Recent Sales</h2>
-					</div>
-					{#if recentSales.length === 0}
-						<p class="text-xs text-slate-400 py-4 text-center">No sales today yet</p>
-					{:else}
-						<ul class="space-y-2.5">
-							{#each recentSales.slice(0,5) as sale}
-								<li class="flex items-center justify-between gap-2">
-									<div class="min-w-0">
-										<p class="text-xs font-semibold text-slate-700 dark:text-slate-200">#{sale.id.slice(0,6).toUpperCase()}</p>
-										<p class="text-[10px] text-slate-400">{fmtTime(sale.created_at)}</p>
-									</div>
-									<div class="text-right shrink-0">
-										<p class="text-xs font-bold text-slate-900 dark:text-slate-100 tabular-nums">KES {fmtFull(sale.total)}</p>
-										<p class="text-[10px] text-slate-400 capitalize">{sale.payment_method}</p>
-									</div>
-								</li>
-							{/each}
-						</ul>
 					{/if}
 				</div>
+
+				<!-- Inventory Value Donut -->
+				{#if inventoryValue.length > 0}
+				<div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-5 shadow-sm">
+					<h2 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">Inventory by Category</h2>
+					<p class="text-xs text-slate-400 mb-3">Retail value distribution</p>
+					<DonutChart labels={invLabels} data={invData} colors={invColors} centerLabel="Total" centerValue={fmt(totalInvValue)} height={160} />
+					<div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+						<div>
+							<p class="text-[10px] text-slate-400 uppercase tracking-wide">Cost</p>
+							<p class="text-xs font-bold text-slate-800 dark:text-slate-100">{fmt(totalInvCost)}</p>
+						</div>
+						<div class="text-right">
+							<p class="text-[10px] text-slate-400 uppercase tracking-wide">Margin</p>
+							<p class="text-xs font-bold text-emerald-600">{invMargin.toFixed(1)}%</p>
+						</div>
+					</div>
+				</div>
+				{/if}
 			</div>
 		</div>
 

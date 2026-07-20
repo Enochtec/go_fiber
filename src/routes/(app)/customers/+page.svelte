@@ -7,8 +7,12 @@
 	import type { Customer, Sale } from '$lib/types';
 	import {
 		Plus, Search, Pencil, Trash2, X, User, Phone, Mail,
-		MapPin, ShoppingBag, TrendingUp, Clock, ChevronRight
+		MapPin, ShoppingBag, TrendingUp, Clock, ChevronRight, Download
 	} from '@lucide/svelte';
+	import ExportModal from '$lib/components/ExportModal.svelte';
+	import { shopService } from '$lib/services/shop';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { exportCustomers, downloadCSV, safeFilename } from '$lib/services/export';
 
 	// ─── List state ──────────────────────────────────────────────
 	let customers = $state<Customer[]>([]);
@@ -17,6 +21,7 @@
 	const limit = 20;
 	let search = $state('');
 	let loading = $state(true);
+	let showExport = $state(false);
 
 	// ─── Form state ───────────────────────────────────────────────
 	let showModal = $state(false);
@@ -124,6 +129,20 @@
 		return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 	}
 
+	async function handleExport(_fmt: 'csv', scope: 'all' | 'filtered' | 'current' | 'selected') {
+		const info = await shopService.getInfo();
+		const shopName = info?.shop?.name ?? 'Export';
+		const userName = authStore.user?.name ?? 'System';
+		let data: Customer[];
+		if (scope === 'current') {
+			data = customers;
+		} else {
+			const res = await customersService.list(scope === 'filtered' ? search : '', 1, 10000);
+			data = res.data ?? [];
+		}
+		downloadCSV(exportCustomers(data, shopName, userName), safeFilename(shopName, 'Customers'));
+	}
+
 	onMount(fetchList);
 </script>
 
@@ -140,13 +159,14 @@
 				<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Customers</h1>
 				<p class="text-xs text-slate-400 mt-0.5">{total} total</p>
 			</div>
-			<button
-				onclick={openCreate}
-				class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-all active:scale-95"
-				style="background:linear-gradient(135deg,#9333ea,#7c3aed);"
-			>
-				<Plus size={15} /> Add Customer
-			</button>
+			<div class="flex gap-2">
+				<button onclick={() => showExport = true} class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all">
+					<Download size={14} /> Export
+				</button>
+				<button onclick={openCreate} class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-all active:scale-95" style="background:linear-gradient(135deg,#9333ea,#7c3aed);">
+					<Plus size={15} /> Add Customer
+				</button>
+			</div>
 		</div>
 
 		<!-- Search -->
@@ -369,3 +389,11 @@
 		</button>
 	{/snippet}
 </Modal>
+
+<ExportModal
+	open={showExport}
+	title="Export Customers"
+	hasFiltered={!!search}
+	onclose={() => showExport = false}
+	onexport={handleExport}
+/>

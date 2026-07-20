@@ -92,7 +92,7 @@
 		</button>
 	</div>
 
-	<div class="bg-white dark:bg-slate-800 overflow-hidden">
+	<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
 		<table class="w-full text-sm">
 			<thead>
 				<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">

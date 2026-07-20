@@ -4,10 +4,15 @@
 	import { notify } from '$lib/stores/notification.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import type { Supplier } from '$lib/types';
-	import { Plus, Pencil, Trash2 } from '@lucide/svelte';
+	import { Plus, Pencil, Trash2, Download } from '@lucide/svelte';
+	import ExportModal from '$lib/components/ExportModal.svelte';
+	import { shopService } from '$lib/services/shop';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { exportSuppliers, downloadCSV, safeFilename } from '$lib/services/export';
 
 	let suppliers = $state<Supplier[]>([]);
 	let loading = $state(true);
+	let showExport = $state(false);
 	let showModal = $state(false);
 	let editing = $state<Supplier | null>(null);
 	let submitting = $state(false);
@@ -67,6 +72,13 @@
 		}
 	}
 
+	async function handleExport(_fmt: 'csv', _scope: 'all' | 'filtered' | 'current' | 'selected') {
+		const info = await shopService.getInfo();
+		const shopName = info?.shop?.name ?? 'Export';
+		const userName = authStore.user?.name ?? 'System';
+		downloadCSV(exportSuppliers(suppliers, shopName, userName), safeFilename(shopName, 'Suppliers'));
+	}
+
 	onMount(fetch);
 </script>
 
@@ -78,12 +90,17 @@
 			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Suppliers</h1>
 			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage your product suppliers</p>
 		</div>
-		<button onclick={openCreate} class="flex items-center gap-1.5 rounded-[1px] bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">
-			<Plus size={13} />Add Supplier
-		</button>
+		<div class="flex gap-2">
+			<button onclick={() => showExport = true} class="flex items-center gap-1.5 rounded-[1px] border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+				<Download size={13} /> Export
+			</button>
+			<button onclick={openCreate} class="flex items-center gap-1.5 rounded-[1px] bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">
+				<Plus size={13} />Add Supplier
+			</button>
+		</div>
 	</div>
 
-	<div class="bg-white dark:bg-slate-800 overflow-hidden">
+	<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
 		<table class="w-full text-sm">
 			<thead>
 				<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
@@ -150,3 +167,10 @@
 		</button>
 	{/snippet}
 </Modal>
+
+<ExportModal
+	open={showExport}
+	title="Export Suppliers"
+	onclose={() => showExport = false}
+	onexport={handleExport}
+/>

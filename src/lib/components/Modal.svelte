@@ -25,7 +25,7 @@
 	>
 		<div
 			class="relative w-full {widths[size]} max-h-[92vh] flex flex-col
-				rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl overflow-hidden"
+				rounded-t-[1px] sm:rounded-[1px] bg-white shadow-2xl overflow-hidden"
 			onclick={(e) => e.stopPropagation()}
 			role="presentation"
 		>

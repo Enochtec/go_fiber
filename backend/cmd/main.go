@@ -50,6 +50,8 @@ func main() {
 	reportSvc := services.NewReportService(db)
 	registrationSvc := services.NewRegistrationService(db, shopRepo, userRepo, authSvc)
 	uploadHandler := handlers.NewUploadHandler()
+	mpesaSvc := services.NewMpesaService()
+	emailSvc := services.NewEmailService()
 
 	h := &routes.Handlers{
 		Auth:      handlers.NewAuthHandler(authSvc, userRepo, validate),
@@ -65,6 +67,8 @@ func main() {
 		Register:  handlers.NewRegisterHandler(registrationSvc, validate),
 		Upload:    uploadHandler,
 		Shop:      handlers.NewShopHandler(shopRepo),
+		Mpesa:     handlers.NewMpesaHandler(db, mpesaSvc),
+		Email:     handlers.NewEmailHandler(saleRepo, shopRepo, emailSvc),
 	}
 
 	app := fiber.New(fiber.Config{

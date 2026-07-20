@@ -5,13 +5,18 @@
 	import Pagination from '$lib/components/Pagination.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import type { Sale } from '$lib/types';
-	import { Eye } from '@lucide/svelte';
+	import { Eye, Download } from '@lucide/svelte';
+	import ExportModal from '$lib/components/ExportModal.svelte';
+	import { shopService } from '$lib/services/shop';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { exportSales, downloadCSV, safeFilename } from '$lib/services/export';
 
 	let sales = $state<Sale[]>([]);
 	let total = $state(0);
 	let page = $state(1);
 	const limit = 20;
 	let loading = $state(true);
+	let showExport = $state(false);
 
 	let statusFilter = $state('');
 	let dateFrom = $state('');
@@ -77,6 +82,25 @@
 		voided:    'badge-red'
 	};
 
+	async function handleExport(_fmt: 'csv', scope: 'all' | 'filtered' | 'current' | 'selected') {
+		const info = await shopService.getInfo();
+		const shopName = info?.shop?.name ?? 'Export';
+		const userName = authStore.user?.name ?? 'System';
+		let data: Sale[];
+		if (scope === 'current') {
+			data = sales;
+		} else {
+			const res = await salesService.list({
+				status: scope === 'filtered' ? (statusFilter as 'completed' | 'held' | 'voided' | undefined || undefined) : undefined,
+				date_from: scope === 'filtered' ? (dateFrom || undefined) : undefined,
+				date_to: scope === 'filtered' ? (dateTo || undefined) : undefined,
+				page: 1, limit: 10000
+			});
+			data = res.data ?? [];
+		}
+		downloadCSV(exportSales(data, shopName, userName), safeFilename(shopName, 'Sales'));
+	}
+
 	onMount(fetch);
 </script>
 
@@ -90,6 +114,9 @@
 				{total} transaction{total !== 1 ? 's' : ''} found
 			</p>
 		</div>
+		<button onclick={() => showExport = true} class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all">
+			<Download size={14} /> Export
+		</button>
 	</div>
 
 	<!-- Filters -->
@@ -118,7 +145,7 @@
 		/>
 	</div>
 
-	<div class="bg-white dark:bg-slate-800 overflow-hidden">
+	<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
@@ -232,3 +259,11 @@
 		{/if}
 	{/snippet}
 </Modal>
+
+<ExportModal
+	open={showExport}
+	title="Export Sales History"
+	hasFiltered={!!(statusFilter || dateFrom || dateTo)}
+	onclose={() => showExport = false}
+	onexport={handleExport}
+/>

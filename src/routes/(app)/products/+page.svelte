@@ -6,9 +6,13 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { Product, Category } from '$lib/types';
-	import { Plus, Search, Pencil, Trash2, AlertTriangle, Package, Scan } from '@lucide/svelte';
+	import { Plus, Search, Pencil, Trash2, AlertTriangle, Package, Scan, Download } from '@lucide/svelte';
 	import ImagePicker from '$lib/components/ImagePicker.svelte';
 	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
+	import ExportModal from '$lib/components/ExportModal.svelte';
+	import { shopService } from '$lib/services/shop';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { exportProducts, downloadCSV, safeFilename } from '$lib/services/export';
 
 	let products = $state<Product[]>([]);
 	let categories = $state<Category[]>([]);
@@ -20,6 +24,7 @@
 	let categoryFilter = $state('');
 	let lowStockFilter = $state(false);
 	let loading = $state(true);
+	let showExport = $state(false);
 
 	let showModal = $state(false);
 	let showScanner = $state(false);
@@ -40,6 +45,25 @@
 
 	function fmt(n: number) {
 		return new Intl.NumberFormat('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+	}
+
+	async function handleExport(_fmt: 'csv', scope: 'all' | 'filtered' | 'current' | 'selected') {
+		const info = await shopService.getInfo();
+		const shopName = info?.shop?.name ?? 'Export';
+		const userName = authStore.user?.name ?? 'System';
+		let data: Product[];
+		if (scope === 'current') {
+			data = products;
+		} else {
+			const res = await productsService.list({
+				search: scope === 'filtered' ? search : undefined,
+				category_id: scope === 'filtered' ? (categoryFilter || undefined) : undefined,
+				low_stock: scope === 'filtered' ? lowStockFilter : undefined,
+				limit: 10000, page: 1
+			});
+			data = res.data ?? [];
+		}
+		downloadCSV(exportProducts(data, shopName, userName), safeFilename(shopName, 'Products'));
 	}
 
 	async function fetchProducts() {
@@ -142,14 +166,14 @@
 				{total} product{total !== 1 ? 's' : ''} total
 			</p>
 		</div>
-		<button
-			onclick={openCreate}
-			class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-95"
-			style="background:linear-gradient(135deg,#059669,#047857);"
-		>
-			<Plus size={16} />
-			Add Product
-		</button>
+		<div class="flex gap-2">
+			<button onclick={() => showExport = true} class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all">
+				<Download size={15} /> Export
+			</button>
+			<button onclick={openCreate} class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all active:scale-95">
+				<Plus size={16} /> Add Product
+			</button>
+		</div>
 	</div>
 
 	<!-- Filters -->
@@ -180,8 +204,8 @@
 	</div>
 
 	<!-- Table card -->
-	<div class="bg-white dark:bg-slate-800 overflow-hidden">
-		<div class="overflow-x-auto">
+		<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
+			<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
 					<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
@@ -380,4 +404,12 @@
 		onclose={() => showScanner = false}
 	/>
 {/if}
+
+<ExportModal
+	open={showExport}
+	title="Export Products"
+	hasFiltered={!!(search || categoryFilter || lowStockFilter)}
+	onclose={() => showExport = false}
+	onexport={handleExport}
+/>
 

@@ -6,6 +6,7 @@
 	import { productsService } from '$lib/services/products';
 	import { customersService } from '$lib/services/customers';
 	import { salesService } from '$lib/services/sales';
+	import { mpesaService, pollMpesaStatus, validatePhone, normalizePhone } from '$lib/services/mpesa';
 	import Modal from '$lib/components/Modal.svelte';
 	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
 	import Calculator from '$lib/components/Calculator.svelte';
@@ -16,7 +17,7 @@
 		Clock, Printer, X, Banknote, Smartphone, Package,
 		ReceiptIcon, ChevronDown, PlusCircle,
 		Percent, FileText, Tag, AlertTriangle, Check,
-		ArrowLeft, Hash, Scan, Phone,
+		ArrowLeft, Hash, Scan, Phone, Loader, CheckCircle, XCircle, RefreshCw,
 		Calculator as CalculatorIcon
 	} from '@lucide/svelte';
 
@@ -59,8 +60,14 @@
 	let lastSale: Sale | null = $state(null);
 	let lastAmountTendered = $state(0);
 	let lastChange = $state(0);
-	let pointsPhone = $state('');
 	let clockStr = $state('');
+
+	// M-Pesa state
+	let mpesaPhone = $state('');
+	let mpesaPhoneError = $state('');
+	let mpesaStatus = $state<'idle' | 'initiating' | 'waiting' | 'completed' | 'failed' | 'cancelled'>('idle');
+	let mpesaMessage = $state('');
+	let mpesaCheckoutID = $state('');
 
 	let searchInput: HTMLInputElement;
 	let searchResultsEl: HTMLDivElement;
@@ -231,7 +238,6 @@
 
 	function selectCustomer(c: Customer) {
 		cart.setCustomer(c.id, c.name);
-		if (c.phone && !pointsPhone) pointsPhone = c.phone;
 		showCustomerModal = false;
 	}
 
@@ -244,7 +250,6 @@
 				name: newCustomerName, phone: newCustomerPhone, email: newCustomerEmail, address: ''
 			});
 			if (res.data) {
-				if (newCustomerPhone) pointsPhone = newCustomerPhone;
 				selectCustomer(res.data);
 				showNewCustomerModal = false;
 				newCustomerName = ''; newCustomerPhone = ''; newCustomerEmail = '';
@@ -311,25 +316,75 @@
 
 	function applyNote() { cart.setNote(noteInput); showNoteModal = false; }
 
+	async function createSaleRecord(method: 'cash' | 'mpesa') {
+		const res = await salesService.create({
+			customer_id: cart.customerId,
+			items: cart.items.map(i => ({ product_id: i.product.id, quantity: i.quantity, unit_price: i.unit_price })),
+			discount: cart.discount, tax_rate: cart.taxRate,
+			payment_method: method, status: 'completed', note: cart.note || null,
+		});
+		if (res.data) {
+			lastSale = res.data;
+			lastAmountTendered = method === 'cash' ? amountTendered : cart.total;
+			lastChange = method === 'cash' ? change : 0;
+		}
+	}
+
 	async function completeSale() {
 		if (cart.items.length === 0) { notify.error('Cart is empty'); return; }
+
+		// M-Pesa flow
+		if (paymentMethod === 'mpesa') {
+			const phoneErr = validatePhone(mpesaPhone);
+			if (phoneErr) { mpesaPhoneError = phoneErr; return; }
+			mpesaPhoneError = '';
+			mpesaStatus = 'initiating';
+			mpesaMessage = 'Sending payment request…';
+			checkingOut = true;
+			try {
+				const stkRes = await mpesaService.initiateSTKPush({
+					phone:     mpesaPhone,
+					amount:    cart.total,
+					reference: cart.customerId ? 'POS-CUST' : 'POS-SALE'
+				});
+				mpesaCheckoutID = stkRes.data!.checkout_request_id;
+				mpesaStatus    = 'waiting';
+				mpesaMessage   = stkRes.data!.customer_message || 'Check your phone and enter M-Pesa PIN…';
+
+				const result = await pollMpesaStatus(
+					mpesaCheckoutID,
+					(s) => {
+						if (s.status === 'pending') mpesaMessage = 'Waiting for M-Pesa confirmation…';
+					}
+				);
+
+				if (result.status === 'completed') {
+					mpesaStatus = 'completed';
+					await createSaleRecord('mpesa');
+				} else if (result.status === 'cancelled') {
+					mpesaStatus  = 'cancelled';
+					mpesaMessage = 'Payment was cancelled. Please try again.';
+				} else {
+					mpesaStatus  = 'failed';
+					mpesaMessage = result.result_desc || 'Payment failed. Please try again.';
+				}
+			} catch (err) {
+				mpesaStatus  = 'failed';
+				mpesaMessage = err instanceof Error ? err.message : 'M-Pesa request failed';
+			} finally {
+				checkingOut = false;
+			}
+			return;
+		}
+
+		// Cash / other payment
 		if (paymentMethod === 'cash' && amountTendered < cart.total) {
 			notify.error('Amount tendered is less than total');
 			return;
 		}
 		checkingOut = true;
 		try {
-			const res = await salesService.create({
-				customer_id: cart.customerId,
-				items: cart.items.map(i => ({ product_id: i.product.id, quantity: i.quantity, unit_price: i.unit_price })),
-				discount: cart.discount, tax_rate: cart.taxRate,
-				payment_method: paymentMethod, status: 'completed', note: cart.note || null,
-			});
-			if (res.data) {
-				lastSale = res.data;
-				lastAmountTendered = amountTendered;
-				lastChange = change;
-			}
+			await createSaleRecord('cash');
 		} catch (err) {
 			notify.error(err instanceof Error ? err.message : 'Checkout failed');
 		} finally {
@@ -341,7 +396,11 @@
 		cart.clear();
 		amountTendered = 0;
 		paymentMethod = 'cash';
-		pointsPhone = '';
+		mpesaPhone = '';
+		mpesaPhoneError = '';
+		mpesaStatus = 'idle';
+		mpesaMessage = '';
+		mpesaCheckoutID = '';
 		lastSale = null;
 		loadProducts();
 		searchInput?.focus();
@@ -523,7 +582,7 @@
 			{#if productsLoading}
 				<div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
 					{#each Array(12) as _}
-						<div class="rounded-2xl bg-white dark:bg-slate-800 h-36 animate-pulse border border-slate-100 dark:border-slate-700"></div>
+						<div class="rounded-[1px] bg-white dark:bg-slate-800 h-36 animate-pulse border border-slate-100 dark:border-slate-700"></div>
 					{/each}
 				</div>
 			{:else if products.length === 0}
@@ -570,7 +629,7 @@
 							</div>
 
 							<!-- Add overlay on hover -->
-							<div class="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-blue-600/5">
+							<div class="absolute inset-0 rounded-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-blue-600/5">
 								<div class="rounded-full bg-blue-600 text-white p-1.5 shadow-lg">
 									<Plus size={14} />
 								</div>
@@ -778,23 +837,51 @@
 					{/if}
 				</div>
 			{:else if paymentMethod === 'mpesa'}
-				<div class="rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-					<Smartphone size={20} class="mx-auto mb-1 text-emerald-600" />
-					<p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">M-Pesa</p>
-					<p class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">Amount: KES {fmt(cart.total)}</p>
+				<div class="space-y-2">
+					<!-- Phone input (only when idle/failed/cancelled) -->
+					{#if mpesaStatus === 'idle' || mpesaStatus === 'failed' || mpesaStatus === 'cancelled'}
+						<div>
+							<label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Customer Phone (M-Pesa)</label>
+							<div class="relative">
+								<Smartphone size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" />
+								<input
+									type="tel"
+									bind:value={mpesaPhone}
+									placeholder="e.g. 0712 345 678"
+									class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-emerald-400"
+								/>
+							</div>
+							{#if mpesaPhoneError}<p class="text-xs text-red-500 mt-1">{mpesaPhoneError}</p>{/if}
+						</div>
+						{#if mpesaStatus === 'failed' || mpesaStatus === 'cancelled'}
+							<div class="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-3 py-2">
+								<XCircle size={14} class="text-red-500 mt-0.5 shrink-0" />
+								<p class="text-xs text-red-700 dark:text-red-400">{mpesaMessage}</p>
+							</div>
+						{/if}
+						<div class="bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-400 text-center">
+							<span class="font-semibold">Amount: KES {fmt(cart.total)}</span> — A push notification will be sent to the customer's phone.
+						</div>
+					{:else if mpesaStatus === 'initiating' || mpesaStatus === 'waiting'}
+						<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-5 text-center space-y-2">
+							<Loader size={24} class="mx-auto animate-spin text-emerald-600" />
+							<p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+								{mpesaStatus === 'initiating' ? 'Initiating STK Push…' : 'Waiting for Payment…'}
+							</p>
+							<p class="text-xs text-emerald-600 dark:text-emerald-500">{mpesaMessage}</p>
+							<p class="text-xs text-slate-500">Amount: KES {fmt(cart.total)} → {normalizePhone(mpesaPhone)}</p>
+						</div>
+					{:else if mpesaStatus === 'completed'}
+						<div class="bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center gap-3">
+							<CheckCircle size={20} class="text-emerald-600 shrink-0" />
+							<div>
+								<p class="text-sm font-semibold text-emerald-800">Payment Confirmed!</p>
+								<p class="text-xs text-emerald-600">KES {fmt(cart.total)} received via M-Pesa</p>
+							</div>
+						</div>
+					{/if}
 				</div>
 			{/if}
-
-			<!-- Points phone number -->
-			<div class="relative">
-				<Phone size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-				<input
-					type="tel"
-					bind:value={pointsPhone}
-					placeholder="Phone (for points): 07XX XXX XXX"
-					class="w-full rounded border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 py-2.5 pl-9 pr-4 text-sm focus:outline-none"
-				/>
-			</div>
 
 			<!-- Utility row -->
 			<div class="grid grid-cols-3 gap-1.5">
@@ -819,8 +906,10 @@
 					{#if checkingOut}
 						<span class="flex items-center justify-center gap-2">
 							<span class="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
-							Processing…
+							{paymentMethod === 'mpesa' ? 'Waiting for M-Pesa…' : 'Processing…'}
 						</span>
+					{:else if paymentMethod === 'mpesa'}
+						Send M-Pesa Request — KES {fmt(cart.total)}
 					{:else}
 						Charge KES {fmt(cart.total)}
 					{/if}
@@ -969,7 +1058,6 @@
 		sale={lastSale}
 		amountTendered={lastAmountTendered}
 		change={lastChange}
-		{pointsPhone}
 		onclose={() => lastSale = null}
 		onnewsale={resetAfterSale}
 	/>

@@ -7,7 +7,11 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { StockAdjustment, Product, InventoryValueRow, TopProductRow } from '$lib/types';
-	import { Plus, AlertTriangle, Search, Package, TrendingUp, DollarSign, BarChart2, ArrowUp, ArrowDown } from '@lucide/svelte';
+	import { Plus, AlertTriangle, Search, Package, TrendingUp, DollarSign, BarChart2, ArrowUp, ArrowDown, Download } from '@lucide/svelte';
+	import ExportModal from '$lib/components/ExportModal.svelte';
+	import { shopService } from '$lib/services/shop';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { exportInventory, downloadCSV, safeFilename } from '$lib/services/export';
 
 	// ─── State ───────────────────────────────────────────────────
 	let adjustments = $state<StockAdjustment[]>([]);
@@ -15,6 +19,7 @@
 	let adjPage = $state(1);
 	const adjLimit = 15;
 	let loading = $state(true);
+	let showExport = $state(false);
 
 	let stockValue = $state<InventoryValueRow[]>([]);
 	let lowStockItems = $state<Product[]>([]);
@@ -121,6 +126,22 @@
 		return new Date(s).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 	}
 
+	async function handleExport(_fmt: 'csv', _scope: 'all' | 'filtered' | 'current' | 'selected') {
+		const info = await shopService.getInfo();
+		const shopName = info?.shop?.name ?? 'Export';
+		const userName = authStore.user?.name ?? 'System';
+		const res = await productsService.list({ limit: 10000, page: 1 });
+		const rows = (res.data ?? []).map(p => ({
+			product_name: p.name,
+			stock_qty: p.stock_qty,
+			reorder_level: p.reorder_level,
+			buying_price: p.buying_price,
+			selling_price: p.selling_price,
+			category_name: p.category_name
+		}));
+		downloadCSV(exportInventory(rows, shopName, userName), safeFilename(shopName, 'Inventory'));
+	}
+
 	onMount(() => { fetchAdjustments(); fetchOverview(); });
 </script>
 
@@ -134,13 +155,14 @@
 			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Inventory</h1>
 			<p class="text-xs text-slate-400 mt-0.5">Stock overview and adjustments</p>
 		</div>
-		<button
-			onclick={() => showModal = true}
-			class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-95"
-			style="background:linear-gradient(135deg,#3F00FF,#3200CC);"
-		>
-			<Plus size={15} /> Adjust Stock
-		</button>
+		<div class="flex gap-2">
+			<button onclick={() => showExport = true} class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all">
+				<Download size={14} /> Export
+			</button>
+			<button onclick={() => showModal = true} class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-95" style="background:linear-gradient(135deg,#3F00FF,#3200CC);">
+				<Plus size={15} /> Adjust Stock
+			</button>
+		</div>
 	</div>
 
 	{#if overviewLoading}
@@ -195,7 +217,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
 			<!-- Low stock -->
-			<div class="bg-white dark:bg-slate-800 overflow-hidden">
+			<div class="rounded-[1px] bg-white dark:bg-slate-800 overflow-hidden">
 				<div class="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 					<AlertTriangle size={14} class="text-amber-500 shrink-0" />
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Low Stock Items</h2>
@@ -238,7 +260,7 @@
 			</div>
 
 			<!-- Fast movers -->
-			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+			<div class="rounded-[1px] bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 					<TrendingUp size={14} style="color:#3F00FF;" class="shrink-0" />
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Fast Movers — 30 Days</h2>
@@ -272,7 +294,7 @@
 
 		<!-- ── Stock value by category ───────────────────────── -->
 		{#if stockValue.length > 0}
-			<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+			<div class="rounded-[1px] bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 				<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 					<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Stock Value by Category</h2>
 				</div>
@@ -311,7 +333,7 @@
 	{/if}
 
 	<!-- ── Adjustments log ───────────────────────────────────── -->
-	<div class="rounded-2xl bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+	<div class="rounded-[1px] bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
 		<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700">
 			<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Adjustment History</h2>
 		</div>
@@ -413,3 +435,10 @@
 		</button>
 	{/snippet}
 </Modal>
+
+<ExportModal
+	open={showExport}
+	title="Export Inventory"
+	onclose={() => showExport = false}
+	onexport={handleExport}
+/>

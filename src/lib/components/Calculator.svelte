@@ -57,7 +57,7 @@
 
 <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm" onclick={() => onclose()}>
 	<div
-		class="w-72 rounded-2xl bg-slate-900 shadow-2xl overflow-hidden"
+		class="w-72 rounded-[1px] bg-slate-900 shadow-2xl overflow-hidden"
 		onclick={(e) => e.stopPropagation()}
 		role="presentation"
 	>

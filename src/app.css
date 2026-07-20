@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-	--color-brand:      #3F00FF;
-	--color-brand-dark: #3200CC;
-	--color-brand-light:#EEF0FF;
+	--color-brand:      #008B8B;
+	--color-brand-dark: #006B6B;
+	--color-brand-light:#e0f7f7;
 	--color-sidebar:    #0f172a;
 
-	/* Blue palette → #3F00FF */
-	--color-blue-50:  #EEF0FF;
-	--color-blue-100: #DBDFFF;
-	--color-blue-200: #B8BFFF;
-	--color-blue-300: #8A8FFF;
-	--color-blue-400: #5C5FFF;
-	--color-blue-500: #3F30FF;
-	--color-blue-600: #3F00FF;
-	--color-blue-700: #3200CC;
-	--color-blue-800: #260099;
-	--color-blue-900: #1A0066;
-	--color-blue-950: #0D0033;
+	/* Remap blue palette → teal #008B8B */
+	--color-blue-50:  #f0fafa;
+	--color-blue-100: #d8f4f4;
+	--color-blue-200: #b3e5e5;
+	--color-blue-300: #7dd0d0;
+	--color-blue-400: #3db8b8;
+	--color-blue-500: #0fa0a0;
+	--color-blue-600: #008B8B;
+	--color-blue-700: #007070;
+	--color-blue-800: #005858;
+	--color-blue-900: #003f3f;
+	--color-blue-950: #002525;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -44,7 +44,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
-	outline: 2px solid #3F00FF;
+	outline: 2px solid #008B8B;
 	outline-offset: 2px;
 }
 
@@ -71,7 +71,15 @@ input[type='number']::-webkit-outer-spin-button {
 	color: #0f172a;
 	transition: border-color 150ms;
 }
-.field:focus { border-color: #3F00FF; }
+.field:focus { border-color: #008B8B; }
+
+/* ─── Global corner radius: containers → 2px, buttons → 5px ─── */
+[class*="rounded"]:not([class*="rounded-full"]):not([class*="rounded-none"]) {
+	border-radius: 2px !important;
+}
+button:not([class*="rounded-full"]) {
+	border-radius: 5px !important;
+}
 
 /* ─── Badge variants ─── */
 .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 600; line-height: 1.25rem; }
@@ -101,3 +109,4 @@ input[type='number']::-webkit-outer-spin-button {
 .badge-red    { background: #fef2f2; color: #b91c1c; }
 .badge-slate  { background: #f1f5f9; color: #475569; }
 .badge-purple { background: #faf5ff; color: #7e22ce; }
+

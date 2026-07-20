@@ -231,3 +231,21 @@ export interface InventoryValueRow {
 	total_cost: number;
 	total_value: number;
 }
+
+export type MpesaTransactionStatus = 'pending' | 'completed' | 'failed' | 'cancelled';
+
+export interface MpesaTransaction {
+	id: string;
+	shop_id: string;
+	merchant_request_id: string;
+	checkout_request_id: string;
+	phone: string;
+	amount: number;
+	reference: string;
+	status: MpesaTransactionStatus;
+	mpesa_receipt: string | null;
+	result_code: string | null;
+	result_desc: string | null;
+	created_at: string;
+	updated_at: string;
+}

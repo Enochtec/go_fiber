@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -41,6 +41,7 @@ func migrate(db *sqlx.DB) error {
 		schemaShopSettings,
 		schemaUsersV2,
 		schemaTenantIsolation,
+		schemaMpesa,
 	}
 
 	for _, s := range schemas {
@@ -294,4 +295,24 @@ CREATE INDEX IF NOT EXISTS idx_purchases_shop ON purchases(shop_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_items_shop ON purchase_items(shop_id);
 CREATE INDEX IF NOT EXISTS idx_stock_adjustments_shop ON stock_adjustments(shop_id);
 CREATE INDEX IF NOT EXISTS idx_shifts_shop ON shifts(shop_id);
+`
+
+const schemaMpesa = `
+CREATE TABLE IF NOT EXISTS mpesa_transactions (
+	id                  TEXT PRIMARY KEY,
+	shop_id             TEXT REFERENCES shops(id),
+	merchant_request_id TEXT,
+	checkout_request_id TEXT UNIQUE NOT NULL,
+	phone               TEXT NOT NULL,
+	amount              DOUBLE PRECISION NOT NULL,
+	account_reference   TEXT,
+	status              TEXT NOT NULL DEFAULT 'pending',
+	mpesa_receipt       TEXT,
+	result_code         TEXT,
+	result_desc         TEXT,
+	created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_mpesa_checkout ON mpesa_transactions(checkout_request_id);
+CREATE INDEX IF NOT EXISTS idx_mpesa_shop    ON mpesa_transactions(shop_id);
 `
