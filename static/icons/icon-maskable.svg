@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#3F00FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Safe zone for maskable: content within 80% center -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <g transform="translate(256,266)" fill="#fff">
+    <!-- Simplified cash register for small sizes -->
+    <rect x="-70" y="-10" width="140" height="60" rx="8"/>
+    <rect x="-55" y="5" width="22" height="14" rx="2" fill="#3F00FF"/>
+    <rect x="-25" y="5" width="22" height="14" rx="2" fill="#3F00FF"/>
+    <rect x="5" y="5" width="22" height="14" rx="2" fill="#3F00FF"/>
+    <rect x="35" y="5" width="22" height="14" rx="2" fill="#3F00FF"/>
+    <!-- Screen -->
+    <path d="M-80,-10 L-80,-55 Q-80,-75 -55,-75 L55,-75 Q80,-75 80,-55 L80,-10 Z"/>
+    <rect x="-70" y="-65" width="140" height="50" rx="4" fill="#1e293b"/>
+    <text x="0" y="-40" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="24" fill="#fff">POS</text>
+    <!-- Receipt -->
+    <rect x="-6" y="50" width="12" height="30" rx="2" fill="#fff" opacity="0.9"/>
+  </g>
+</svg>

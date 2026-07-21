@@ -2,8 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { inventoryService } from '$lib/services/inventory';
 	import { reportsService } from '$lib/services/reports';
-	import { salesService } from '$lib/services/sales';
-	import { productsService } from '$lib/services/products';
+	import { offlineSales as salesService } from '$lib/services/offline';
+	import { offlineProducts as productsService } from '$lib/services/offline';
 	import { notify } from '$lib/stores/notification.svelte';
 	import type { DashboardStats, DailySalesRow, TopProductRow, Product, InventoryValueRow } from '$lib/types';
 	import {

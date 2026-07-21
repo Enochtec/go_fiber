@@ -5,6 +5,7 @@
 	import { authService } from '$lib/services/auth';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Notification from '$lib/components/Notification.svelte';
+	import SyncStatus from '$lib/components/SyncStatus.svelte';
 	import { onMount } from 'svelte';
 	import {
 		Menu, LayoutDashboard, ShoppingCart, Package, Users, MoreHorizontal, Store
@@ -76,11 +77,14 @@
 				</div>
 				<span class="font-bold text-white text-sm">Maestro POS</span>
 			</div>
-			{#if authStore.user}
-				<div class="ml-auto flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-					{authStore.user.name.charAt(0).toUpperCase()}
-				</div>
-			{/if}
+			<div class="ml-auto flex items-center gap-2">
+				<SyncStatus />
+				{#if authStore.user}
+					<div class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+						{authStore.user.name.charAt(0).toUpperCase()}
+					</div>
+				{/if}
+			</div>
 		</header>
 
 		<!-- Page content -->
@@ -89,24 +93,28 @@
 		</main>
 
 		<!-- Mobile bottom navigation -->
-		<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-slate-900 border-t border-slate-800">
+		<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-slate-900 border-t border-slate-800 pb-[env(safe-area-inset-bottom,0px)]">
 			<div class="flex">
 				{#each bottomNav as item}
 					{@const active = $page.url.pathname === item.href}
 					<a
 						href={item.href}
 						data-sveltekit-preload-code
-						class="flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors {active ? 'text-blue-400' : 'text-slate-500 hover:text-slate-300'}"
+						class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors {active ? 'text-blue-400' : 'text-slate-500 hover:text-slate-300'}"
 					>
-						<item.icon size={19} />
+						<div class="h-9 w-9 flex items-center justify-center {active ? 'bg-blue-600/15 rounded-lg' : ''}">
+							<item.icon size={20} />
+						</div>
 						{item.label}
 					</a>
 				{/each}
 				<button
 					onclick={() => drawerOpen = true}
-					class="flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium text-slate-500 hover:text-slate-300 transition-colors"
+					class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium text-slate-500 hover:text-slate-300 transition-colors"
 				>
-					<MoreHorizontal size={19} />
+					<div class="h-9 w-9 flex items-center justify-center">
+						<MoreHorizontal size={20} />
+					</div>
 					More
 				</button>
 			</div>

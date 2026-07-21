@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { customersService, type CustomerInput, type CustomerStats } from '$lib/services/customers';
+	import { offlineCustomers as customersService } from '$lib/services/offline';
+	import type { CustomerInput, CustomerStats } from '$lib/services/customers';
 	import { notify } from '$lib/stores/notification.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';

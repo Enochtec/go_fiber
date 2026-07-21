@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { inventoryService, type AdjustInput } from '$lib/services/inventory';
-	import { productsService } from '$lib/services/products';
+	import { offlineProducts as productsService } from '$lib/services/offline';
 	import { reportsService } from '$lib/services/reports';
 	import { notify } from '$lib/stores/notification.svelte';
 	import Modal from '$lib/components/Modal.svelte';

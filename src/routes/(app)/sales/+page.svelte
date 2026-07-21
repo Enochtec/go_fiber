@@ -3,9 +3,7 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { notify } from '$lib/stores/notification.svelte';
 	import { invalidation } from '$lib/stores/invalidation.svelte';
-	import { productsService } from '$lib/services/products';
-	import { customersService } from '$lib/services/customers';
-	import { salesService } from '$lib/services/sales';
+	import { offlineProducts as productsService, offlineCustomers as customersService, offlineSales as salesService } from '$lib/services/offline';
 	import { mpesaService, pollMpesaStatus, validatePhone, normalizePhone } from '$lib/services/mpesa';
 	import Modal from '$lib/components/Modal.svelte';
 	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';

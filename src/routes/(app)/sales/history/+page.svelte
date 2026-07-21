@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { salesService } from '$lib/services/sales';
+	import { offlineSales as salesService } from '$lib/services/offline';
 	import { notify } from '$lib/stores/notification.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import Modal from '$lib/components/Modal.svelte';
