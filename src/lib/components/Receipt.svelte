@@ -356,8 +356,8 @@
 			</div>
 		</div>
 
-		<!-- RIGHT PANEL: Receipt preview (hidden, used as capture source) -->
-		<div class="hidden lg:flex flex-col w-[56%] bg-slate-100 overflow-y-auto">
+		<!-- RIGHT PANEL: Receipt preview (always rendered for PDF capture, off-screen on small screens) -->
+		<div class="lg:flex flex-col w-[56%] bg-slate-100 overflow-y-auto max-lg:fixed max-lg:-left-[9999px] max-lg:top-0 max-lg:w-[80mm] max-lg:shadow-none">
 			<div class="flex items-center justify-between px-5 py-3 bg-slate-200">
 				<p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Receipt Preview (80mm)</p>
 				<button onclick={printReceipt} class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white transition-colors" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
