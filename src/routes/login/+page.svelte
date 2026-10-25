@@ -32,7 +32,7 @@
 
 <Notification />
 
-	<div class="min-h-[100svh] bg-[#f4f7fb] text-slate-900 lg:grid lg:grid-cols-[minmax(360px,0.9fr)_1.1fr]">
+	<div class="min-h-[100svh] overflow-y-auto overscroll-contain bg-[#f4f7fb] text-slate-900 lg:grid lg:grid-cols-[minmax(360px,0.9fr)_1.1fr] lg:overflow-hidden">
 	<!-- Brand panel -->
 	<div class="relative hidden overflow-hidden bg-[#08152f] lg:flex lg:min-h-screen lg:flex-col lg:justify-between lg:p-12 xl:p-16">
 		<div class="absolute -right-28 -top-28 h-96 w-96 rounded-full border border-blue-400/20"></div>
@@ -69,8 +69,8 @@
 	</div>
 
 	<!-- Form panel -->
-	<div class="flex min-h-[100svh] flex-col items-center justify-center px-4 py-8 sm:px-8 sm:py-10">
-		<div class="w-full max-w-[430px]">
+	<div class="flex min-h-[100svh] flex-col items-center justify-start px-4 py-8 sm:px-8 sm:py-10 lg:justify-center">
+		<div class="my-auto w-full max-w-[430px]">
 			<div class="mb-8 flex items-center gap-3 lg:hidden">
 				<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-900/20">
 					<Store size={21} />
