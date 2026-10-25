@@ -57,7 +57,7 @@
 	function logout() { authStore.clear(); goto('/login'); }
 </script>
 
-<aside class="flex h-full w-64 shrink-0 flex-col bg-[#0000CD] select-none">
+<aside class="flex h-full w-64 shrink-0 flex-col bg-sidebar select-none">
 	<!-- Logo -->
 	<div class="flex items-center gap-3 px-4 py-4 border-b border-white/20">
 		<div class="flex h-8 w-8 shrink-0 items-center justify-center">
