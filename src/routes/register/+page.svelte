@@ -181,9 +181,9 @@
 <svelte:head><title>Register — Maestro POS</title></svelte:head>
 <Notification />
 
-<div class="flex h-screen overflow-y-auto overscroll-contain bg-slate-50">
+<div class="flex min-h-[100svh] overflow-y-auto overscroll-contain bg-slate-50">
 	<!-- Left branding -->
-	<div class="hidden min-h-screen lg:flex lg:w-5/12 xl:w-2/5 flex-col bg-slate-900 p-10">
+	<div class="hidden min-h-[100svh] lg:flex lg:w-5/12 xl:w-2/5 flex-col bg-slate-900 p-10">
 		<div class="flex items-center gap-3 mb-auto">
 			<div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600">
 				<Store size={18} class="text-white" />
@@ -217,23 +217,25 @@
 	</div>
 
 	<!-- Right form panel -->
-	<div class="flex min-h-full flex-1 items-start justify-center px-4 py-8 sm:px-6 md:px-10 md:py-12 lg:px-12 lg:py-16">
+	<div class="flex min-h-[100svh] flex-1 items-start justify-center px-4 py-6 sm:px-6 sm:py-10 md:px-10 md:py-12 lg:px-12 lg:py-16">
 		<div class="my-auto w-full max-w-lg">
 			<!-- Mobile logo -->
-			<div class="mb-6 text-center lg:hidden">
-				<div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
+			<div class="mb-6 flex items-center gap-3 lg:hidden">
+				<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600">
 					<Store size={20} class="text-white" />
 				</div>
-				<h1 class="text-lg font-bold text-slate-900">Create Your Account</h1>
-				<p class="text-sm text-slate-500 mt-0.5">Set up your shop in 3 simple steps</p>
+				<div>
+					<h1 class="text-lg font-bold text-slate-900">Create Your Account</h1>
+					<p class="mt-0.5 text-sm text-slate-500">Set up your shop in 3 simple steps</p>
+				</div>
 			</div>
 
 			<!-- Progress indicator -->
-			<div class="mb-8">
+			<div class="mb-7 sm:mb-8">
 				<div class="flex items-center justify-between">
 					{#each steps as s, i}
 						<button onclick={() => { if (s.num < step) step = s.num as Step; }} class="flex flex-col items-center gap-1.5 group" type="button">
-							<div class="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 {s.num < step ? 'bg-blue-600 text-white' : s.num === step ? 'bg-blue-600 text-white ring-4 ring-blue-200' : 'bg-slate-200 text-slate-400'}">
+							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 {s.num < step ? 'bg-blue-600 text-white' : s.num === step ? 'bg-blue-600 text-white ring-4 ring-blue-200' : 'bg-slate-200 text-slate-400'}">
 								{#if s.num < step}
 									<Check size={15} />
 								{:else}
@@ -243,7 +245,7 @@
 							<span class="text-[10px] font-semibold uppercase tracking-wide {s.num <= step ? 'text-blue-600' : 'text-slate-400'}">{s.label}</span>
 						</button>
 						{#if i < steps.length - 1}
-							<div class="flex-1 h-px mx-2 {s.num < step ? 'bg-blue-500' : 'bg-slate-200'} transition-colors"></div>
+							<div class="mx-1 flex-1 h-px sm:mx-2 {s.num < step ? 'bg-blue-500' : 'bg-slate-200'} transition-colors"></div>
 						{/if}
 					{/each}
 				</div>
@@ -441,10 +443,10 @@
 			{/if}
 
 			<!-- Navigation buttons -->
-			<div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200">
+			<div class="mt-7 flex items-center justify-between gap-3 border-t border-slate-200 pt-5 sm:mt-8 sm:pt-6">
 				{#if step > 1}
 					<button onclick={prevStep} type="button"
-						class="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+						class="flex min-w-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors sm:px-4">
 						<ChevronLeft size={15} /> Back
 					</button>
 				{:else}
@@ -453,13 +455,13 @@
 
 				{#if step < 3}
 					<button onclick={nextStep} type="button"
-						class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
+						class="flex min-w-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98] sm:px-5"
 						disabled={!canAdvance(step)}>
 						Continue <ChevronRight size={15} />
 					</button>
 				{:else}
 					<button onclick={submit} disabled={loading || !canAdvance(3)}
-						class="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]">
+						class="flex min-w-0 items-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98] sm:px-5">
 						{#if loading}
 							<LoaderCircle size={16} class="animate-spin" /> Creating Account…
 						{:else}

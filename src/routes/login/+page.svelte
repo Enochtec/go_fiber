@@ -32,7 +32,7 @@
 
 <Notification />
 
-	<div class="min-h-screen bg-[#f4f7fb] text-slate-900 lg:grid lg:grid-cols-[minmax(360px,0.9fr)_1.1fr]">
+	<div class="min-h-[100svh] bg-[#f4f7fb] text-slate-900 lg:grid lg:grid-cols-[minmax(360px,0.9fr)_1.1fr]">
 	<!-- Brand panel -->
 	<div class="relative hidden overflow-hidden bg-[#08152f] lg:flex lg:min-h-screen lg:flex-col lg:justify-between lg:p-12 xl:p-16">
 		<div class="absolute -right-28 -top-28 h-96 w-96 rounded-full border border-blue-400/20"></div>
@@ -69,23 +69,25 @@
 	</div>
 
 	<!-- Form panel -->
-	<div class="flex min-h-screen flex-col items-center justify-center px-5 py-10 sm:px-8">
+	<div class="flex min-h-[100svh] flex-col items-center justify-center px-4 py-8 sm:px-8 sm:py-10">
 		<div class="w-full max-w-[430px]">
-			<div class="mb-9 lg:hidden">
-				<div class="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-900/20">
+			<div class="mb-8 flex items-center gap-3 lg:hidden">
+				<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-900/20">
 					<Store size={21} />
 				</div>
-				<p class="text-sm font-bold tracking-wide text-slate-900">Maestro POS</p>
-				<p class="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Retail operations</p>
+				<div>
+					<p class="text-sm font-bold tracking-wide text-slate-900">Maestro POS</p>
+					<p class="mt-0.5 text-xs uppercase tracking-[0.18em] text-slate-400">Retail operations</p>
+				</div>
 			</div>
 
-			<div class="mb-8">
+			<div class="mb-7 sm:mb-8">
 				<p class="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#0000CD]">Secure sign in</p>
-				<h2 class="text-3xl font-bold tracking-tight text-slate-950">Welcome back</h2>
+				<h2 class="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Welcome back</h2>
 				<p class="mt-2 text-sm leading-6 text-slate-500">Sign in to continue to your workspace.</p>
 			</div>
 
-			<form onsubmit={login} class="space-y-5">
+			<form onsubmit={login} class="space-y-4 sm:space-y-5">
 				<div>
 					<label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email address</label>
 					<input
@@ -112,7 +114,7 @@
 					/>
 				</div>
 
-				<div class="flex items-center justify-between gap-4">
+				<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
 					<label class="flex items-center gap-2 cursor-pointer">
 						<input type="checkbox" bind:checked={remember}
 							class="h-4 w-4 rounded border-slate-300 text-[#0000CD] focus:ring-blue-600/20" />
