@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { connectionStatus, type ConnectionStatus } from '$lib/services/connection';
-	import { syncState } from '$lib/services/sync';
+	import { syncState } from '$lib/services/sync.svelte';
 
 	let status: ConnectionStatus = 'online';
 	let pending = $state(0);

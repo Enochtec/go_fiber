@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { offlineProducts as productsService } from '$lib/services/offline';
+	import { shopService } from '$lib/services/shop';
+	import { shopStore } from '$lib/stores/shop.svelte';
 	import { notify } from '$lib/stores/notification.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import type { Category } from '$lib/types';
@@ -13,6 +15,32 @@
 	let submitting = $state(false);
 	let catName = $state('');
 	let catDesc = $state('');
+	let shopName = $state('One Stop Point of Sale');
+	let shopNameSubmitting = $state(false);
+
+	async function fetchShopName() {
+		try {
+			const info = await shopService.getInfo();
+			if (info.shop.name?.trim()) shopName = info.shop.name.trim();
+		} catch {
+		}
+	}
+
+	async function saveShopName() {
+		const name = shopName.trim();
+		if (name.length < 2) { notify.error('Shop name must be at least 2 characters'); return; }
+		shopNameSubmitting = true;
+		try {
+			const shop = await shopService.updateName(name);
+			shopStore.setName(shop.name);
+			shopName = shopStore.name;
+			notify.success('Shop name updated');
+		} catch (err) {
+			notify.error(err instanceof Error ? err.message : 'Save failed');
+		} finally {
+			shopNameSubmitting = false;
+		}
+	}
 
 	async function fetchCats() {
 		loading = true;
@@ -69,7 +97,10 @@
 		}
 	}
 
-	onMount(fetchCats);
+	onMount(() => {
+		fetchCats();
+		fetchShopName();
+	});
 </script>
 
 <svelte:head><title>Settings — Maestro POS</title></svelte:head>
@@ -79,6 +110,22 @@
 		<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Settings</h1>
 		<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage system configuration</p>
 	</div>
+
+	<section class="bg-white dark:bg-slate-800 overflow-hidden">
+		<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+			<h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Shop name</h2>
+			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">This name appears in the POS sidebar and receipts</p>
+		</div>
+		<div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-end">
+			<label class="flex-1">
+				<span class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Business name</span>
+				<input bind:value={shopName} maxlength="200" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors" />
+			</label>
+			<button onclick={saveShopName} disabled={shopNameSubmitting} class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 transition-colors">
+				{shopNameSubmitting ? 'Saving…' : 'Save name'}
+			</button>
+		</div>
+	</section>
 
 	<section class="bg-white dark:bg-slate-800 overflow-hidden">
 		<div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">

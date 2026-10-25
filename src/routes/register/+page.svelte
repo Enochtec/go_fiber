@@ -181,9 +181,9 @@
 <svelte:head><title>Register — Maestro POS</title></svelte:head>
 <Notification />
 
-<div class="flex min-h-screen bg-slate-50">
+<div class="flex h-screen overflow-y-auto overscroll-contain bg-slate-50">
 	<!-- Left branding -->
-	<div class="hidden lg:flex lg:w-5/12 xl:w-2/5 flex-col bg-slate-900 p-10">
+	<div class="hidden min-h-screen lg:flex lg:w-5/12 xl:w-2/5 flex-col bg-slate-900 p-10">
 		<div class="flex items-center gap-3 mb-auto">
 			<div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600">
 				<Store size={18} class="text-white" />
@@ -217,8 +217,8 @@
 	</div>
 
 	<!-- Right form panel -->
-	<div class="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
-		<div class="w-full max-w-lg">
+	<div class="flex min-h-full flex-1 items-start justify-center px-4 py-8 sm:px-6 md:px-10 md:py-12 lg:px-12 lg:py-16">
+		<div class="my-auto w-full max-w-lg">
 			<!-- Mobile logo -->
 			<div class="mb-6 text-center lg:hidden">
 				<div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">

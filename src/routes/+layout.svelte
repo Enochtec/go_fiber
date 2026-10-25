@@ -5,15 +5,18 @@
 	import PwaInstallPrompt from '$lib/components/PwaInstallPrompt.svelte';
 	import PwaUpdatePrompt from '$lib/components/PwaUpdatePrompt.svelte';
 	import { startConnectionMonitor } from '$lib/services/connection';
-	import { startSyncEngine, processSyncQueue } from '$lib/services/sync';
+	import { startSyncEngine, processSyncQueue } from '$lib/services/sync.svelte';
 	import { refreshLocalCache } from '$lib/services/offline';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	let { children } = $props();
 
 	onMount(() => {
 		startConnectionMonitor();
-		startSyncEngine();
-		refreshLocalCache();
+		if (authStore.isAuthenticated) {
+			startSyncEngine();
+			refreshLocalCache();
+		}
 	});
 </script>
 

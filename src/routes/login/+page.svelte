@@ -4,7 +4,7 @@
 	import { authService } from '$lib/services/auth';
 	import { notify } from '$lib/stores/notification.svelte';
 	import Notification from '$lib/components/Notification.svelte';
-	import { Store, LoaderCircle } from '@lucide/svelte';
+	import { Store, LoaderCircle, ShieldCheck, ArrowUpRight } from '@lucide/svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -32,104 +32,99 @@
 
 <Notification />
 
-<div class="flex min-h-screen">
-	<!-- Left branding panel -->
-	<div class="hidden lg:flex lg:w-5/12 xl:w-2/5 flex-col relative overflow-hidden" style="background:linear-gradient(135deg,#1a0a5e 0%,#3F00FF 50%,#3200CC 100%);">
-		<div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 20% 30%, white 0%, transparent 50%), radial-gradient(circle at 80% 70%, white 0%, transparent 50%);"></div>
-		<div class="relative p-10 flex flex-col h-full">
-			<div class="flex items-center gap-3 mb-auto">
-				<div class="flex h-9 w-9 items-center justify-center">
-					<Store size={20} class="text-white/90" />
+	<div class="min-h-screen bg-[#f4f7fb] text-slate-900 lg:grid lg:grid-cols-[minmax(360px,0.9fr)_1.1fr]">
+	<!-- Brand panel -->
+	<div class="relative hidden overflow-hidden bg-[#08152f] lg:flex lg:min-h-screen lg:flex-col lg:justify-between lg:p-12 xl:p-16">
+		<div class="absolute -right-28 -top-28 h-96 w-96 rounded-full border border-blue-400/20"></div>
+		<div class="absolute -bottom-40 -left-32 h-[30rem] w-[30rem] rounded-full border border-blue-400/10"></div>
+		<div class="absolute inset-0 opacity-20" style="background-image:linear-gradient(rgba(85,146,255,.18) 1px, transparent 1px),linear-gradient(90deg,rgba(85,146,255,.18) 1px, transparent 1px);background-size:42px 42px;"></div>
+		<div class="relative">
+			<div class="flex items-center gap-3">
+				<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-950/40">
+					<Store size={20} />
 				</div>
-				<span class="text-white/90 font-bold text-base">Maestro POS</span>
-			</div>
-
-			<div class="py-12">
-				<h1 class="text-4xl font-bold text-white leading-tight mb-4">
-					The modern POS<br />built for retail.
-				</h1>
-				<p class="text-indigo-200 text-sm leading-relaxed mb-10 max-w-sm">
-					Fast checkout, real-time inventory, customer management, and business intelligence — all in one place.
-				</p>
-				<div class="space-y-3">
-					{#each [
-						['Instant checkout', 'Process sales in seconds with barcode scanning'],
-						['Live inventory', 'Track stock levels and get low-stock alerts'],
-						['Business reports', 'Daily, weekly and monthly performance insights'],
-					] as [title, desc]}
-						<div class="flex items-start gap-3.5 p-3.5 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
-							<div class="h-2 w-2 rounded-full bg-indigo-300 mt-1.5 shrink-0"></div>
-							<div>
-								<p class="text-sm font-semibold text-white">{title}</p>
-								<p class="text-xs text-indigo-300 mt-0.5">{desc}</p>
-							</div>
-						</div>
-					{/each}
+				<div>
+					<p class="text-sm font-bold tracking-wide text-white">Maestro POS</p>
+					<p class="text-[11px] uppercase tracking-[0.2em] text-blue-200/70">Retail operations</p>
 				</div>
 			</div>
-
-			<p class="text-xs text-indigo-300/60">© {new Date().getFullYear()} Maestro POS</p>
 		</div>
+
+		<div class="relative max-w-lg py-16">
+			<div class="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-300/20 bg-blue-300/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-100">
+				<span class="h-1.5 w-1.5 rounded-full bg-[#6ea8ff]"></span>
+				Your store, in sync
+			</div>
+			<h1 class="max-w-md text-5xl font-bold leading-[1.04] tracking-tight text-white xl:text-6xl">Make every sale count.</h1>
+			<p class="mt-6 max-w-md text-base leading-7 text-blue-100/70">A focused workspace for checkout, stock, customers, and the decisions that keep your business moving.</p>
+
+			<div class="mt-10 flex items-center gap-3 border-t border-white/10 pt-5 text-sm text-blue-100/80">
+				<ShieldCheck size={18} class="text-blue-300" />
+				<span>Protected access for your team</span>
+				<ArrowUpRight size={15} class="ml-auto text-blue-300/70" />
+			</div>
+		</div>
+
+		<p class="relative text-xs text-blue-100/45">© {new Date().getFullYear()} Maestro POS</p>
 	</div>
 
-	<!-- Right form panel -->
-	<div class="flex flex-1 flex-col items-center justify-center bg-white dark:bg-slate-950 p-6">
-		<!-- Mobile logo -->
-		<div class="mb-8 text-center lg:hidden">
-			<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center">
-				<Store size={28} class="text-blue-600" />
+	<!-- Form panel -->
+	<div class="flex min-h-screen flex-col items-center justify-center px-5 py-10 sm:px-8">
+		<div class="w-full max-w-[430px]">
+			<div class="mb-9 lg:hidden">
+				<div class="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-900/20">
+					<Store size={21} />
+				</div>
+				<p class="text-sm font-bold tracking-wide text-slate-900">Maestro POS</p>
+				<p class="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Retail operations</p>
 			</div>
-			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Maestro POS</h1>
-			<p class="mt-1 text-sm text-slate-500">Sign in to continue</p>
-		</div>
 
-		<div class="w-full max-w-sm">
-			<div class="hidden lg:block mb-8">
-				<h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Welcome back</h2>
-				<p class="mt-1.5 text-sm text-slate-500 dark:text-slate-400">Enter your credentials to access the system</p>
+			<div class="mb-8">
+				<p class="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#0000CD]">Secure sign in</p>
+				<h2 class="text-3xl font-bold tracking-tight text-slate-950">Welcome back</h2>
+				<p class="mt-2 text-sm leading-6 text-slate-500">Sign in to continue to your workspace.</p>
 			</div>
 
 			<form onsubmit={login} class="space-y-5">
 				<div>
-					<label for="email" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Email address</label>
+					<label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email address</label>
 					<input
 						id="email"
 						type="email"
 						bind:value={email}
 						required
 						autocomplete="email"
-						class="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-600/15"
+						class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#0000CD] focus:ring-4 focus:ring-blue-600/10"
 						placeholder="you@example.com"
 					/>
 				</div>
 
 				<div>
-					<label for="password" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">Password</label>
+					<label for="password" class="mb-2 block text-sm font-semibold text-slate-700">Password</label>
 					<input
 						id="password"
 						type="password"
 						bind:value={password}
 						required
 						autocomplete="current-password"
-						class="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-600/15"
+						class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#0000CD] focus:ring-4 focus:ring-blue-600/10"
 						placeholder="••••••••"
 					/>
 				</div>
 
-				<div class="flex items-center justify-between">
+				<div class="flex items-center justify-between gap-4">
 					<label class="flex items-center gap-2 cursor-pointer">
 						<input type="checkbox" bind:checked={remember}
-							class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-600/20 dark:bg-slate-800" />
-						<span class="text-xs text-slate-600 dark:text-slate-400">Remember me</span>
+							class="h-4 w-4 rounded border-slate-300 text-[#0000CD] focus:ring-blue-600/20" />
+						<span class="text-sm text-slate-500">Remember me</span>
 					</label>
-					<a href="/forgot-password" class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">Forgot password?</a>
+					<a href="/forgot-password" class="text-sm font-semibold text-[#0000CD] hover:text-blue-800">Forgot password?</a>
 				</div>
 
 				<button
 					type="submit"
 					disabled={loading}
-					class="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-					style="background:linear-gradient(135deg,#3F00FF,#3200CC);"
+					class="w-full rounded-lg bg-[#0000CD] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/20 transition-all hover:bg-blue-800 hover:shadow-blue-900/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{#if loading}
 						<span class="inline-flex items-center gap-2"><LoaderCircle size={15} class="animate-spin" /> Signing in…</span>
@@ -139,15 +134,15 @@
 				</button>
 			</form>
 
-			<div class="mt-6 text-center">
-				<p class="text-xs text-slate-400 dark:text-slate-500">
+			<div class="mt-7 text-center">
+				<p class="text-sm text-slate-500">
 					Don't have an account?
-					<a href="/register" class="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">Create one</a>
+					<a href="/register" class="font-semibold text-[#0000CD] hover:text-blue-800">Create one</a>
 				</p>
 			</div>
 
-			<p class="mt-4 text-center text-xs text-slate-400 dark:text-slate-500">
-				Secure access · All sessions are encrypted
+			<p class="mt-8 text-center text-xs text-slate-400">
+				Your session is protected with encrypted access
 			</p>
 		</div>
 	</div>

@@ -66,7 +66,7 @@ func main() {
 		Shift:     handlers.NewShiftHandler(shiftRepo, validate),
 		Register:  handlers.NewRegisterHandler(registrationSvc, validate),
 		Upload:    uploadHandler,
-		Shop:      handlers.NewShopHandler(shopRepo),
+		Shop:      handlers.NewShopHandler(shopRepo, validate),
 		Mpesa:     handlers.NewMpesaHandler(db, mpesaSvc),
 		Email:     handlers.NewEmailHandler(saleRepo, shopRepo, emailSvc),
 	}
@@ -119,11 +119,14 @@ func main() {
 		if p == "/" {
 			p = "/index.html"
 		}
-		file := webDir + p
-		if _, err := os.Stat(file); err == nil {
+		file := filepath.Join(webDir, filepath.Clean("/"+p))
+		if fi, err := os.Stat(file); err == nil && !fi.IsDir() {
 			return c.SendFile(file)
 		}
-		return c.SendFile(webDir + "/index.html")
+		if fi, err := os.Stat(file + ".html"); err == nil && !fi.IsDir() {
+			return c.SendFile(file + ".html")
+		}
+		return c.SendFile(filepath.Join(webDir, "index.html"))
 	})
 
 	port := os.Getenv("PORT")

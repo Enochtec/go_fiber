@@ -1,6 +1,6 @@
 import { db, type OfflineSale, type OfflineSaleItem } from './db';
 import { api } from './api';
-import { enqueueSync } from './sync';
+import { enqueueSync } from './sync.svelte';
 import { connectionStatus, isOnline } from './connection';
 import type { Product, Category, Customer, Supplier } from '$lib/types';
 import type { ProductFilter } from './products';
@@ -149,10 +149,13 @@ export const offlineProducts = {
 				const res = await api.post<{ success: boolean; data: Product }>('/products', data);
 				if (res?.data) await db.products.put(res.data);
 				return res;
-			} catch {
+			} catch (err) {
+				if (err instanceof Error && err.message.toLowerCase().includes('already exists')) throw err;
 				// fall through
 			}
 		}
+		const duplicate = await db.products.filter((product) => product.is_active && product.name.trim().toLowerCase() === String(data.name).trim().toLowerCase()).count();
+		if (duplicate > 0) throw new Error('A product with this name already exists');
 		const localId = generateLocalId();
 		const product: Product = {
 			id: localId,
@@ -182,7 +185,8 @@ export const offlineProducts = {
 				const res = await api.put<{ success: boolean; data: Product }>(`/products/${id}`, data);
 				if (res?.data) await db.products.put(res.data);
 				return res;
-			} catch {
+			} catch (err) {
+				if (err instanceof Error && err.message.toLowerCase().includes('already exists')) throw err;
 				// fall through
 			}
 		}
@@ -231,10 +235,13 @@ export const offlineProducts = {
 				const res = await api.post<{ success: boolean; data: Category }>('/categories', { name, description });
 				if (res?.data) await db.categories.put(res.data);
 				return res;
-			} catch {
+			} catch (err) {
+				if (err instanceof Error && err.message.toLowerCase().includes('already exists')) throw err;
 				// fall through
 			}
 		}
+		const duplicate = await db.categories.filter((category) => category.name.trim().toLowerCase() === name.trim().toLowerCase()).count();
+		if (duplicate > 0) throw new Error('A category with this name already exists');
 		const localId = generateLocalId();
 		const cat: Category = { id: localId, name, description: description || null, created_at: new Date().toISOString() };
 		await db.categories.put(cat);
@@ -249,7 +256,8 @@ export const offlineProducts = {
 				const res = await api.put<{ success: boolean }>(`/categories/${id}`, { name, description });
 				await db.categories.update(id, { name, description: description || null });
 				return res;
-			} catch {
+			} catch (err) {
+				if (err instanceof Error && err.message.toLowerCase().includes('already exists')) throw err;
 				// fall through
 			}
 		}

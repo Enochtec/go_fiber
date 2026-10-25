@@ -39,6 +39,7 @@ func Setup(app *fiber.App, h *Handlers) {
 
 	protected.Get("/auth/me", h.Auth.Me)
 	protected.Get("/shop/info", h.Shop.Info)
+	protected.Put("/shop/name", middleware.RequireRole("admin", "manager"), h.Shop.UpdateName)
 	protected.Post("/upload", h.Upload.Upload)
 
 	protected.Get("/dashboard", h.Inventory.Dashboard)

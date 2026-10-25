@@ -75,7 +75,9 @@ async function doFetch<T>(path: string, init: RequestInit): Promise<T> {
 
 	if (res.status === 401) {
 		authStore.clear();
-		window.location.href = '/login';
+		if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+			window.location.href = '/login';
+		}
 		throw new Error('Unauthorized');
 	}
 
@@ -96,7 +98,9 @@ async function doFetchForm<T>(path: string, fd: FormData): Promise<T> {
 
 	if (res.status === 401) {
 		authStore.clear();
-		window.location.href = '/login';
+		if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+			window.location.href = '/login';
+		}
 		throw new Error('Unauthorized');
 	}
 

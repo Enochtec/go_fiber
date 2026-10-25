@@ -84,6 +84,30 @@ func (r *ProductRepo) FindByBarcode(shopID, barcode string) (*models.Product, er
 	return p, nil
 }
 
+func (r *ProductRepo) ProductNameExists(shopID, name, excludeID string) (bool, error) {
+	var exists bool
+	err := r.db.Get(&exists, `
+		SELECT EXISTS(
+			SELECT 1 FROM products
+			WHERE shop_id = $1 AND is_active = TRUE
+			  AND LOWER(TRIM(name)) = LOWER(TRIM($2))
+			  AND ($3 = '' OR id <> $3)
+		)`, shopID, name, excludeID)
+	return exists, err
+}
+
+func (r *ProductRepo) CategoryNameExists(shopID, name, excludeID string) (bool, error) {
+	var exists bool
+	err := r.db.Get(&exists, `
+		SELECT EXISTS(
+			SELECT 1 FROM categories
+			WHERE shop_id = $1
+			  AND LOWER(TRIM(name)) = LOWER(TRIM($2))
+			  AND ($3 = '' OR id <> $3)
+		)`, shopID, name, excludeID)
+	return exists, err
+}
+
 func (r *ProductRepo) Create(shopID string, p *models.Product) error {
 	p.ID = uuid.New().String()
 	return r.db.QueryRowx(`

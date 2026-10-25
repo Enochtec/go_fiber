@@ -9,8 +9,8 @@
 	import { goto } from '$app/navigation';
 	import { themeStore } from '$lib/stores/theme.svelte';
 
-	interface Props { onclose?: () => void; }
-	let { onclose }: Props = $props();
+	interface Props { onclose?: () => void; shopName?: string; }
+	let { onclose, shopName = 'One Stop Point of Sale' }: Props = $props();
 
 	const groups = [
 		{
@@ -57,17 +57,17 @@
 	function logout() { authStore.clear(); goto('/login'); }
 </script>
 
-<aside class="flex h-full w-64 shrink-0 flex-col bg-slate-900 select-none">
+<aside class="flex h-full w-64 shrink-0 flex-col bg-[#0000CD] select-none">
 	<!-- Logo -->
-	<div class="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
+	<div class="flex items-center gap-3 px-4 py-4 border-b border-white/20">
 		<div class="flex h-8 w-8 shrink-0 items-center justify-center">
-			<Store size={18} class="text-blue-400" />
+			<Store size={18} class="text-white" />
 		</div>
 		<div class="flex-1 min-w-0">
-			<p class="text-sm font-bold text-white leading-none">Maestro POS</p>
-			<p class="text-xs text-slate-500 mt-0.5">Point of Sale</p>
+			<p class="text-sm font-bold text-white leading-none truncate" title={shopName}>{shopName}</p>
+			<p class="text-xs text-white/75 mt-0.5">Point of Sale</p>
 		</div>
-		<button onclick={onclose} class="h-7 w-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors lg:hidden">
+		<button onclick={onclose} class="h-7 w-7 flex items-center justify-center rounded-md text-white/75 hover:text-white hover:bg-white/15 transition-colors lg:hidden">
 			<X size={15} />
 		</button>
 	</div>
@@ -78,7 +78,7 @@
 			{@const visible = group.links.filter(l => l.roles.includes(role))}
 			{#if visible.length > 0}
 				<div class="mb-1">
-					<p class="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 flex items-center gap-2"><span class="h-1.5 w-1.5 {group.color}"></span>{group.label}</p>
+					<p class="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/75 flex items-center gap-2"><span class="h-1.5 w-1.5 {group.color}"></span>{group.label}</p>
 					{#each visible as link}
 						{@const active = path === link.href || (link.href !== '/sales' && path.startsWith(link.href + '/') && link.href !== '/dashboard')}
 						<a
@@ -87,8 +87,8 @@
 							onclick={() => onclose?.()}
 							class="flex items-center gap-2.5 mx-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
 								{active
-									? 'bg-blue-600/20 text-blue-300'
-									: 'text-slate-400 hover:text-slate-300 hover:bg-white/5'}"
+									? 'bg-white/25 text-white'
+									: 'text-white/90 hover:text-white hover:bg-white/15'}"
 						>
 							<link.icon size={15} class="shrink-0" />
 							<span>{link.label}</span>
@@ -100,20 +100,20 @@
 	</nav>
 
 	<!-- User section -->
-	<div class="border-t border-slate-800 p-3 space-y-1">
+	<div class="border-t border-white/20 p-3 space-y-1">
 		{#if authStore.user}
-			<div class="flex items-center gap-2.5 px-3 py-2 rounded-md bg-slate-800">
+			<div class="flex items-center gap-2.5 px-3 py-2 rounded-md bg-white/15">
 				<div class="h-7 w-7 shrink-0 flex items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
 					{authStore.user.name.charAt(0).toUpperCase()}
 				</div>
 				<div class="flex-1 min-w-0">
-					<p class="text-xs font-semibold text-slate-200 truncate">{authStore.user.name}</p>
-					<p class="text-[10px] text-slate-500 capitalize">{authStore.user.role}</p>
+					<p class="text-xs font-semibold text-white truncate">{authStore.user.name}</p>
+					<p class="text-[10px] text-white/75 capitalize">{authStore.user.role}</p>
 				</div>
 				<button
 					onclick={themeStore.toggle}
 					title={themeStore.dark ? 'Light mode' : 'Dark mode'}
-					class="h-6 w-6 flex items-center justify-center rounded text-slate-500 hover:text-slate-300 transition-colors"
+					class="h-6 w-6 flex items-center justify-center rounded text-white/75 hover:text-white transition-colors"
 				>
 					{#if themeStore.dark}<Sun size={13} />{:else}<Moon size={13} />{/if}
 				</button>
@@ -121,7 +121,7 @@
 		{/if}
 		<button
 			onclick={logout}
-			class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+			class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm text-white/85 hover:text-white hover:bg-white/15 transition-colors"
 		>
 			<LogOut size={14} />
 			Sign out

@@ -72,6 +72,11 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 	if err := h.validate.Struct(input); err != nil {
 		return utils.BadRequest(c, err.Error())
 	}
+	if exists, err := h.products.ProductNameExists(shopID, input.Name, ""); err != nil {
+		return utils.Internal(c, err)
+	} else if exists {
+		return utils.BadRequest(c, "a product with this name already exists")
+	}
 
 	product := &models.Product{
 		Name:         input.Name,
@@ -100,6 +105,11 @@ func (h *ProductHandler) Update(c *fiber.Ctx) error {
 	}
 	if err := h.validate.Struct(input); err != nil {
 		return utils.BadRequest(c, err.Error())
+	}
+	if exists, err := h.products.ProductNameExists(shopID, input.Name, c.Params("id")); err != nil {
+		return utils.Internal(c, err)
+	} else if exists {
+		return utils.BadRequest(c, "a product with this name already exists")
 	}
 
 	if err := h.products.Update(shopID, c.Params("id"), &input); err != nil {
@@ -139,6 +149,11 @@ func (h *ProductHandler) CreateCategory(c *fiber.Ctx) error {
 	if err := h.validate.Struct(input); err != nil {
 		return utils.BadRequest(c, err.Error())
 	}
+	if exists, err := h.products.CategoryNameExists(shopID, input.Name, ""); err != nil {
+		return utils.Internal(c, err)
+	} else if exists {
+		return utils.BadRequest(c, "a category with this name already exists")
+	}
 
 	cat := &models.Category{Name: input.Name, Description: input.Description}
 	if err := h.products.CreateCategory(shopID, cat); err != nil {
@@ -152,6 +167,14 @@ func (h *ProductHandler) UpdateCategory(c *fiber.Ctx) error {
 	var input models.CategoryInput
 	if err := c.BodyParser(&input); err != nil {
 		return utils.BadRequest(c, "invalid request body")
+	}
+	if err := h.validate.Struct(input); err != nil {
+		return utils.BadRequest(c, err.Error())
+	}
+	if exists, err := h.products.CategoryNameExists(shopID, input.Name, c.Params("id")); err != nil {
+		return utils.Internal(c, err)
+	} else if exists {
+		return utils.BadRequest(c, "a category with this name already exists")
 	}
 	if err := h.products.UpdateCategory(shopID, c.Params("id"), &input); err != nil {
 		return utils.Internal(c, err)

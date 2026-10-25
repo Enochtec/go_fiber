@@ -3,6 +3,8 @@
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { authService } from '$lib/services/auth';
+	import { shopService } from '$lib/services/shop';
+	import { shopStore } from '$lib/stores/shop.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 	import SyncStatus from '$lib/components/SyncStatus.svelte';
@@ -37,6 +39,11 @@
 				goto('/login');
 			}
 		}
+		try {
+			const info = await shopService.getInfo();
+			shopStore.setName(info.shop.name);
+		} catch {
+		}
 	});
 </script>
 
@@ -58,7 +65,7 @@
 		class:translate-x-0={drawerOpen}
 		class:-translate-x-full={!drawerOpen}
 	>
-		<Sidebar onclose={() => drawerOpen = false} />
+		<Sidebar onclose={() => drawerOpen = false} shopName={shopStore.name} />
 	</div>
 
 	<!-- Main area -->
@@ -75,7 +82,7 @@
 				<div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
 					<Store size={13} class="text-white" />
 				</div>
-				<span class="font-bold text-white text-sm">Maestro POS</span>
+				<span class="font-bold text-white text-sm truncate" title={shopStore.name}>{shopStore.name}</span>
 			</div>
 			<div class="ml-auto flex items-center gap-2">
 				<SyncStatus />

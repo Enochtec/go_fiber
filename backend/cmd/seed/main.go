@@ -37,6 +37,14 @@ func main() {
 		log.Fatalf("Hash error: %v", err)
 	}
 
+	var shopID string
+	err = db.Get(&shopID, `SELECT id FROM shops ORDER BY created_at ASC LIMIT 1`)
+	if err != nil {
+		shopID = "shop-default"
+		db.Exec(`INSERT INTO shops (id, name, business_type) VALUES ($1, $2, $3)`, shopID, "Default Shop", "retail")
+		db.Exec(`INSERT INTO shop_settings (id, shop_id) VALUES ($1, $2)`, "settings-default", shopID)
+	}
+
 	repo := repositories.NewUserRepo(db)
 	user := &models.User{
 		Name:     name,
@@ -46,7 +54,7 @@ func main() {
 		IsActive: true,
 	}
 
-	if err := repo.Create("", user); err != nil {
+	if err := repo.Create(shopID, user); err != nil {
 		log.Fatalf("Failed to create admin: %v", err)
 	}
 

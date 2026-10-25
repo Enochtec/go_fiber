@@ -50,6 +50,18 @@ func migrate(db *sqlx.DB) error {
 		}
 	}
 
+	// Ensure at least one shop exists for tenant isolation
+	var shopID string
+	err := db.Get(&shopID, `SELECT id FROM shops ORDER BY created_at ASC LIMIT 1`)
+	if err != nil {
+		shopID = uuid.New().String()
+		_, _ = db.Exec(`INSERT INTO shops (id, name, business_type) VALUES ($1, $2, $3)`, shopID, "Default Shop", "retail")
+		_, _ = db.Exec(`INSERT INTO shop_settings (id, shop_id, tax_rate, receipt_footer) VALUES ($1, $2, $3, $4)`, uuid.New().String(), shopID, 0, "Thank you for your business!")
+	}
+
+	// Assign any users without a shop to the default shop
+	_, _ = db.Exec(`UPDATE users SET shop_id = $1 WHERE shop_id IS NULL OR shop_id = ''`, shopID)
+
 	var count int
 	if err := db.Get(&count, `SELECT COUNT(*) FROM users`); err != nil {
 		return err
@@ -65,8 +77,8 @@ func migrate(db *sqlx.DB) error {
 
 	id := uuid.New().String()
 	_, err = db.Exec(
-		`INSERT INTO users (id, name, email, password, role, is_active) VALUES ($1, $2, $3, $4, $5, $6)`,
-		id, "Administrator", "admin@pos.local", string(hash), "admin", true,
+		`INSERT INTO users (id, name, email, password, role, is_active, shop_id) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		id, "Administrator", "admin@pos.local", string(hash), "admin", true, shopID,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to seed admin user: %w", err)

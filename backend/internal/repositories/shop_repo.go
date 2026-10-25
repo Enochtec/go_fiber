@@ -36,6 +36,11 @@ func (r *ShopRepo) FindByID(id string) (*models.Shop, error) {
 	return shop, nil
 }
 
+func (r *ShopRepo) UpdateName(id, name string) error {
+	_, err := r.db.Exec(`UPDATE shops SET name = $1, updated_at = NOW() WHERE id = $2`, name, id)
+	return err
+}
+
 func (r *ShopRepo) FindByEmail(email string) (*models.Shop, error) {
 	shop := &models.Shop{}
 	err := r.db.Get(shop, `SELECT * FROM shops WHERE email = $1`, email)
