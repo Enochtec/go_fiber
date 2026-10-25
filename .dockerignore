@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+node_modules
+.svelte-kit
+build
+web
+backend/.env
+backend/pos-api.exe
+backend/pos-api.exe~
+*.db
+*.db-shm
+*.db-wal
+uploads

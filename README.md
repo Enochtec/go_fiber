@@ -39,6 +39,20 @@ npm run dev
 
 The app runs on `http://localhost:5173`.
 
+## Deploy to Render
+
+This repository includes a `Dockerfile` and `render.yaml` for a single Render web service with a PostgreSQL database.
+
+1. Push the repository to GitHub.
+2. In Render, choose **New → Blueprint** and select this repository.
+3. Review the `one-stop-pos` web service and `one-stop-pos-db` database, then apply the blueprint.
+4. Render generates `JWT_SECRET` and supplies `DATABASE_URL` from the database. Do not commit either value to the repository.
+5. Open the deployed URL and register the shop owner, or use the seeded `admin@pos.local` / `admin123` account, then change that password immediately.
+
+The service listens on Render's `PORT` and serves both the Svelte frontend and `/api` from the same URL. Render's free database and web service plans may have availability or sleeping limits depending on your account.
+
+Product uploads are stored on the service filesystem and can be lost during redeploys or restarts. Use a persistent Render Disk or external object storage before relying on uploaded product images in production.
+
 ## Default Login
 
 | Email             | Password  | Role  |
