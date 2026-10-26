@@ -66,14 +66,18 @@ func (r *UserRepo) List(shopID string) ([]models.User, error) {
 
 // Create is shop-scoped. shopID is set on the user record.
 func (r *UserRepo) Create(shopID string, u *models.User) error {
+	if shopID == "" {
+		return fmt.Errorf("shop ID is required")
+	}
+
 	u.ID = uuid.New().String()
 	var shopNull sql.NullString
 	err := r.db.QueryRowx(
-		`INSERT INTO users (id, shop_id, name, username, email, phone, password, role)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id, shop_id, created_at, updated_at`,
-		u.ID, shopID, u.Name, u.Username, u.Email, u.Phone, u.Password, u.Role,
-	).Scan(&u.ID, &shopNull, &u.CreatedAt, &u.UpdatedAt)
+		`INSERT INTO users (id, shop_id, name, username, email, phone, password, role, is_active)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		RETURNING id, shop_id, is_active, created_at, updated_at`,
+		u.ID, shopID, u.Name, u.Username, u.Email, u.Phone, u.Password, u.Role, true,
+	).Scan(&u.ID, &shopNull, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
 	u.ShopID = shopNull
 	return err
 }

@@ -31,8 +31,18 @@ async function cacheProducts() {
 	try {
 		const res = await api.get<{ success: boolean; data: Product[]; total: number }>('/products?limit=10000');
 		if (res?.data) {
+			let page = res.data;
+			const total = res.total ?? page.length;
+			while (page.length < total) {
+				const nextPage = Math.floor(page.length / 100) + 1;
+				const next = await api.get<{ success: boolean; data: Product[]; total: number }>(
+					`/products?limit=100&page=${nextPage}`
+				);
+				if (!next.data?.length) break;
+				page = page.concat(next.data);
+			}
 			await db.products.clear();
-			await db.products.bulkPut(res.data);
+			await db.products.bulkPut(page);
 		}
 	} catch {
 		// silently fail
