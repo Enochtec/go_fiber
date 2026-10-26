@@ -109,15 +109,15 @@ button:not([class*="rounded-full"]) {
 /* ─── Badge variants ─── */
 .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 600; line-height: 1.25rem; }
 
-/* ─── Font size boost ─── */
+/* ─── Responsive type scale ─── */
 @media (max-width: 640px) {
-	:where(.text-xs) { font-size: 0.8125rem; }
-	:where(.text-sm) { font-size: 0.9375rem; }
-	:where(.text-base) { font-size: 1.0625rem; }
-	:where(.text-lg) { font-size: 1.1875rem; }
-	:where(.text-xl) { font-size: 1.3125rem; }
-	:where(.text-2xl) { font-size: 1.5625rem; }
-	:where(.text-3xl) { font-size: 1.9375rem; }
+	:where(.text-xs) { font-size: 0.75rem; }
+	:where(.text-sm) { font-size: 0.875rem; }
+	:where(.text-base) { font-size: 1rem; }
+	:where(.text-lg) { font-size: 1.125rem; }
+	:where(.text-xl) { font-size: 1.25rem; }
+	:where(.text-2xl) { font-size: 1.5rem; }
+	:where(.text-3xl) { font-size: 1.875rem; }
 }
 @media (min-width: 641px) {
 	:where(.text-xs) { font-size: 0.8125rem; }
@@ -142,6 +142,6 @@ button:not([class*="rounded-full"]) {
 
 /* ─── Touch-friendly: larger tap targets on mobile ─── */
 @media (max-width: 640px) {
-	button, a, [role="button"] { min-height: 40px; }
+	button, a, [role="button"] { min-height: 36px; }
 	input, select, textarea { font-size: 16px !important; }
 }
