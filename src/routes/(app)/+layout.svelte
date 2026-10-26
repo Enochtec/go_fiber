@@ -4,6 +4,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { authService } from '$lib/services/auth';
 	import { shopService } from '$lib/services/shop';
+	import { refreshLocalCache } from '$lib/services/offline';
 	import { shopStore } from '$lib/stores/shop.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Notification from '$lib/components/Notification.svelte';
@@ -37,6 +38,7 @@
 			} catch {
 				authStore.clear();
 				goto('/login');
+				return;
 			}
 		}
 		try {
@@ -44,6 +46,7 @@
 			shopStore.setName(info.shop.name);
 		} catch {
 		}
+		await refreshLocalCache();
 	});
 </script>
 

@@ -69,11 +69,9 @@ export const offlineProducts = {
 			}
 		}
 
-		let collection = db.products.where('is_active').equals(1);
-
 		if (filter.search) {
 			const q = filter.search.toLowerCase();
-			const all = await db.products.toArray();
+			const all = (await db.products.toArray()).filter((p) => p.is_active !== false);
 			const filtered = all.filter(
 				(p) =>
 					p.name.toLowerCase().includes(q) ||
@@ -89,14 +87,9 @@ export const offlineProducts = {
 			};
 		}
 
-		if (filter.category_id) {
-			collection = collection.filter((p) => p.category_id === filter.category_id);
-		}
-		if (filter.low_stock) {
-			collection = collection.filter((p) => p.stock_qty <= p.reorder_level);
-		}
-
-		const all = await collection.toArray();
+		let all = (await db.products.toArray()).filter((p) => p.is_active !== false);
+		if (filter.category_id) all = all.filter((p) => p.category_id === filter.category_id);
+		if (filter.low_stock) all = all.filter((p) => p.stock_qty <= p.reorder_level);
 		const total = all.length;
 		const page = filter.page || 1;
 		const limit = filter.limit || total || 20;
