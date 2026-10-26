@@ -40,7 +40,7 @@
 		<div class="absolute inset-0 opacity-20" style="background-image:linear-gradient(rgba(85,146,255,.18) 1px, transparent 1px),linear-gradient(90deg,rgba(85,146,255,.18) 1px, transparent 1px);background-size:42px 42px;"></div>
 		<div class="relative">
 			<div class="flex items-center gap-3">
-				<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-950/40">
+				<div class="flex h-10 w-10 items-center justify-center text-white">
 					<Store size={20} />
 				</div>
 				<div>
@@ -72,7 +72,7 @@
 	<div class="flex min-h-[100svh] flex-col items-center justify-start px-4 py-8 sm:px-8 sm:py-10 lg:justify-center">
 		<div class="my-auto w-full max-w-[430px]">
 			<div class="mb-8 flex items-center gap-3 lg:hidden">
-				<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0000CD] text-white shadow-lg shadow-blue-900/20">
+				<div class="flex h-10 w-10 shrink-0 items-center justify-center text-[#0000CD]">
 					<Store size={21} />
 				</div>
 				<div>

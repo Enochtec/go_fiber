@@ -185,7 +185,7 @@
 	<!-- Left branding -->
 	<div class="hidden min-h-[100svh] shrink-0 flex-col bg-slate-900 p-10 lg:flex lg:w-5/12 xl:w-2/5">
 		<div class="flex items-center gap-3 mb-auto">
-			<div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600">
+			<div class="flex h-9 w-9 items-center justify-center text-white">
 				<Store size={18} class="text-white" />
 			</div>
 			<span class="text-white font-bold text-base">Maestro POS</span>
@@ -221,8 +221,8 @@
 		<div class="my-auto w-full max-w-lg">
 			<!-- Mobile logo -->
 			<div class="mb-6 flex items-center gap-3 lg:hidden">
-				<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600">
-					<Store size={20} class="text-white" />
+				<div class="flex h-10 w-10 shrink-0 items-center justify-center text-blue-600">
+					<Store size={20} class="text-blue-600" />
 				</div>
 				<div>
 					<h1 class="text-lg font-bold text-slate-900">Create Your Account</h1>
