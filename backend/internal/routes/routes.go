@@ -47,9 +47,9 @@ func Setup(app *fiber.App, h *Handlers) {
 	users := protected.Group("/users", middleware.RequireRole("admin", "manager"))
 	users.Get("/", h.User.List)
 	users.Get("/:id", h.User.GetByID)
-	users.Post("/", middleware.RequireRole("admin"), h.User.Create)
-	users.Put("/:id", middleware.RequireRole("admin"), h.User.Update)
-	users.Delete("/:id", middleware.RequireRole("admin"), h.User.Delete)
+	users.Post("/", middleware.RequireRole("admin", "manager"), h.User.Create)
+	users.Put("/:id", middleware.RequireRole("admin", "manager"), h.User.Update)
+	users.Delete("/:id", middleware.RequireRole("admin", "manager"), h.User.Delete)
 
 	cats := protected.Group("/categories")
 	cats.Get("/", h.Product.ListCategories)

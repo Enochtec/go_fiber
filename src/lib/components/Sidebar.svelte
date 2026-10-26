@@ -45,7 +45,7 @@
 		{
 			label: 'Admin', color: 'bg-rose-500',
 			links: [
-				{ href: '/users',     label: 'Users',      icon: UserCog,    roles: ['admin'] },
+				{ href: '/users',     label: 'Users',      icon: UserCog,    roles: ['admin', 'manager'] },
 				{ href: '/settings',  label: 'Settings',   icon: Settings,   roles: ['admin', 'manager'] },
 			]
 		},
