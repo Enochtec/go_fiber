@@ -94,6 +94,7 @@ async function processItem(item: SyncQueueItem): Promise<boolean> {
 
 export async function processSyncQueue() {
 	if (isSyncing) return;
+	if (!navigator.onLine || !authStore.isAuthenticated) return;
 	isSyncing = true;
 	syncState.syncing = true;
 

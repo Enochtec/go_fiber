@@ -157,48 +157,48 @@
 
 <svelte:head><title>Products — One Point POS</title></svelte:head>
 
-<div class="p-4 md:p-6 space-y-5 dark:bg-slate-950 min-h-full">
+<div class="p-3 md:p-4 space-y-3 dark:bg-slate-950 min-h-full">
 
 	<!-- Page header -->
-	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-3 border-l-4 border-emerald-500">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pl-2 border-l-2 border-emerald-500">
 		<div>
-			<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Products</h1>
-			<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+			<h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Products</h1>
+			<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
 				{total} product{total !== 1 ? 's' : ''} total
 			</p>
 		</div>
 		<div class="flex gap-2">
-			<button onclick={() => showExport = true} class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all">
-				<Download size={15} /> Export
+			<button onclick={() => showExport = true} class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all">
+				<Download size={13} /> Export
 			</button>
-			<button onclick={openCreate} class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all active:scale-95">
-				<Plus size={16} /> Add Product
+			<button onclick={openCreate} class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all active:scale-95">
+				<Plus size={14} /> Add Product
 			</button>
 		</div>
 	</div>
 
 	<!-- Filters -->
-	<div class="flex gap-2.5 flex-wrap">
+	<div class="flex gap-2 flex-wrap">
 		<div class="relative flex-1 min-w-48">
 			<Search size={14} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 			<input
 				bind:value={search}
 				oninput={onSearch}
 				placeholder="Search by name, barcode, SKU…"
-				class="w-full rounded-[1px] border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 bg-white py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none"
+				class="w-full rounded-[1px] border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 bg-white py-1.5 pl-8 pr-2 text-sm shadow-sm focus:outline-none"
 			/>
 		</div>
 		<select
 			bind:value={categoryFilter}
 			onchange={() => { page = 1; fetchProducts(); }}
-			class="rounded-[1px] border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none"
+			class="rounded-[1px] border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 bg-white px-2.5 py-1.5 text-sm shadow-sm focus:outline-none"
 		>
 			<option value="">All Categories</option>
 			{#each categories as cat}
 				<option value={cat.id}>{cat.name}</option>
 			{/each}
 		</select>
-		<label class="inline-flex items-center gap-2 rounded-[1px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 cursor-pointer shadow-sm select-none">
+		<label class="inline-flex items-center gap-1.5 rounded-[1px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 cursor-pointer shadow-sm select-none">
 			<input type="checkbox" bind:checked={lowStockFilter} onchange={() => { page = 1; fetchProducts(); }} class="rounded accent-teal-600" />
 			Low Stock Only
 		</label>
@@ -210,14 +210,14 @@
 			<table class="w-full text-sm">
 				<thead>
 					<tr style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
-						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide w-12">Image</th>
-						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Product</th>
-						<th class="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Category</th>
-						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Cost</th>
-						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Price</th>
-						<th class="px-4 py-2.5 text-center text-xs font-semibold text-white uppercase tracking-wide">Stock</th>
-						<th class="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Margin</th>
-						<th class="px-4 py-2.5"></th>
+						<th class="px-3 py-1.5 text-left text-xs font-semibold text-white uppercase tracking-wide w-10">Image</th>
+						<th class="px-3 py-1.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Product</th>
+						<th class="px-3 py-1.5 text-left text-xs font-semibold text-white uppercase tracking-wide">Category</th>
+						<th class="px-3 py-1.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Cost</th>
+						<th class="px-3 py-1.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Price</th>
+						<th class="px-3 py-1.5 text-center text-xs font-semibold text-white uppercase tracking-wide">Stock</th>
+						<th class="px-3 py-1.5 text-right text-xs font-semibold text-white uppercase tracking-wide">Margin</th>
+						<th class="px-3 py-1.5"></th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -225,7 +225,7 @@
 						{#each Array(8) as _}
 							<tr>
 								{#each Array(8) as _}
-									<td class="px-4 py-2.5">
+									<td class="px-3 py-1.5">
 										<div class="h-4 bg-slate-100 dark:bg-slate-700 animate-pulse"></div>
 									</td>
 								{/each}
@@ -245,8 +245,8 @@
 						{#each products as p}
 							{@const margin = p.buying_price > 0 ? ((p.selling_price - p.buying_price) / p.buying_price * 100) : 0}
 							<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group">
-								<td class="px-4 py-3.5">
-									<div class="h-10 w-10 rounded-[1px] overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+								<td class="px-3 py-1.5">
+									<div class="h-8 w-8 rounded-[1px] overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
 										{#if p.image_url}
 											<img src={p.image_url} alt={p.name} class="h-full w-full object-cover" loading="lazy" />
 										{:else}
@@ -254,7 +254,7 @@
 										{/if}
 									</div>
 								</td>
-								<td class="px-4 py-2.5">
+								<td class="px-3 py-1.5">
 									<p class="font-semibold text-slate-800 dark:text-slate-100">{p.name}</p>
 									<div class="flex items-center gap-2 mt-0.5">
 										{#if p.barcode}
@@ -265,7 +265,7 @@
 										{/if}
 									</div>
 								</td>
-								<td class="px-4 py-2.5">
+								<td class="px-3 py-1.5">
 									{#if p.category_name}
 										<span class="inline-flex rounded-[1px] bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
 											{p.category_name}
@@ -274,13 +274,13 @@
 										<span class="text-slate-400 text-xs">—</span>
 									{/if}
 								</td>
-								<td class="px-4 py-2.5 text-right text-slate-500 dark:text-slate-400 tabular-nums">
+								<td class="px-3 py-1.5 text-right text-slate-500 dark:text-slate-400 tabular-nums">
 									{fmt(p.buying_price)}
 								</td>
-								<td class="px-4 py-2.5 text-right font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
+								<td class="px-3 py-1.5 text-right font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
 									{fmt(p.selling_price)}
 								</td>
-								<td class="px-4 py-2.5 text-center">
+								<td class="px-3 py-1.5 text-center">
 									{#if p.stock_qty === 0}
 										<span class="inline-flex items-center gap-1 rounded-[1px] bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
 											<AlertTriangle size={10} /> Out of stock
@@ -295,12 +295,12 @@
 										</span>
 									{/if}
 								</td>
-								<td class="px-4 py-2.5 text-right tabular-nums">
+								<td class="px-3 py-1.5 text-right tabular-nums">
 									<span class="text-xs font-semibold {margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : margin >= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}">
 										{margin.toFixed(1)}%
 									</span>
 								</td>
-								<td class="px-4 py-2.5">
+								<td class="px-3 py-1.5">
 									<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 										<button
 											onclick={() => openEdit(p)}

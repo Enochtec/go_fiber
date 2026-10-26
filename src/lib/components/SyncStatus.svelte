@@ -54,7 +54,6 @@
 		</button>
 	{:else}
 		<button class="sync-badge online" onclick={togglePanel} title="All synced">
-			<span class="dot online-dot"></span>
 			Synced
 		</button>
 	{/if}

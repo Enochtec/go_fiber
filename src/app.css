@@ -119,15 +119,6 @@ button:not([class*="rounded-full"]) {
 	:where(.text-2xl) { font-size: 1.5rem; }
 	:where(.text-3xl) { font-size: 1.875rem; }
 }
-@media (min-width: 641px) {
-	:where(.text-xs) { font-size: 0.8125rem; }
-	:where(.text-sm) { font-size: 0.9375rem; }
-	:where(.text-base) { font-size: 1.0625rem; }
-	:where(.text-lg) { font-size: 1.1875rem; }
-	:where(.text-xl) { font-size: 1.3125rem; }
-	:where(.text-2xl) { font-size: 1.5625rem; }
-	:where(.text-3xl) { font-size: 1.9375rem; }
-}
 .badge-blue   { background: #EEF0FF; color: #2E00CC; }
 .badge-green  { background: #f0fdf4; color: #15803d; }
 .badge-amber  { background: #fffbeb; color: #b45309; }
