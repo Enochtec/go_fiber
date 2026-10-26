@@ -147,7 +147,7 @@
 	onMount(fetchList);
 </script>
 
-<svelte:head><title>Customers — POS</title></svelte:head>
+<svelte:head><title>Customers — One Point POS</title></svelte:head>
 
 <div class="flex h-full overflow-hidden bg-slate-50 dark:bg-slate-950">
 

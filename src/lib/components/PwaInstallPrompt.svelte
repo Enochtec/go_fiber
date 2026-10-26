@@ -36,7 +36,7 @@
 			<Download size={14} />
 			Install App
 		</button>
-		<span class="text-xs text-slate-600 dark:text-slate-400">Install Maestro POS for the best experience</span>
+		<span class="text-xs text-slate-600 dark:text-slate-400">Install One Point POS for the best experience</span>
 		<button onclick={dismiss} class="h-7 w-7 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors shrink-0">
 			<X size={14} />
 		</button>

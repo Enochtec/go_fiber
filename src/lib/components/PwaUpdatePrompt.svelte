@@ -41,7 +41,7 @@
 
 {#if needRefresh && !dismissed}
 	<div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg max-sm:left-4 max-sm:right-4 max-sm:-translate-x-0">
-		<p class="text-xs text-slate-600 dark:text-slate-400">A new version of Maestro POS is available.</p>
+		<p class="text-xs text-slate-600 dark:text-slate-400">A new version of One Point POS is available.</p>
 		<div class="flex items-center gap-2 shrink-0">
 			<button onclick={update} class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white transition-colors" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 				<RefreshCw size={12} />

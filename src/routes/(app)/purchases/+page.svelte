@@ -134,7 +134,7 @@
 	});
 </script>
 
-<svelte:head><title>Purchases — Maestro POS</title></svelte:head>
+<svelte:head><title>Purchases — One Point POS</title></svelte:head>
 
 <div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
 	<div class="flex items-center justify-between">

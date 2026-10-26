@@ -15,7 +15,7 @@
 	let submitting = $state(false);
 	let catName = $state('');
 	let catDesc = $state('');
-	let shopName = $state('One Stop Point of Sale');
+	let shopName = $state('One Point POS');
 	let shopNameSubmitting = $state(false);
 
 	async function fetchShopName() {
@@ -103,7 +103,7 @@
 	});
 </script>
 
-<svelte:head><title>Settings — Maestro POS</title></svelte:head>
+<svelte:head><title>Settings — One Point POS</title></svelte:head>
 
 <div class="p-4 md:p-6 space-y-6 max-w-3xl dark:bg-slate-950 min-h-full">
 	<div>

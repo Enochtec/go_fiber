@@ -16,8 +16,8 @@ export default defineConfig({
 				'icons/*.svg'
 			],
 			manifest: {
-				name: 'Maestro POS',
-				short_name: 'Maestro POS',
+				name: 'One Point POS',
+				short_name: 'One Point POS',
 				description: 'Modern Point of Sale System — Manage sales, inventory, customers and more.',
 				theme_color: '#3F00FF',
 				background_color: '#0f172a',

@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head>
-	<title>Maestro POS</title>
+	<title>One Point POS</title>
 	<meta name="description" content="Modern Point of Sale System — Manage sales, inventory, customers and more." />
 </svelte:head>
 

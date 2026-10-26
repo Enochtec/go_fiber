@@ -44,7 +44,7 @@
 	});
 </script>
 
-<svelte:head><title>Reports — Maestro POS</title></svelte:head>
+<svelte:head><title>Reports — One Point POS</title></svelte:head>
 
 <div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
 

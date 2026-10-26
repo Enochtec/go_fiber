@@ -44,7 +44,7 @@
 					<Store size={20} />
 				</div>
 				<div>
-					<p class="text-sm font-bold tracking-wide text-white">Maestro POS</p>
+					<p class="text-sm font-bold tracking-wide text-white">One Point POS</p>
 					<p class="text-[11px] uppercase tracking-[0.2em] text-blue-200/70">Retail operations</p>
 				</div>
 			</div>
@@ -65,7 +65,7 @@
 			</div>
 		</div>
 
-		<p class="relative text-xs text-blue-100/45">© {new Date().getFullYear()} Maestro POS</p>
+		<p class="relative text-xs text-blue-100/45">© {new Date().getFullYear()} One Point POS</p>
 	</div>
 
 	<!-- Form panel -->
@@ -76,7 +76,7 @@
 					<Store size={21} />
 				</div>
 				<div>
-					<p class="text-sm font-bold tracking-wide text-slate-900">Maestro POS</p>
+					<p class="text-sm font-bold tracking-wide text-slate-900">One Point POS</p>
 					<p class="mt-0.5 text-xs uppercase tracking-[0.18em] text-slate-400">Retail operations</p>
 				</div>
 			</div>

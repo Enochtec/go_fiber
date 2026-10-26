@@ -434,7 +434,7 @@
 	});
 </script>
 
-<svelte:head><title>Checkout — POS</title></svelte:head>
+<svelte:head><title>Checkout — One Point POS</title></svelte:head>
 <svelte:window onkeydown={handleKeydown} />
 
 	<div class="flex h-full overflow-hidden bg-slate-100">

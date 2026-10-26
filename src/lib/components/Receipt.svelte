@@ -147,7 +147,7 @@
     <p style="margin-top:4px;letter-spacing:1px;">* * * * * * * * * * * * * * * * *</p>
     <div class="bc"></div>
     <p style="margin-top:2px;font-size:7px;letter-spacing:2px;">${receiptId}</p>
-    <p style="margin-top:4px;font-size:7px;color:#999;">Powered by Maestro POS</p>
+    <p style="margin-top:4px;font-size:7px;color:#999;">Powered by One Point POS</p>
   </div>
 </body>
 </html>`;
@@ -426,7 +426,7 @@
 						<p style="margin-top:4px;letter-spacing:1px;">* * * * * * * * * * * * * * * * *</p>
 						<div style="margin:6px auto 0;width:120px;height:24px;background:repeating-linear-gradient(90deg,#000 0,#000 2px,transparent 2px,transparent 4px);"></div>
 						<p style="margin-top:2px;font-size:7px;letter-spacing:2px;">{receiptId}</p>
-						<p style="margin-top:4px;font-size:7px;color:#999;">Powered by Maestro POS</p>
+						<p style="margin-top:4px;font-size:7px;color:#999;">Powered by One Point POS</p>
 					</div>
 				</div>
 			</div>

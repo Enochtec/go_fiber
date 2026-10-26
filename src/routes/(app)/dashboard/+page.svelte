@@ -141,7 +141,7 @@
 	const sparkOrders = $derived(sparkPath(dailySales.map(d => d.orders)));
 </script>
 
-<svelte:head><title>Dashboard — Maestro POS</title></svelte:head>
+<svelte:head><title>Dashboard — One Point POS</title></svelte:head>
 
 <div class="min-h-full bg-slate-50 dark:bg-slate-950 p-4 md:p-6 space-y-6">
 

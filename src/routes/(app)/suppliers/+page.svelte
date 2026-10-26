@@ -83,7 +83,7 @@
 	onMount(fetch);
 </script>
 
-<svelte:head><title>Suppliers — Maestro POS</title></svelte:head>
+<svelte:head><title>Suppliers — One Point POS</title></svelte:head>
 
 <div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
 	<div class="flex items-center justify-between">

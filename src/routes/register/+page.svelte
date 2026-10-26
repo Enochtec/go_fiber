@@ -178,7 +178,7 @@
 	];
 </script>
 
-<svelte:head><title>Register — Maestro POS</title></svelte:head>
+<svelte:head><title>Register — One Point POS</title></svelte:head>
 <Notification />
 
 <div class="flex h-[100svh] max-h-[100svh] flex-col overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50 lg:flex-row lg:overflow-hidden">
@@ -188,7 +188,7 @@
 			<div class="flex h-9 w-9 items-center justify-center text-white">
 				<Store size={18} class="text-white" />
 			</div>
-			<span class="text-white font-bold text-base">Maestro POS</span>
+			<span class="text-white font-bold text-base">One Point POS</span>
 		</div>
 		<div class="py-12">
 			<h1 class="text-3xl font-bold text-white leading-snug mb-3">
@@ -213,7 +213,7 @@
 				{/each}
 			</div>
 		</div>
-		<p class="text-xs text-slate-600">© {new Date().getFullYear()} Maestro POS</p>
+		<p class="text-xs text-slate-600">© {new Date().getFullYear()} One Point POS</p>
 	</div>
 
 	<!-- Right form panel -->

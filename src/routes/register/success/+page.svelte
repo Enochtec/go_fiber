@@ -23,7 +23,7 @@
 	});
 </script>
 
-<svelte:head><title>Welcome — Maestro POS</title></svelte:head>
+<svelte:head><title>Welcome — One Point POS</title></svelte:head>
 
 <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
 	<div class="w-full max-w-md text-center">
@@ -39,7 +39,7 @@
 			Registration Successful
 		</h1>
 		<p class="text-slate-400 text-sm mb-8 animate-[fade-in_0.6s_ease-out]">
-			Welcome to Maestro POS
+			Welcome to One Point POS
 		</p>
 
 		<!-- Cards -->

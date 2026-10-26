@@ -155,7 +155,7 @@
 	});
 </script>
 
-<svelte:head><title>Products — POS</title></svelte:head>
+<svelte:head><title>Products — One Point POS</title></svelte:head>
 
 <div class="p-4 md:p-6 space-y-5 dark:bg-slate-950 min-h-full">
 
@@ -413,4 +413,3 @@
 	onclose={() => showExport = false}
 	onexport={handleExport}
 />
-

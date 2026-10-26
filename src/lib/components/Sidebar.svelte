@@ -10,7 +10,7 @@
 	import { themeStore } from '$lib/stores/theme.svelte';
 
 	interface Props { onclose?: () => void; shopName?: string; }
-	let { onclose, shopName = 'One Stop Point of Sale' }: Props = $props();
+	let { onclose, shopName = 'One Point POS' }: Props = $props();
 
 	const groups = [
 		{

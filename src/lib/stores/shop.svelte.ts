@@ -1,4 +1,4 @@
-const DEFAULT_SHOP_NAME = 'One Stop Point of Sale';
+const DEFAULT_SHOP_NAME = 'One Point POS';
 let name = $state(DEFAULT_SHOP_NAME);
 
 export const shopStore = {

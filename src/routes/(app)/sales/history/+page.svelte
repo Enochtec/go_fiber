@@ -104,7 +104,7 @@
 	onMount(fetch);
 </script>
 
-<svelte:head><title>Sales History — Maestro POS</title></svelte:head>
+<svelte:head><title>Sales History — One Point POS</title></svelte:head>
 
 <div class="p-4 md:p-6 space-y-5 min-h-full dark:bg-slate-950">
 	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
