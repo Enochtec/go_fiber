@@ -301,7 +301,7 @@
 									</span>
 								</td>
 								<td class="px-3 py-1.5">
-									<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+									<div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
 										<button
 											onclick={() => openEdit(p)}
 											class="inline-flex h-8 w-8 items-center justify-center rounded-[1px] text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
