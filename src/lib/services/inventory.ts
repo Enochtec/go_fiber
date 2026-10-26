@@ -1,5 +1,6 @@
 import { api } from './api';
 import type { ApiResponse, DashboardStats, PaginatedResponse, StockAdjustment } from '$lib/types';
+import { offlineInventory } from './offline';
 
 export interface AdjustInput {
 	product_id: string;
@@ -8,13 +9,18 @@ export interface AdjustInput {
 }
 
 export const inventoryService = {
-	dashboard: () => api.get<ApiResponse<DashboardStats>>('/dashboard'),
+	dashboard: async () => {
+		try { return await api.get<ApiResponse<DashboardStats>>('/dashboard'); }
+		catch { return offlineInventory.dashboard(); }
+	},
 
-	listAdjustments: (page = 1, limit = 20) =>
-		api.get<PaginatedResponse<StockAdjustment>>(
-			`/inventory/adjustments?page=${page}&limit=${limit}`
-		),
+	listAdjustments: async (page = 1, limit = 20) => {
+		try { return await api.get<PaginatedResponse<StockAdjustment>>(`/inventory/adjustments?page=${page}&limit=${limit}`); }
+		catch { return offlineInventory.listAdjustments(page, limit); }
+	},
 
-	adjust: (data: AdjustInput) =>
-		api.post<ApiResponse<StockAdjustment>>('/inventory/adjust', data)
+	adjust: async (data: AdjustInput) => {
+		try { return await api.post<ApiResponse<StockAdjustment>>('/inventory/adjust', data); }
+		catch { return offlineInventory.adjust(data); }
+	}
 };

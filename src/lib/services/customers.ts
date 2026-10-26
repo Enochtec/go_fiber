@@ -1,5 +1,6 @@
 import { api } from './api';
 import type { ApiResponse, Customer, PaginatedResponse, Sale } from '$lib/types';
+import { offlineCustomers } from './offline';
 
 export interface CustomerInput {
 	name: string;
@@ -23,10 +24,15 @@ export const customersService = {
 
 	getById: (id: string) => api.get<ApiResponse<Customer>>(`/customers/${id}`),
 
-	stats: (id: string) => api.get<ApiResponse<CustomerStats>>(`/customers/${id}/stats`),
+	stats: async (id: string) => {
+		try { return await api.get<ApiResponse<CustomerStats>>(`/customers/${id}/stats`); }
+		catch { return offlineCustomers.stats(id); }
+	},
 
-	history: (id: string, limit = 20) =>
-		api.get<ApiResponse<Sale[]>>(`/customers/${id}/history?limit=${limit}`),
+	history: async (id: string, limit = 20) => {
+		try { return await api.get<ApiResponse<Sale[]>>(`/customers/${id}/history?limit=${limit}`); }
+		catch { return offlineCustomers.history(id, limit); }
+	},
 
 	create: (data: CustomerInput) => api.post<ApiResponse<Customer>>('/customers', data),
 

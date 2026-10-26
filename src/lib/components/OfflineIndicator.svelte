@@ -1,22 +1,18 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { WifiOff } from '@lucide/svelte';
+	import { connectionStatus } from '$lib/services/connection';
 
 	let offline = $state(false);
 
-	function update() {
-		offline = !navigator.onLine;
-	}
+	let unsubscribe: (() => void) | undefined;
 
 	onMount(() => {
-		update();
-		window.addEventListener('online', update);
-		window.addEventListener('offline', update);
+		unsubscribe = connectionStatus.subscribe((status) => offline = status === 'offline');
 	});
 
 	onDestroy(() => {
-		window.removeEventListener('online', update);
-		window.removeEventListener('offline', update);
+		unsubscribe?.();
 	});
 </script>
 

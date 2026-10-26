@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { connectionStatus, type ConnectionStatus } from '$lib/services/connection';
 	import { syncState } from '$lib/services/sync.svelte';
+		import { toUserMessage } from '$lib/stores/notification.svelte';
 
 	let status: ConnectionStatus = 'online';
 	let pending = $state(0);
@@ -80,7 +81,7 @@
 				{#if lastError}
 					<div class="row error">
 						<span>Last error</span>
-						<span class="error-text">{lastError}</span>
+						<span class="error-text">{toUserMessage(lastError)}</span>
 					</div>
 				{/if}
 			</div>

@@ -37,6 +37,12 @@ function endpointFor(entity: string, action: string, entityId: string): string {
 			return action === 'create' ? '/suppliers' : `/suppliers/${entityId}`;
 		case 'category':
 			return action === 'create' ? '/categories' : `/categories/${entityId}`;
+		case 'purchase':
+			return action === 'create' ? '/purchases' : `/purchases/${entityId}`;
+		case 'adjustment':
+			return action === 'create' ? '/inventory/adjust' : `/inventory/adjustments/${entityId}`;
+		case 'shop':
+			return '/shop/name';
 		default:
 			return '';
 	}

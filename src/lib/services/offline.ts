@@ -2,7 +2,7 @@ import { db, type OfflineSale, type OfflineSaleItem } from './db';
 import { api } from './api';
 import { enqueueSync } from './sync.svelte';
 import { connectionStatus, isOnline } from './connection';
-import type { Product, Category, Customer, Supplier } from '$lib/types';
+import type { Product, Category, Customer, Supplier, DashboardStats, DailySalesRow, InventoryValueRow, TopProductRow, Purchase, StockAdjustment } from '$lib/types';
 import type { ProductFilter } from './products';
 import type { CustomerInput } from './customers';
 import type { CreateSaleInput } from './sales';
@@ -60,7 +60,7 @@ export const offlineProducts = {
 		const online = getConnectionStatus() === 'online';
 		if (online) {
 			try {
-				const res = await api.get<any>('/products' + buildQuery(filter));
+				const res = await api.get<any>('/products' + buildQuery(filter as Record<string, string | number | boolean | undefined>));
 				await cacheProducts();
 				await cacheCategories();
 				return res;
@@ -381,6 +381,17 @@ export const offlineCustomers = {
 		await db.customers.delete(id);
 		await enqueueSync('customer', 'delete', id, null);
 		return { success: true };
+	},
+
+	stats: async (id: string) => {
+		const sales = (await localSales()).filter((sale) => sale.customer_id === id);
+		const lifetime = sales.reduce((sum, sale) => sum + sale.total, 0);
+		return { success: true, data: { total_orders: sales.length, lifetime_spend: lifetime, avg_order: sales.length ? lifetime / sales.length : 0, last_visit: sales.length ? sales[sales.length - 1].created_at : null } };
+	},
+
+	history: async (id: string, limit = 20) => {
+		const sales = (await localSales()).filter((sale) => sale.customer_id === id).slice(-limit).reverse();
+		return { success: true, data: sales };
 	}
 };
 
@@ -572,6 +583,7 @@ export const offlineSuppliers = {
 			address: data.address || null,
 			created_at: new Date().toISOString()
 		};
+
 		await db.suppliers.put(supplier);
 		await enqueueSync('supplier', 'create', localId, data);
 		return { success: true, data: supplier };
@@ -612,7 +624,141 @@ export const offlineSuppliers = {
 	}
 };
 
-// ─── Query builder ─────────────────────────────────────────────────
+// ─── Inventory, purchases, reports and dashboard ─────────────────
+		function localDate(date = new Date()): string {
+			return date.toISOString().slice(0, 10);
+		}
+
+		async function localSales(): Promise<OfflineSale[]> {
+			return db.sales.where('status').notEqual('voided').toArray();
+		}
+
+		export const offlineInventory = {
+			dashboard: async () => {
+				const products = await db.products.toArray();
+				const customers = await db.customers.count();
+				const sales = await localSales();
+				const today = localDate();
+				const month = today.slice(0, 7);
+				const todaySales = sales.filter((s) => s.created_at.startsWith(today));
+				const monthSales = sales.filter((s) => s.created_at.startsWith(month));
+				const total = todaySales.reduce((sum, s) => sum + s.total, 0);
+				const stats: DashboardStats = {
+					today_sales: total,
+					today_orders: todaySales.length,
+					today_avg_sale: todaySales.length ? total / todaySales.length : 0,
+					today_cash_sales: todaySales.filter((s) => s.payment_method === 'cash').reduce((sum, s) => sum + s.total, 0),
+					today_mpesa: todaySales.filter((s) => s.payment_method === 'mpesa').reduce((sum, s) => sum + s.total, 0),
+					today_card: todaySales.filter((s) => s.payment_method === 'card').reduce((sum, s) => sum + s.total, 0),
+					total_products: products.length,
+					low_stock_count: products.filter((p) => p.stock_qty > 0 && p.stock_qty <= p.reorder_level).length,
+					out_of_stock: products.filter((p) => p.stock_qty <= 0).length,
+					total_customers: customers,
+					month_sales: monthSales.reduce((sum, s) => sum + s.total, 0),
+					yesterday_sales: sales.filter((s) => s.created_at.startsWith(localDate(new Date(Date.now() - 86400000)))).reduce((sum, s) => sum + s.total, 0)
+				};
+				return { success: true, data: stats };
+			},
+
+			listAdjustments: async (page = 1, limit = 20) => {
+				const all = (await db.adjustments.toArray()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+				const start = (page - 1) * limit;
+				return { success: true, data: all.slice(start, start + limit), total: all.length, page, limit };
+			},
+
+			adjust: async (data: { product_id: string; quantity: number; reason: string }) => {
+				const product = await db.products.get(data.product_id);
+				if (!product) throw new Error('The selected product is not available offline');
+				const nextStock = product.stock_qty + data.quantity;
+				if (nextStock < 0) throw new Error('Stock cannot go below zero');
+				await db.products.update(product.id, { stock_qty: nextStock, updated_at: new Date().toISOString() });
+				const id = generateLocalId();
+				const adjustment: StockAdjustment = {
+					id, product_id: product.id, product_name: product.name, user_id: '', user_name: null,
+					quantity: data.quantity, reason: data.reason, created_at: new Date().toISOString()
+				};
+				await db.adjustments.put(adjustment);
+				await enqueueSync('adjustment', 'create', id, data);
+				return { success: true, data: adjustment };
+			}
+		};
+
+		export const offlinePurchases = {
+			list: async (page = 1, limit = 20) => {
+				const all = (await db.purchases.toArray()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+				const start = (page - 1) * limit;
+				return { success: true, data: all.slice(start, start + limit), total: all.length, page, limit };
+			},
+			create: async (data: { supplier_id?: string | null; items: { product_id: string; quantity: number; unit_price: number }[]; status?: 'received' | 'pending'; note?: string | null }) => {
+				const id = generateLocalId();
+				const purchaseItems = [];
+				for (const item of data.items) {
+					const product = await db.products.get(item.product_id);
+					if (!product) throw new Error('One of the selected products is not available offline');
+					purchaseItems.push({ id: `${id}_${item.product_id}`, purchase_id: id, product_id: item.product_id, product_name: product.name, quantity: item.quantity, unit_price: item.unit_price, total: item.quantity * item.unit_price });
+					if (data.status !== 'pending') await db.products.update(item.product_id, { stock_qty: product.stock_qty + item.quantity, updated_at: new Date().toISOString() });
+				}
+				const purchase: Purchase = {
+					id, supplier_id: data.supplier_id || null, supplier_name: data.supplier_id ? (await db.suppliers.get(data.supplier_id))?.name ?? null : null,
+					user_id: '', user_name: null, total: purchaseItems.reduce((sum, item) => sum + item.total, 0),
+					status: data.status || 'received', note: data.note || null, created_at: new Date().toISOString(), items: purchaseItems
+				};
+				await db.purchases.put(purchase);
+				await enqueueSync('purchase', 'create', id, data);
+				return { success: true, data: purchase };
+			}
+		};
+
+		export const offlineReports = {
+			dailySales: async (days = 30) => {
+				const sales = await localSales();
+				const rows: DailySalesRow[] = [];
+				for (let i = days - 1; i >= 0; i--) {
+					const date = localDate(new Date(Date.now() - i * 86400000));
+					const day = sales.filter((s) => s.created_at.startsWith(date));
+					rows.push({ date, orders: day.length, total: day.reduce((sum, s) => sum + s.total, 0) });
+				}
+				return { success: true, data: rows };
+			},
+			monthlySales: async (months = 12) => {
+				const sales = await localSales();
+				const rows: DailySalesRow[] = [];
+				for (let i = months - 1; i >= 0; i--) {
+					const date = new Date();
+					date.setMonth(date.getMonth() - i);
+					const month = date.toISOString().slice(0, 7);
+					const monthSales = sales.filter((s) => s.created_at.startsWith(month));
+					rows.push({ date: month, orders: monthSales.length, total: monthSales.reduce((sum, s) => sum + s.total, 0) });
+				}
+				return { success: true, data: rows };
+			},
+			topProducts: async (limit = 10) => {
+				const sales = await localSales();
+				const totals = new Map<string, TopProductRow>();
+				for (const sale of sales) for (const item of sale.items) {
+					const current = totals.get(item.product_id) ?? { product_id: item.product_id, product_name: item.product_name || item.product_id, quantity: 0, quantity_sold: 0, revenue: 0 };
+					current.quantity_sold += item.quantity;
+					current.quantity += item.quantity;
+					current.revenue += item.total;
+					totals.set(item.product_id, current);
+				}
+				return { success: true, data: [...totals.values()].sort((a, b) => b.revenue - a.revenue).slice(0, limit) };
+			},
+			inventoryValue: async () => {
+				const products = await db.products.toArray();
+				const groups = new Map<string, InventoryValueRow>();
+				for (const product of products) {
+					const category = product.category_name || 'Uncategorized';
+					const row = groups.get(category) ?? { category_name: category, product_count: 0, total_cost: 0, total_value: 0 };
+					row.product_count++;
+					row.total_cost += product.buying_price * product.stock_qty;
+					row.total_value += product.selling_price * product.stock_qty;
+					groups.set(category, row);
+				}
+				return { success: true, data: [...groups.values()] };
+			}
+		};
+		// ─── Query builder ─────────────────────────────────────────────────
 function buildQuery(params: Record<string, string | number | boolean | undefined>) {
 	const q = new URLSearchParams();
 	for (const [k, v] of Object.entries(params)) {

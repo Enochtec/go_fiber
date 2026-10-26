@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Product, Category, Customer, Supplier } from '$lib/types';
+import type { Product, Category, Customer, Supplier, Purchase, StockAdjustment } from '$lib/types';
 
 export interface OfflineSale {
 	id: string;
@@ -32,7 +32,7 @@ export interface OfflineSaleItem {
 
 export interface SyncQueueItem {
 	id?: number;
-	entity: 'sale' | 'customer' | 'product' | 'supplier' | 'category';
+	entity: 'sale' | 'customer' | 'product' | 'supplier' | 'category' | 'purchase' | 'adjustment' | 'shop';
 	action: 'create' | 'update' | 'delete';
 	entityId: string;
 	payload: unknown;
@@ -42,6 +42,11 @@ export interface SyncQueueItem {
 	last_error: string | null;
 }
 
+export interface OfflineShopInfo {
+	key: 'info';
+	value: string;
+}
+
 export class MaestroDB extends Dexie {
 	products!: Table<Product, string>;
 	categories!: Table<Category, string>;
@@ -49,16 +54,20 @@ export class MaestroDB extends Dexie {
 	suppliers!: Table<Supplier, string>;
 	sales!: Table<OfflineSale, string>;
 	syncQueue!: Table<SyncQueueItem, number>;
+	purchases!: Table<Purchase, string>;
+	adjustments!: Table<StockAdjustment, string>;
 	meta!: Table<{ key: string; value: string }, string>;
 
 	constructor() {
 		super('MaestroPOS');
-		this.version(1).stores({
+		this.version(2).stores({
 			products: 'id, name, barcode, category_id, is_active, updated_at',
 			categories: 'id, name',
 			customers: 'id, name, phone, email',
 			suppliers: 'id, name, phone',
 			sales: 'id, created_at, synced, status',
+			purchases: 'id, created_at, status',
+			adjustments: 'id, product_id, created_at',
 			syncQueue: '++id, entity, action, status, created_at',
 			meta: 'key'
 		});

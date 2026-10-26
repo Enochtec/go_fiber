@@ -6,6 +6,10 @@ function createAuthStore() {
 
 	if (typeof localStorage !== 'undefined') {
 		token = localStorage.getItem('pos_token');
+		const cachedUser = localStorage.getItem('pos_user');
+		if (cachedUser) {
+			try { user = JSON.parse(cachedUser) as User; } catch { localStorage.removeItem('pos_user'); }
+		}
 	}
 
 	return {
@@ -18,16 +22,19 @@ function createAuthStore() {
 			user = newUser;
 			token = newToken;
 			localStorage.setItem('pos_token', newToken);
+			localStorage.setItem('pos_user', JSON.stringify(newUser));
 		},
 
 		setUser(u: User) {
 			user = u;
+			localStorage.setItem('pos_user', JSON.stringify(u));
 		},
 
 		clear() {
 			user = null;
 			token = null;
 			localStorage.removeItem('pos_token');
+			localStorage.removeItem('pos_user');
 		},
 
 		can(roles: string[]) {
