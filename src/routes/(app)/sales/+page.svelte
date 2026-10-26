@@ -198,7 +198,6 @@
 		}
 		cart.addProduct(product);
 		closeSearch();
-		cartOpen = true;
 		searchInput?.focus();
 	}
 
